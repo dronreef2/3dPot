@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard 3D Pot - Controle de Projetos Maker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 24px;
+            color: white;
+        }
+
+        .esp32-icon { background: linear-gradient(45deg, #ff6b6b, #ee5a52); }
+        .arduino-icon { background: linear-gradient(45deg, #4ecdc4, #44a08d); }
+        .raspberry-icon { background: linear-gradient(45deg, #c44569, #f8b500); }
+        .toolchain-icon { background: linear-gradient(45deg, #667eea, #764ba2); }
+
+        .card-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .metric-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .status-online {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .action-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: white;
+            opacity: 0.8;
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+        }
+
+        .log-timestamp {
+            color: #6a9955;
+        }
+
+        .log-level-info {
+            color: #4fc3f7;
+        }
+
+        .log-level-warning {
+            color: #ffb74d;
+        }
+
+        .log-level-error {
+            color: #e57373;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 3D Pot Dashboard</h1>
+            <p>Controle Central dos Projetos Maker com Hardware e Impressão 3D</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- ESP32 Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon esp32-icon">📡</div>
+                    <div class="card-title">ESP32 Monitor de Filamento</div>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Status</span>
+                    <span class="status-indicator status-online">Online</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Filamento Restante</span>
+                    <span class="metric-value" id="filamento-restante">--%</span>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="filamento-progress" style="width: 0%"></div>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Peso Atual</span>
+                    <span class="metric-value" id="peso-atual">-- g</span>
+                </div>
+                
+                <button class="action-button btn-primary" onclick="accessESP32()">Acessar Interface</button>
+                <button class="action-button btn-secondary" onclick="calibrateSensor()">Calibrar Sensor</button>
+            </div>
+
+            <!-- Arduino Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon arduino-icon">🔧</div>
+                    <div class="card-title">Arduino Esteira Transportadora</div>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Status</span>
+                    <span class="status-indicator status-online">Ativo</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Velocidade</span>
+                    <span class="metric-value" id="velocidade-esteira">-- rpm</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Objetos Processados</span>
+                    <span class="metric-value" id="objetos-processados">0</span>
+                </div>
+                
+                <button class="action-button btn-primary" onclick="toggleEsteira()">Iniciar/Pausar</button>
+                <button class="action-button btn-secondary" onclick="ajustarVelocidade()">Ajustar Velocidade</button>
+            </div>
+
+            <!-- Raspberry Pi Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon raspberry-icon">📷</div>
+                    <div class="card-title">Raspberry Pi QC Station</div>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Status</span>
+                    <span class="status-indicator status-warning">Inspecionando</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Última Inspeção</span>
+                    <span class="metric-value" id="ultima-inspecao">--</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Taxa de Aprovação</span>
+                    <span class="metric-value" id="taxa-aprovacao">--%</span>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="qc-progress" style="width: 0%"></div>
+                </div>
+                
+                <button class="action-button btn-primary" onclick="iniciarInspecao()">Nova Inspeção</button>
+                <button class="action-button btn-secondary" onclick="verHistorico()">Ver Histórico</button>
+            </div>
+
+            <!-- Toolchain Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon toolchain-icon">⚙️</div>
+                    <div class="card-title">Toolchain Status</div>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">MQTT Broker</span>
+                    <span class="status-indicator status-online">Conectado</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Node-RED</span>
+                    <span class="status-indicator status-online">Executando</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Modelos 3D</span>
+                    <span class="metric-value" id="modelos-3d">12</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Projetos Ativos</span>
+                    <span class="metric-value" id="projetos-ativos">3</span>
+                </div>
+                
+                <button class="action-button btn-primary" onclick="openNodeRED()">Node-RED Flow</button>
+                <button class="action-button btn-secondary" onclick="verModelos()">Modelos 3D</button>
+            </div>
+        </div>
+
+        <!-- Log Container -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon toolchain-icon">📋</div>
+                <div class="card-title">Log de Eventos</div>
+            </div>
+            
+            <div class="log-container" id="log-container">
+                <div class="log-entry">
+                    <span class="log-timestamp">[2025-11-10 07:46:52]</span>
+                    <span class="log-level-info">[INFO]</span>
+                    Dashboard inicializado com sucesso
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>3D Pot Project - Projetos Maker com Hardware e Impressão 3D</p>
+        <p>Desenvolvido por MiniMax Agent | 2025</p>
+    </div>
+
+    <script>
+        // Dados de exemplo para demonstração
+        let esp32Data = {
+            filamento: 45.2,
+            peso: 756.8
+        };
+
+        let arduinoData = {
+            velocidade: 250,
+            objetos: 127
+        };
+
+        let raspberryData = {
+            ultimaInspecao: '2025-11-10 07:30:15',
+            taxaAprovacao: 94.5,
+            emInspecao: false
+        };
+
+        // Atualização automática dos dados
+        function updateDashboard() {
+            // Simula variação nos dados
+            esp32Data.filamento = Math.max(0, esp32Data.filamento - Math.random() * 0.1);
+            
+            document.getElementById('filamento-restante').textContent = esp32Data.filamento.toFixed(1) + '%';
+            document.getElementById('filamento-progress').style.width = esp32Data.filamento + '%';
+            document.getElementById('peso-atual').textContent = esp32Data.peso.toFixed(1) + ' g';
+            
+            document.getElementById('velocidade-esteira').textContent = arduinoData.velocidade + ' rpm';
+            document.getElementById('objetos-processados').textContent = arduinoData.objetos;
+            
+            document.getElementById('ultima-inspecao').textContent = raspberryData.ultimaInspecao;
+            document.getElementById('taxa-aprovacao').textContent = raspberryData.taxaAprovacao.toFixed(1) + '%';
+            document.getElementById('qc-progress').style.width = raspberryData.taxaAprovacao + '%';
+        }
+
+        // Funções de ação
+        function accessESP32() {
+            addLog('INFO', 'Abrindo interface do ESP32...');
+            window.open('http://192.168.1.100', '_blank');
+        }
+
+        function calibrateSensor() {
+            addLog('INFO', 'Iniciando calibração do sensor de peso...');
+            // Aqui você faria a chamada para a API do ESP32
+            setTimeout(() => {
+                addLog('INFO', 'Calibração concluída com sucesso');
+            }, 2000);
+        }
+
+        function toggleEsteira() {
+            addLog('INFO', 'Toggle da esteira transportadora...');
+            // Simula mudança de estado
+        }
+
+        function ajustarVelocidade() {
+            const novaVelocidade = prompt('Nova velocidade (100-1000 rpm):', arduinoData.velocidade);
+            if (novaVelocidade) {
+                arduinoData.velocidade = parseInt(novaVelocidade);
+                addLog('INFO', `Velocidade ajustada para ${novaVelocidade} rpm`);
+            }
+        }
+
+        function iniciarInspecao() {
+            if (raspberryData.emInspecao) {
+                addLog('WARNING', 'Inspeção já está em andamento');
+                return;
+            }
+            
+            raspberryData.emInspecao = true;
+            addLog('INFO', 'Iniciando processo de inspeção...');
+            
+            // Simula processo de inspeção
+            setTimeout(() => {
+                raspberryData.emInspecao = false;
+                raspberryData.ultimaInspecao = new Date().toLocaleString('pt-BR');
+                raspberryData.taxaAprovacao = 90 + Math.random() * 10;
+                addLog('INFO', 'Inspeção concluída - Peça aprovada');
+            }, 5000);
+        }
+
+        function verHistorico() {
+            addLog('INFO', 'Abrindo histórico de inspeções...');
+            // Implementar modal ou nova página
+        }
+
+        function openNodeRED() {
+            addLog('INFO', 'Abrindo Node-RED...');
+            window.open('http://192.168.1.101:1880', '_blank');
+        }
+
+        function verModelos() {
+            addLog('INFO', 'Abrindo biblioteca de modelos 3D...');
+            // Implementar visualizador de modelos
+        }
+
+        // Sistema de log
+        function addLog(level, message) {
+            const logContainer = document.getElementById('log-container');
+            const timestamp = new Date().toLocaleString('pt-BR');
+            const levelClass = `log-level-${level.toLowerCase()}`;
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <span class="log-timestamp">[${timestamp}]</span>
+                <span class="${levelClass}">[${level}]</span>
+                ${message}
+            `;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // Limita o número de entradas no log
+            const entries = logContainer.querySelectorAll('.log-entry');
+            if (entries.length > 50) {
+                entries[0].remove();
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDashboard();
+            addLog('INFO', 'Dashboard 3D Pot inicializado');
+            
+            // Atualiza dados a cada 5 segundos
+            setInterval(updateDashboard, 5000);
+        });
+    </script>
+</body>
+</html>
