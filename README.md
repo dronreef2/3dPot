@@ -33,6 +33,48 @@ A combinação de hardware de baixo custo com impressão 3D e software open-sour
     └── raspberry-pi-projetos/
 ```
 
+## 🖼️ Galeria Visual
+
+Abaixo você encontra diagramas técnicos, mockups de interface e visualizações dos projetos. Para uma galeria completa com descrições detalhadas, acesse: [`assets/screenshots/GALERIA-VISUAL.md`](assets/screenshots/GALERIA-VISUAL.md)
+
+### 🏗️ Arquitetura dos Sistemas
+
+#### **Monitor de Filamento ESP32**
+![Arquitetura ESP32](assets/screenshots/arquitetura-esp32-monitor.png)
+*Sistema completo de monitoramento com ESP32, interface web e integração IoT*
+
+#### **Esteira Transportadora Arduino**
+![Arquitetura Arduino](assets/screenshots/arquitetura-arduino-esteira.png)
+*Controle de motores, sensores e interface de usuário para automação*
+
+#### **Estação QC Raspberry Pi**
+![Arquitetura QC](assets/screenshots/arquitetura-raspberry-qc.png)
+*Sistema de visão computacional para controle de qualidade automatizado*
+
+### 🔄 Integração do Ecossistema
+
+#### **Fluxo 3dPot**
+![Fluxo Ecossistema](assets/screenshots/fluxo-ecosistema-3dpot.png)
+*Como os três projetos se integram em um ecossistema de produção inteligente*
+
+### 🖥️ Interfaces Web
+
+#### **Interface Monitor ESP32**
+![Interface Web ESP32](assets/screenshots/interface-esp32-web.png)
+*Dashboard responsivo para monitoramento de filamento em tempo real*
+
+#### **Dashboard Estação QC**
+![Dashboard QC](assets/screenshots/interface-qc-dashboard.png)
+*Interface web para análise automática de qualidade com galeria de fotos*
+
+### 🎯 Modelos 3D Técnicos
+
+#### **Especificações dos Modelos 3D**
+![Modelos 3D](assets/screenshots/modelos-3d-especificacoes.png)
+*Especificações detalhadas dos modelos OpenSCAD paramétricos*
+
+---
+
 ## 🚀 Primeiros Passos
 
 ### Pré-requisitos
