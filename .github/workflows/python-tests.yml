@@ -63,27 +63,21 @@ jobs:
             echo "# 3dPot test placeholder" > tests/__init__.py
             
             # Create basic tests for different components
-            cat > tests/test_basic.py << 'PYTEST_EOF'
+            cat > tests/test_basic.py << 'EOF'
+import os
+
 def test_project_structure():
-    """Test that project structure is valid."""
-    import os
     assert os.path.exists('README.md'), "README.md should exist"
     
 def test_arduino_codes():
-    """Test that Arduino codes directory exists."""
-    import os
     assert os.path.exists('codigos/arduino'), "Arduino codes directory should exist"
     
 def test_esp32_codes():
-    """Test that ESP32 codes directory exists."""
-    import os
     assert os.path.exists('codigos/esp32'), "ESP32 codes directory should exist"
     
 def test_3d_models():
-    """Test that 3D models directory exists."""
-    import os
     assert os.path.exists('modelos-3d'), "3D models directory should exist"
-PYTEST_EOF
+EOF
             
             # Run the basic tests
             pytest tests/test_basic.py -v --cov=. --cov-report=term-missing
