@@ -14,7 +14,12 @@ assets/screenshots/
 ├── fluxo-ecosistema-3dpot.png         # Fluxo integração projetos
 ├── interface-esp32-web.png            # Mockup interface web ESP32
 ├── interface-qc-dashboard.png         # Mockup dashboard estação QC
-└── modelos-3d-especificacoes.png      # Especificações técnicas modelos 3D
+├── modelos-3d-especificacoes.png      # Especificações técnicas modelos 3D
+├── esquematico-esp32-monitor.png      # Esquemático conexões ESP32
+├── esquematico-arduino-esteira.png    # Esquemático conexões Arduino
+├── esquematico-raspberry-qc.png       # Esquemático conexões Raspberry Pi
+├── diagrama-sistema-integrado.png     # Diagrama integração global
+└── GUIA-CONEXOES.md                   # Guia técnico de montagem
 ```
 
 ## 🖼️ Galeria de Imagens
@@ -75,6 +80,38 @@ assets/screenshots/
 - **Modelos**: Suporte ESP32, rolo esteira, case Raspberry Pi
 - **Parâmetros**: Dimensões, tolerâncias, materiais, configurações
 - **Formato**: 1400x800px PNG
+
+### 5. 🔌 Esquemáticos Técnicos
+
+#### **Esquemático Monitor ESP32**
+![Esquemático ESP32](esquematico-esp32-monitor.png)
+- **Descrição**: Diagrama detalhado de conexões do monitor de filamento
+- **Componentes**: ESP32, HX711, células de carga, LED status
+- **Conexões**: GPIO mapping, power distribution, sensor integration
+- **Formato**: 1600x1000px PNG
+
+#### **Esquemático Esteira Arduino**
+![Esquemático Arduino](esquematico-arduino-esteira.png)
+- **Descrição**: Esquemático completo da esteira transportadora
+- **Componentes**: Arduino, motor NEMA17, driver A4988, sensores IR, LCD
+- **Interface**: Controles manuais, display, emergência
+- **Formato**: 1600x1100px PNG
+
+#### **Esquemático Estação QC**
+![Esquemático Raspberry Pi](esquematico-raspberry-qc.png)
+- **Descrição**: Diagrama de conexões da estação de controle de qualidade
+- **Componentes**: Raspberry Pi, câmera, LED ring, motor, controladores
+- **Alimentação**: 12V/5V/3.3V distribution, power management
+- **Formato**: 1600x1200px PNG
+
+#### **Diagrama Sistema Integrado**
+![Sistema Integrado](diagrama-sistema-integrado.png)
+- **Descrição**: Integração global de todos os componentes
+- **Rede**: WiFi, MQTT, comunicação entre dispositivos
+- **Fluxo**: Da pesagem do filamento ao produto final
+- **Formato**: 1800x1200px PNG
+
+**Guia Técnico**: [GUIA-CONEXOES.md](GUIA-CONEXOES.md) - Instruções detalhadas de montagem
 
 ## 🎨 Diretrizes Visuais
 

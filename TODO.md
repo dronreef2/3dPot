@@ -32,7 +32,8 @@ Este arquivo contém todas as tarefas pendentes, melhorias planejadas e roadmap 
   - [x] ✅ Criar guias passo-a-passo para cada hardware - **GUIA DETALHADO NO README**
   - [x] ✅ Documentar requisitos de hardware específicos - **DOCUMENTADO POR PLATAFORMA**
   - [x] ✅ Adicionar seção de troubleshooting comum - **SEÇÃO "TROUBLESHOOTING" NO README**
-  - [ ] Criar diagramas de conexão e esquemáticos - **PENDENTE**
+  - [x] ✅ Criar diagramas de conexão e esquemáticos - **ESQUEMÁTICOS DETALHADOS CRIADOS**
+  - 📊 **Progresso**: 100% completo - 4 esquemáticos + guia técnico de montagem
 
 ---
 
@@ -216,16 +217,16 @@ Este arquivo contém todas as tarefas pendentes, melhorias planejadas e roadmap 
 
 | Categoria | Total | Concluídas | Em Progresso | Pendentes |
 |-----------|-------|------------|--------------|-----------|
-| **Alta Prioridade** | 11 | 8 | 1 | 2 |
+| **Alta Prioridade** | 11 | 9 | 1 | 1 |
 | **Média Prioridade** | 8 | 6 | 0 | 2 |
 | **Funcionalidades** | 18 | 3 | 0 | 15 |
 | **Comunidade** | 15 | 0 | 0 | 15 |
 | **Infraestrutura** | 12 | 8 | 0 | 4 |
-| **Total** | **64** | **25** | **1** | **38** |
+| **Total** | **64** | **26** | **1** | **37** |
 
 ### 📈 **PROGRESSO POR TAREFA COMPLETADA**
 
-#### **✅ ALTA PRIORIDADE CONCLUÍDA (8/11):**
+#### **✅ ALTA PRIORIDADE CONCLUÍDA (9/11):**
 1. ✅ Configurar workflow principal (.github/workflows/ci.yml)
 2. ✅ Adicionar matriz de builds (Python 3.8+, Arduino IDE)  
 3. ✅ Implementar lint para Python e C++
@@ -241,6 +242,7 @@ Este arquivo contém todas as tarefas pendentes, melhorias planejadas e roadmap 
 13. ✅ Criar guias passo-a-passo para cada hardware
 14. ✅ Documentar requisitos de hardware específicos
 15. ✅ Adicionar seção de troubleshooting comum
+16. ✅ **Criar diagramas de conexão e esquemáticos** - **4 ESQUEMÁTICOS + GUIA TÉCNICO**
 
 #### **✅ MÉDIA PRIORIDADE CONCLUÍDA (6/8):**
 1. ✅ Template de Documentation Update (CONTRIBUTING.md)
@@ -274,8 +276,8 @@ Este arquivo contém todas as tarefas pendentes, melhorias planejadas e roadmap 
 #### **⚠️ EM PROGRESSO (1):**
 1. 🔄 **CI/CD Workflows**: Arquivos criados, pendentes de push por limitações de token
 
-**🎯 TAXA DE CONCLUSÃO ATUAL: 39% (25/64 tarefas)**  
-**📊 EVOLUÇÃO: +19 tarefas concluídas desde implementação inicial**
+**🎯 TAXA DE CONCLUSÃO ATUAL: 41% (26/64 tarefas)**  
+**📊 EVOLUÇÃO: +20 tarefas concluídas desde implementação inicial**
 
 ## 🎯 **Métricas de Sucesso**
 
@@ -296,7 +298,7 @@ Para questões sobre este TODO ou para contribuir com qualquer tarefa:
 
 ---
 
-**Última atualização**: 2025-11-10 09:05:00  
+**Última atualização**: 2025-11-10 09:10:00  
 **Versão do documento**: 1.2  
 **Responsável**: Equipe 3dPot  
 
@@ -336,11 +338,12 @@ Para questões sobre este TODO ou para contribuir com qualquer tarefa:
 7. **🔄 CI/CD**: Workflows criados (pendentes de push)
 
 ### **📈 PROGRESSO ATUALIZADO**
-- **Taxa de Conclusão**: 39% (25/64 tarefas) - ⬆️ +11%
+- **Taxa de Conclusão**: 41% (26/64 tarefas) - ⬆️ +13%
 - **Modelos 3D**: 60% completo (3/5 previstos)
 - **Templates**: 100% completo (3/3 previstos)
-- **Screenshots**: 100% completo (7 diagramas técnicos)
-- **Documentação**: +Galeria visual completa
+- **Screenshots**: 100% completo (11 diagramas técnicos)
+- **Esquemáticos**: 100% completo (4 esquemáticos + guia montagem)
+- **Documentação**: +Galeria visual completa + esquemáticos técnicos
 
 ### **🎯 PRÓXIMOS MARCOS**
 - 🔥 **Prioridade 1**: Ativar GitHub Actions (necessita token adequado)
@@ -349,9 +352,10 @@ Para questões sobre este TODO ou para contribuir com qualquer tarefa:
 - 🌍 **Prioridade 4**: Publicação em plataformas (Hackster.io)
 
 ### **📈 CONQUISTAS TÉCNICAS**
-- ✅ **GALERIA VISUAL COMPLETA**: 7 diagramas técnicos + interface
+- ✅ **GALERIA VISUAL COMPLETA**: 11 diagramas técnicos + interfaces
+- ✅ **ESQUEMÁTICOS TÉCNICOS**: 4 diagramas detalhados de conexões
+- ✅ **GUIA DE MONTAGEM**: 278 linhas de instruções técnicas
 - ✅ **ESTRUTURA GITHUB PROFISSIONAL**: Templates em .github/ISSUE_TEMPLATE/
-- ✅ **DOCUMENTAÇÃO VISUAL**: Integração README + galeria
-- ✅ **ECOSSISTEMA INTEGRADO**: Fluxo entre os 3 projetos
+- ✅ **ECOSSISTEMA INTEGRADO**: Fluxo entre os 3 projetos documentado
 
 **Status: 🟢 PROJETO PRONTO PARA COMUNIDADE**

@@ -73,6 +73,26 @@ Abaixo você encontra diagramas técnicos, mockups de interface e visualizaçõe
 ![Modelos 3D](assets/screenshots/modelos-3d-especificacoes.png)
 *Especificações detalhadas dos modelos OpenSCAD paramétricos*
 
+### 🔌 Esquemáticos Técnicos
+
+#### **Monitor ESP32**
+![Esquemático ESP32](assets/screenshots/esquematico-esp32-monitor.png)
+*Diagrama detalhado de conexões: ESP32, HX711, células de carga*
+
+#### **Esteira Arduino**
+![Esquemático Arduino](assets/screenshots/esquematico-arduino-esteira.png)
+*Esquemático completo: Arduino, motor NEMA17, sensores, controles*
+
+#### **Estação QC**
+![Esquemático QC](assets/screenshots/esquematico-raspberry-qc.png)
+*Diagrama de conexões: Raspberry Pi, câmera, LED ring, motor*
+
+#### **Sistema Integrado**
+![Sistema Integrado](assets/screenshots/diagrama-sistema-integrado.png)
+*Integração global: rede WiFi, MQTT, fluxo de produção*
+
+📖 **Para instruções detalhadas de montagem, consulte**: [`assets/screenshots/GUIA-CONEXOES.md`](assets/screenshots/GUIA-CONEXOES.md)
+
 ---
 
 ## 🚀 Primeiros Passos
