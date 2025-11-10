@@ -1,0 +1,103 @@
+# Alertas para o sistema 3dPot
+groups:
+  - name: 3dpot-alerts
+    rules:
+      # Alerta de backend inativo
+      - alert: BackendDown
+        expr: up{job="3dpot-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend 3dPot está inativo"
+          description: "O backend da aplicação 3dPot não está respondendo"
+
+      # Alerta de alta latência da API
+      - alert: HighAPIResponseTime
+        expr: http_request_duration_seconds{quantile="0.9"} > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alta latência na API"
+          description: "A latência da API está acima de 5 segundos"
+
+      # Alerta de uso de CPU
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{name="3dpot-backend"}[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alto uso de CPU"
+          description: "O backend está usando mais de 80% da CPU"
+
+      # Alerta de uso de memória
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes{name="3dpot-backend"} / container_spec_memory_limit_bytes > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alto uso de memória"
+          description: "O backend está usando mais de 90% da memória disponível"
+
+      # Alerta de espaço em disco
+      - alert: HighDiskUsage
+        expr: (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"}) / node_filesystem_size_bytes{mountpoint="/"} > 0.8
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alto uso de disco"
+          description: "O disco principal está com mais de 80% de uso"
+
+      # Alerta de MQTT desconectado
+      - alert: MQTTDown
+        expr: up{job="mqtt-broker"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MQTT Broker está inativo"
+          description: "O broker MQTT não está respondendo"
+
+      # Alerta de banco de dados
+      - alert: DatabaseDown
+        expr: up{job="database"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Banco de dados está inativo"
+          description: "O banco de dados não está respondendo"
+
+      # Alerta de hardware ESP32 offline
+      - alert: ESP32Offline
+        expr: time() - esp32_last_seen_seconds > 300
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "ESP32 está offline"
+          description: "O dispositivo ESP32 não envia dados há mais de 5 minutos"
+
+      # Alerta de Arduino desconectado
+      - alert: ArduinoDisconnected
+        expr: arduino_connection_status == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Arduino está desconectado"
+          description: "A comunicação serial com o Arduino foi perdida"
+
+      # Alerta de qualidade baixa na estação QC
+      - alert: LowQualityProducts
+        expr: rate(products_quality_grade{grade="F"}[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alta taxa de produtos com qualidade baixa"
+          description: "Mais de 10% dos produtos estão sendo classificados como F" 

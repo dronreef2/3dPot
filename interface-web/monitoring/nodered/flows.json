@@ -1,0 +1,71 @@
+[
+  {
+    "id": "main",
+    "type": "tab",
+    "label": "3dPot Alerts"
+  },
+  {
+    "id": "mqtt-broker",
+    "type": "mqtt-broker",
+    "name": "3dPot MQTT",
+    "broker": "mqtt-broker",
+    "port": "1883",
+    "clientid": "nodered-3dpot",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "birthTopic": "3dpot/nodered/status",
+    "birthQos": "1",
+    "birthPayload": "online"
+  },
+  {
+    "id": "alert-processor",
+    "type": "function",
+    "z": "main",
+    "name": "Process Alert",
+    "func": "const alert = {\n  timestamp: new Date().toISOString(),\n  severity: msg.payload.severity || 'info',\n  device: msg.payload.device_id,\n  type: msg.payload.type,\n  message: msg.payload.message,\n  data: msg.payload\n};\n\nconst severityColors = {\n  'info': 'blue',\n  'warning': 'yellow', \n  'error': 'orange',\n  'critical': 'red'\n};\n\nalert.color = severityColors[alert.severity] || 'gray';\n\nmsg.payload = alert;\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 320,
+    "y": 80,
+    "wires": [
+      ["log-alert", "mqtt-out"]
+    ]
+  },
+  {
+    "id": "log-alert",
+    "type": "debug",
+    "z": "main",
+    "name": "Log Alert",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 560,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "mqtt-out",
+    "type": "mqtt out",
+    "z": "main",
+    "name": "Alert MQTT",
+    "topic": "3dpot/alerts",
+    "qos": "1",
+    "retain": "",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "broker": "mqtt-broker",
+    "x": 560,
+    "y": 80,
+    "wires": []
+  }
+]

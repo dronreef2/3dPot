@@ -1,0 +1,15 @@
+# Configurações de provisionamento do Grafana
+# Arquivo: monitoring/grafana/provisioning/dashboards/dashboards.yml
+
+apiVersion: 1
+
+providers:
+  - name: '3dPot Dashboards'
+    orgId: 1
+    folder: '3dPot'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
