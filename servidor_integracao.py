@@ -823,44 +823,44 @@ def main():
         print("❌ Erro ao inicializar sistema")
         return
     
-        # Configurar servidor
-        port = int(os.environ.get('PORT', 5000))
-        host = os.environ.get('HOST', '0.0.0.0')
-        debug = os.environ.get('DEBUG', 'false').lower() == 'true'
-        
-        print(f"🌐 Servidor rodando em: http://{host}:{port}")
-        print(f"🔗 Interface web: http://{host}:{port}/")
-        print(f"📊 Status API: http://{host}:{port}/api/status")
-        print(f"🏥 Health check: http://{host}:{port}/api/health")
-        print(f"💾 Modelos 3D: http://{host}:{port}/models")
-        
-        # Mostrar status do LGM
-        if sistema_lgm:
-            stats = sistema_lgm.get_usage_stats()
-            print(f"🤖 Sistema LGM: ATIVO (método: {stats['method']})")
-            print(f"🔧 LGM Status: http://{host}:{port}/api/lgm/status")
-            print(f"📝 Projeto Completo: http://{host}:{port}/api/lgm/projeto-completo")
-        else:
-            print("🤖 Sistema LGM: INATIVO (configure REPLICATE_API_TOKEN)")
-        
-        if debug:
-            print("🐛 Modo debug ativado")
-        
-        print("\n=== SISTEMA PRONTO ===")
-        print("API Slant 3D integrada com sucesso!")
-        print("Interface web disponível para uso")
-        print("Sistema LGM disponível para geração de modelos 3D")
-        print("Endpoint integrado: texto → modelo 3D + análise + orçamento")
-        
-        # Iniciar servidor Flask
-        try:
-            app.run(host=host, port=port, debug=debug)
-        except KeyboardInterrupt:
-            print("\n🔴 Servidor interrompido pelo usuário")
-        except Exception as e:
-            print(f"❌ Erro no servidor: {e}")
-        finally:
-            print("👋 Servidor finalizado")
+    # Configurar servidor
+    port = int(os.environ.get('PORT', 5000))
+    host = os.environ.get('HOST', '0.0.0.0')
+    debug = os.environ.get('DEBUG', 'false').lower() == 'true'
+    
+    print(f"🌐 Servidor rodando em: http://{host}:{port}")
+    print(f"🔗 Interface web: http://{host}:{port}/")
+    print(f"📊 Status API: http://{host}:{port}/api/status")
+    print(f"🏥 Health check: http://{host}:{port}/api/health")
+    print(f"💾 Modelos 3D: http://{host}:{port}/models")
+    
+    # Mostrar status do LGM
+    if sistema_lgm:
+        stats = sistema_lgm.get_usage_stats()
+        print(f"🤖 Sistema LGM: ATIVO (método: {stats['method']})")
+        print(f"🔧 LGM Status: http://{host}:{port}/api/lgm/status")
+        print(f"📝 Projeto Completo: http://{host}:{port}/api/lgm/projeto-completo")
+    else:
+        print("🤖 Sistema LGM: INATIVO (configure REPLICATE_API_TOKEN)")
+    
+    if debug:
+        print("🐛 Modo debug ativado")
+    
+    print("\n=== SISTEMA PRONTO ===")
+    print("API Slant 3D integrada com sucesso!")
+    print("Interface web disponível para uso")
+    print("Sistema LGM disponível para geração de modelos 3D")
+    print("Endpoint integrado: texto → modelo 3D + análise + orçamento")
+    
+    # Iniciar servidor Flask
+    try:
+        app.run(host=host, port=port, debug=debug)
+    except KeyboardInterrupt:
+        print("\n🔴 Servidor interrompido pelo usuário")
+    except Exception as e:
+        print(f"❌ Erro no servidor: {e}")
+    finally:
+        print("👋 Servidor finalizado")
 
 if __name__ == "__main__":
     main()
