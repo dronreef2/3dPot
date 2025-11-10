@@ -29,13 +29,17 @@
                     <i class="fas fa-cube text-primary text-3xl"></i>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-800">Sistema de Modelagem Inteligente</h1>
-                        <p class="text-gray-600">Integração Slant 3D API</p>
+                        <p class="text-gray-600">Integração Slant 3D API + Sistema LGM AI</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
                         <i class="fas fa-check-circle mr-1"></i>
-                        API Conectada
+                        API Slant 3D
+                    </div>
+                    <div id="lgmStatus" class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">
+                        <i class="fas fa-robot mr-1"></i>
+                        LGM AI: Aguardando...
                     </div>
                     <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                         <i class="fas fa-cog mr-2"></i>
@@ -91,13 +95,23 @@
                         </div>
                     </div>
                     
-                    <button 
-                        id="processPrompt" 
-                        class="w-full bg-gradient-to-r from-primary to-accent text-white py-3 rounded-lg hover:from-blue-700 hover:to-orange-600 transition-all duration-300 font-semibold"
-                    >
-                        <i class="fas fa-brain mr-2"></i>
-                        Processar Prompt Inteligente
-                    </button>
+                    <div class="grid grid-cols-1 gap-3">
+                        <button 
+                            id="processPrompt" 
+                            class="w-full bg-gradient-to-r from-primary to-accent text-white py-3 rounded-lg hover:from-blue-700 hover:to-orange-600 transition-all duration-300 font-semibold"
+                        >
+                            <i class="fas fa-brain mr-2"></i>
+                            Processar Prompt Inteligente
+                        </button>
+                        
+                        <button 
+                            id="generateAIModel" 
+                            class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-semibold"
+                        >
+                            <i class="fas fa-robot mr-2"></i>
+                            Geração AI + Projeto Completo
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -112,6 +126,82 @@
                     <div class="text-center text-gray-500 py-8">
                         <i class="fas fa-lightbulb text-4xl mb-4"></i>
                         <p>Aguardando processamento do prompt...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nova Seção LGM - Geração AI -->
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Painel de Geração AI -->
+            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-lg p-6 border border-purple-200">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fas fa-robot text-purple-600 mr-3"></i>
+                    Geração AI de Modelos 3D
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="bg-white rounded-lg p-4 border border-purple-200">
+                        <p class="text-sm text-gray-700 mb-3">
+                            <i class="fas fa-magic text-purple-600 mr-2"></i>
+                            Use IA para gerar modelos 3D de alta qualidade a partir de descrições textuais
+                        </p>
+                        
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                <span>Modelos em 5 segundos</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                <span>Resolução alta</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                <span>Múltiplas variações</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                <span>Formato PLY</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-4 border border-purple-200">
+                        <h4 class="font-medium text-gray-800 mb-2">Exemplos Rápidos:</h4>
+                        <div class="space-y-2">
+                            <div class="text-xs text-purple-700 bg-purple-100 px-2 py-1 rounded cursor-pointer hover:bg-purple-200 transition-colors" 
+                                 onclick="setQuickPrompt('um dado de 6 faces com textura de madeira')">
+                                🎲 um dado de 6 faces com textura de madeira
+                            </div>
+                            <div class="text-xs text-purple-700 bg-purple-100 px-2 py-1 rounded cursor-pointer hover:bg-purple-200 transition-colors" 
+                                 onclick="setQuickPrompt('um robô humanoide com olhos LED azuis')">
+                                🤖 um robô humanoide com olhos LED azuis
+                            </div>
+                            <div class="text-xs text-purple-700 bg-purple-100 px-2 py-1 rounded cursor-pointer hover:bg-purple-200 transition-colors" 
+                                 onclick="setQuickPrompt('uma xícara de café com vapor realista')">
+                                ☕ uma xícara de café com vapor realista
+                            </div>
+                            <div class="text-xs text-purple-700 bg-purple-100 px-2 py-1 rounded cursor-pointer hover:bg-purple-200 transition-colors" 
+                                 onclick="setQuickPrompt('um suporte para celular em formato de árvore')">
+                                🌳 um suporte para celular em formato de árvore
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel de Resultados LGM -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fas fa-cube text-purple-600 mr-3"></i>
+                    Resultados LGM
+                </h2>
+                
+                <div id="lgmResults" class="space-y-4">
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-magic text-4xl mb-4"></i>
+                        <p>Aguardando geração AI...</p>
                     </div>
                 </div>
             </div>
@@ -252,7 +342,9 @@
             projectType: document.getElementById('projectType'),
             complexity: document.getElementById('complexity'),
             processPrompt: document.getElementById('processPrompt'),
+            generateAIModel: document.getElementById('generateAIModel'),
             analysisResults: document.getElementById('analysisResults'),
+            lgmResults: document.getElementById('lgmResults'),
             materialFilter: document.getElementById('materialFilter'),
             colorFilter: document.getElementById('colorFilter'),
             priceFilter: document.getElementById('priceFilter'),
@@ -627,6 +719,7 @@
         // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
             elements.processPrompt.addEventListener('click', processPromptIntelligently);
+            elements.generateAIModel.addEventListener('click', generateAIModelComplete);
             elements.searchFilaments.addEventListener('click', searchFilaments);
             elements.calculateBudget.addEventListener('click', calculateBudget);
             
@@ -636,7 +729,256 @@
                     processPromptIntelligently();
                 }
             });
+            
+            // Verificar status do LGM
+            checkLGMStatus();
         });
+        
+        // ================================
+        // FUNÇÕES LGM - INTEGRAÇÃO AI
+        // ================================
+        
+        // URL base da API
+        const API_BASE = 'http://localhost:5000/api';
+        
+        // Função para verificar status do LGM
+        async function checkLGMStatus() {
+            const lgmStatus = document.getElementById('lgmStatus');
+            
+            try {
+                const response = await fetch(`${API_BASE}/lgm/status`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    // LGM disponível
+                    lgmStatus.className = 'bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm';
+                    lgmStatus.innerHTML = '<i class="fas fa-robot mr-1"></i>LGM AI: Ativo';
+                } else {
+                    // LGM não disponível
+                    lgmStatus.className = 'bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm';
+                    lgmStatus.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i>LGM AI: Indisponível';
+                }
+            } catch (error) {
+                // Erro de conexão
+                lgmStatus.className = 'bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm';
+                lgmStatus.innerHTML = '<i class="fas fa-question-circle mr-1"></i>LGM AI: Sem conexão';
+            }
+        }
+        
+        // Função para definir prompt rápido
+        function setQuickPrompt(prompt) {
+            document.getElementById('promptInput').value = prompt;
+            showAlert('Prompt carregado! Clique em "Geração AI + Projeto Completo" para gerar.', 'info');
+        }
+        
+        // Função para gerar modelo AI completo
+        async function generateAIModelComplete() {
+            const prompt = elements.promptInput.value.trim();
+            if (!prompt) {
+                showAlert('Por favor, digite uma descrição do modelo!', 'error');
+                return;
+            }
+            
+            // Atualizar interface
+            elements.generateAIModel.disabled = true;
+            elements.generateAIModel.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Gerando modelo AI...';
+            showLGMStatus('Iniciando geração AI...', 'info');
+            
+            try {
+                // Chamada para o endpoint integrado
+                const response = await fetch(`${API_BASE}/lgm/projeto-completo`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        include_analysis: true,
+                        include_budget: true
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Mostrar resultados LGM
+                    displayLGMResults(data);
+                    showAlert('Projeto completo gerado com sucesso!', 'success');
+                } else {
+                    showLGMError('Erro na geração: ' + (data.error || 'Erro desconhecido'));
+                    showAlert('Erro na geração do modelo AI. Verifique se o servidor está rodando.', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Erro na geração AI:', error);
+                showLGMError('Erro de conexão: ' + error.message);
+                showAlert('Erro de conexão com o servidor. Verifique se está rodando em localhost:5000', 'error');
+            } finally {
+                // Restaurar botão
+                elements.generateAIModel.disabled = false;
+                elements.generateAIModel.innerHTML = '<i class="fas fa-robot mr-2"></i>Geração AI + Projeto Completo';
+            }
+        }
+        
+        // Função para mostrar status LGM
+        function showLGMStatus(message, type = 'info') {
+            const lgmResults = document.getElementById('lgmResults');
+            const typeClass = type === 'info' ? 'bg-blue-50 border-blue-200 text-blue-800' : 
+                            type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
+                            'bg-red-50 border-red-200 text-red-800';
+            
+            lgmResults.innerHTML = `
+                <div class="${typeClass} border rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <span>${message}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Função para mostrar erro LGM
+        function showLGMError(message) {
+            showLGMStatus(message, 'error');
+        }
+        
+        // Função para exibir resultados LGM
+        function displayLGMResults(data) {
+            const lgmResults = document.getElementById('lgmResults');
+            const stages = data.stages || {};
+            
+            // Status geral
+            const statusEmoji = data.overall_status === 'complete' ? '🎉' : 
+                              data.overall_status === 'partial' ? '⚠️' : '❌';
+            const statusText = data.overall_status === 'complete' ? 'Concluído' : 
+                             data.overall_status === 'partial' ? 'Parcialmente concluído' : 'Falhou';
+            
+            let html = `
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-semibold text-green-800">${statusEmoji} ${statusText}</h3>
+                            <p class="text-sm text-green-600">${data.completion_rate}</p>
+                        </div>
+                        <div class="text-right text-sm text-green-600">
+                            <div>Tempo total:</div>
+                            <div class="font-medium">${Math.floor((data.timestamp - Math.floor(data.timestamp)) * 60)}s</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Mostrar cada estágio
+            html += '<div class="space-y-3">';
+            
+            // Estágio 1: Geração LGM
+            if (stages.lgm_generation) {
+                const lgm = stages.lgm_generation;
+                const lgmEmoji = lgm.success ? '✅' : '❌';
+                const lgmClass = lgm.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
+                
+                html += `
+                    <div class="${lgmClass} border rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">${lgmEmoji} Geração AI de Modelo 3D</h4>
+                `;
+                
+                if (lgm.success) {
+                    const files = lgm.output_files || [];
+                    html += `
+                        <div class="text-sm space-y-1">
+                            <div><strong>Método:</strong> ${lgm.method || 'N/A'}</div>
+                            <div><strong>Tempo:</strong> ${lgm.processing_time?.toFixed(1) || 'N/A'}s</div>
+                            <div><strong>Arquivos:</strong> ${files.length} gerados</div>
+                            ${files.length > 0 ? `
+                                <div class="mt-2">
+                                    <div class="font-medium">Arquivos gerados:</div>
+                                    <div class="text-xs bg-white p-2 rounded mt-1 max-h-20 overflow-y-auto">
+                                        ${files.map(file => `<div>📁 ${file}</div>`).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="text-sm text-red-700">
+                            <div><strong>Erro:</strong> ${lgm.error || 'Erro desconhecido'}</div>
+                            ${lgm.note ? `<div><strong>Nota:</strong> ${lgm.note}</div>` : ''}
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+            }
+            
+            // Estágio 2: Análise do Projeto
+            if (stages.project_analysis) {
+                const analysis = stages.project_analysis;
+                const analysisEmoji = analysis.success ? '✅' : '❌';
+                const analysisClass = analysis.success ? 'bg-blue-50 border-blue-200' : 'bg-red-50 border-red-200';
+                
+                html += `
+                    <div class="${analysisClass} border rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">${analysisEmoji} Análise do Projeto</h4>
+                `;
+                
+                if (analysis.success) {
+                    html += `
+                        <div class="text-sm space-y-1">
+                            <div><strong>Volume estimado:</strong> ${analysis.volume_estimado || 'N/A'} cm³</div>
+                            <div><strong>Complexidade:</strong> ${analysis.complexidade || 'N/A'}</div>
+                            <div><strong>Tempo estimado:</strong> ${analysis.tempo_estimado || 'N/A'}</div>
+                            ${analysis.materiais_recomendados ? `
+                                <div><strong>Materiais:</strong> ${analysis.materiais_recomendados.join(', ')}</div>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    html += `<div class="text-sm text-red-700">${analysis.error || 'Erro na análise'}</div>`;
+                }
+                
+                html += '</div>';
+            }
+            
+            // Estágio 3: Orçamento
+            if (stages.budget_calculation) {
+                const budget = stages.budget_calculation;
+                const budgetEmoji = budget.success ? '✅' : '❌';
+                const budgetClass = budget.success ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200';
+                
+                html += `
+                    <div class="${budgetClass} border rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">${budgetEmoji} Orçamento Completo</h4>
+                `;
+                
+                if (budget.success) {
+                    const custos = budget.custos || {};
+                    html += `
+                        <div class="text-sm space-y-1">
+                            <div><strong>Custo total:</strong> R$ ${custos.total || '0.00'}</div>
+                            <div><strong>Material:</strong> R$ ${custos.material || '0.00'}</div>
+                            <div><strong>Impressão:</strong> R$ ${custos.impressao || '0.00'}</div>
+                            <div><strong>Volume:</strong> ${budget.volume_total || 'N/A'} cm³</div>
+                        </div>
+                    `;
+                } else {
+                    html += `<div class="text-sm text-red-700">${budget.error || 'Erro no orçamento'}</div>`;
+                }
+                
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            
+            // Adicionar timestamp
+            html += `
+                <div class="mt-4 text-xs text-gray-500 text-center">
+                    Gerado em: ${new Date(data.timestamp * 1000).toLocaleString('pt-BR')}
+                </div>
+            `;
+            
+            lgmResults.innerHTML = html;
+        }
         
         // Função para selecionar filamento
         function selectFilament(filamentId) {
