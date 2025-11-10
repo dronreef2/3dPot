@@ -43,7 +43,6 @@ jobs:
           else
             echo "No tests directory found"
           fi
-        continue-on-error: true
           
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
