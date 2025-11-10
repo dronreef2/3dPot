@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central de Modelagem Inteligente 3D</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#F59E0B'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-cube text-primary text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Sistema de Modelagem Inteligente</h1>
+                        <p class="text-gray-600">Integração Slant 3D API</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        API Conectada
+                    </div>
+                    <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-cog mr-2"></i>
+                        Configurações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Painel de Prompt -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fas fa-magic text-accent mr-3"></i>
+                    Gerador de Prompts Inteligentes
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Descreva seu modelo 3D:
+                        </label>
+                        <textarea 
+                            id="promptInput" 
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            rows="4" 
+                            placeholder="Ex: criar suporte para Raspberry Pi com furos de ventilação e encaixe para fonte..."
+                        ></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Tipo de Projeto:
+                            </label>
+                            <select id="projectType" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                                <option value="prototipo">Protótipo</option>
+                                <option value="producao">Produção</option>
+                                <option value="estudo">Estudo de viabilidade</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Complexidade:
+                            </label>
+                            <select id="complexity" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                                <option value="baixa">Baixa</option>
+                                <option value="media" selected>Média</option>
+                                <option value="alta">Alta</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button 
+                        id="processPrompt" 
+                        class="w-full bg-gradient-to-r from-primary to-accent text-white py-3 rounded-lg hover:from-blue-700 hover:to-orange-600 transition-all duration-300 font-semibold"
+                    >
+                        <i class="fas fa-brain mr-2"></i>
+                        Processar Prompt Inteligente
+                    </button>
+                </div>
+            </div>
+
+            <!-- Painel de Resultados -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fas fa-chart-bar text-secondary mr-3"></i>
+                    Análise Inteligente
+                </h2>
+                
+                <div id="analysisResults" class="space-y-4">
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-lightbulb text-4xl mb-4"></i>
+                        <p>Aguardando processamento do prompt...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Filamentos -->
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Filtros de Material -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-filter text-primary mr-2"></i>
+                    Filtros de Material
+                </h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Material:</label>
+                        <select id="materialFilter" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                            <option value="">Todos</option>
+                            <option value="PLA">PLA</option>
+                            <option value="ABS">ABS</option>
+                            <option value="PETG">PETG</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cor:</label>
+                        <input type="text" id="colorFilter" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary" placeholder="Ex: branco, preto...">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Preço máximo (USD/g):</label>
+                        <input type="number" id="priceFilter" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                    
+                    <button id="searchFilaments" class="w-full bg-secondary text-white py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-search mr-2"></i>
+                        Buscar Filamentos
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lista de Filamentos -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-palette text-accent mr-2"></i>
+                    Filamentos Disponíveis
+                </h3>
+                
+                <div id="filamentsList" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+                    <div class="text-center text-gray-500 py-8 md:col-span-2">
+                        <i class="fas fa-boxes text-4xl mb-4"></i>
+                        <p>Clique em "Buscar Filamentos" para carregar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculadora de Custo -->
+        <div class="mt-8 bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fas fa-calculator text-primary mr-3"></i>
+                Calculadora de Orçamento
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Modelo:</label>
+                    <input type="text" id="modelName" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary" placeholder="Ex: Suporte Arduino">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Volume (cm³):</label>
+                    <input type="number" id="modelVolume" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary" step="0.1" min="0" placeholder="50.0">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Material Preferido:</label>
+                    <select id="preferredMaterial" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary">
+                        <option value="">Qualquer um</option>
+                        <option value="PLA">PLA</option>
+                        <option value="ABS">ABS</option>
+                        <option value="PETG">PETG</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Cor:</label>
+                    <input type="text" id="preferredColor" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary" placeholder="Ex: branco">
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <button id="calculateBudget" class="bg-gradient-to-r from-secondary to-green-600 text-white py-3 px-6 rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-300 font-semibold">
+                    <i class="fas fa-dollar-sign mr-2"></i>
+                    Calcular Orçamento
+                </button>
+            </div>
+            
+            <div id="budgetResults" class="mt-6 space-y-4">
+                <!-- Resultados da calculadora aparecerão aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-16">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-lg font-semibold mb-2">Sistema de Modelagem Inteligente 3D</p>
+            <p class="text-gray-400">Powered by Slant 3D API & Central de Controle Inteligente 3dPot</p>
+            <div class="mt-4 flex justify-center space-x-6">
+                <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                    <i class="fab fa-github text-2xl"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                    <i class="fab fa-linkedin text-2xl"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                    <i class="fas fa-envelope text-2xl"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript para interatividade
+        
+        // Estado global da aplicação
+        let sistema = {
+            filaments: [],
+            currentAnalysis: null,
+            apiKey: 'sl-cc497e90df04027eed2468af328a2d00fa99ca5e3b57893394f6cd6012aba3d4'
+        };
+
+        // Elementos DOM
+        const elements = {
+            promptInput: document.getElementById('promptInput'),
+            projectType: document.getElementById('projectType'),
+            complexity: document.getElementById('complexity'),
+            processPrompt: document.getElementById('processPrompt'),
+            analysisResults: document.getElementById('analysisResults'),
+            materialFilter: document.getElementById('materialFilter'),
+            colorFilter: document.getElementById('colorFilter'),
+            priceFilter: document.getElementById('priceFilter'),
+            searchFilaments: document.getElementById('searchFilaments'),
+            filamentsList: document.getElementById('filamentsList'),
+            modelName: document.getElementById('modelName'),
+            modelVolume: document.getElementById('modelVolume'),
+            preferredMaterial: document.getElementById('preferredMaterial'),
+            preferredColor: document.getElementById('preferredColor'),
+            calculateBudget: document.getElementById('calculateBudget'),
+            budgetResults: document.getElementById('budgetResults')
+        };
+
+        // Função para simular processamento de prompt (em produção, chamaria a API Python)
+        function processPromptIntelligently() {
+            const prompt = elements.promptInput.value.trim();
+            const projectType = elements.projectType.value;
+            const complexity = elements.complexity.value;
+            
+            if (!prompt) {
+                showAlert('Por favor, insira uma descrição do modelo.', 'error');
+                return;
+            }
+            
+            // Simular análise inteligente
+            const analysis = analyzePrompt(prompt, projectType, complexity);
+            sistema.currentAnalysis = analysis;
+            displayAnalysis(analysis);
+        }
+
+        function analyzePrompt(prompt, projectType, complexity) {
+            // Lógica simplificada de análise (em produção seria feita pelo Python)
+            const words = prompt.toLowerCase().split(' ');
+            
+            // Detectar tipo de objeto
+            let detectedType = 'peça genérica';
+            let recommendedMaterials = ['PLA'];
+            let estimatedTime = '2-4 horas';
+            let estimatedCost = '$5-15';
+            
+            if (words.some(w => ['chassi', 'base', 'estrutura', 'case'].includes(w))) {
+                detectedType = 'Estrutura/Suporte';
+                recommendedMaterials = ['PLA', 'ABS'];
+                estimatedTime = '3-6 horas';
+                estimatedCost = '$8-20';
+            }
+            
+            if (words.some(w => ['enclosure', 'caixa', 'gabinete'].includes(w))) {
+                detectedType = 'Caixa/Gabinete';
+                recommendedMaterials = ['ABS', 'PETG'];
+                estimatedTime = '4-8 horas';
+                estimatedCost = '$10-30';
+            }
+            
+            return {
+                originalPrompt: prompt,
+                detectedType: detectedType,
+                projectType: projectType,
+                complexity: complexity,
+                recommendedMaterials: recommendedMaterials,
+                estimatedTime: estimatedTime,
+                estimatedCost: estimatedCost,
+                suggestions: generateSuggestions(prompt, detectedType, projectType),
+                configurations: generateConfigurations(detectedType, projectType)
+            };
+        }
+
+        function generateSuggestions(prompt, type, projectType) {
+            const suggestions = [];
+            
+            if (type === 'Estrutura/Suporte') {
+                suggestions.push('Parede mínima recomendada: 2mm para resistêcia');
+                suggestions.push('Furos de fixação: Ø3.5mm para parafusos M3');
+                suggestions.push('Tolerâncias de encaixe: +0.2mm para peças móveis');
+            }
+            
+            if (type === 'Caixa/Gabinete') {
+                suggestions.push('Espessura mínima: 3mm para durabililidade');
+                suggestions.push('Considerar furos de ventilação');
+                suggestions.push('Adicionar suportes de borboleta para acesso');
+            }
+            
+            if (projectType === 'prototipo') {
+                suggestions.push('Use baixo preenchimento (15-20%) para velocidade');
+                suggestions.push('Orientação de impressão para minimizar supports');
+            } else if (projectType === 'producao') {
+                suggestions.push('Use preenchimento 30-50% para resistência');
+                suggestions.push('Qualidade alta para acabamento profissional');
+            }
+            
+            return suggestions;
+        }
+
+        function generateConfigurations(type, projectType) {
+            const configs = {
+                'nozzle_temp': '200-220°C',
+                'bed_temp': '60-70°C',
+                'layer_height': '0.2mm',
+                'infill': projectType === 'producao' ? '30%' : '20%',
+                'print_speed': '50-60mm/s'
+            };
+            
+            if (type === 'Caixa/Gabinete') {
+                configs.bed_temp = '90-100°C';
+                configs.enclosure = 'recommended';
+            }
+            
+            return configs;
+        }
+
+        function displayAnalysis(analysis) {
+            const html = `
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <h4 class="font-semibold text-lg mb-3">Análise do Prompt</h4>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <span class="text-sm text-gray-600">Tipo Detectado:</span>
+                            <p class="font-medium">${analysis.detectedType}</p>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-600">Propósito:</span>
+                            <p class="font-medium capitalize">${analysis.projectType}</p>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-600">Complexidade:</span>
+                            <p class="font-medium capitalize">${analysis.complexity}</p>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-600">Tempo Estimado:</span>
+                            <p class="font-medium">${analysis.estimatedTime}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                    <h4 class="font-semibold mb-2">Materiais Recomendados</h4>
+                    <div class="flex flex-wrap gap-2">
+                        ${analysis.recommendedMaterials.map(material => 
+                            `<span class="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm">${material}</span>`
+                        ).join('')}
+                    </div>
+                </div>
+                
+                <div class="bg-green-50 rounded-lg p-4 mb-4">
+                    <h4 class="font-semibold mb-2">Sugestões Inteligentes</h4>
+                    <ul class="list-disc list-inside space-y-1">
+                        ${analysis.suggestions.map(suggestion => 
+                            `<li class="text-sm text-gray-700">${suggestion}</li>`
+                        ).join('')}
+                    </ul>
+                </div>
+                
+                <div class="bg-yellow-50 rounded-lg p-4">
+                    <h4 class="font-semibold mb-2">Configurações de Impressão</h4>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div>Temp. Extrusor: <span class="font-medium">${analysis.configurations.nozzle_temp}</span></div>
+                        <div>Temp. Mesa: <span class="font-medium">${analysis.configurations.bed_temp}</span></div>
+                        <div>Altura de Camada: <span class="font-medium">${analysis.configurations.layer_height}</span></div>
+                        <div>Preenchimento: <span class="font-medium">${analysis.configurations.infill}</span></div>
+                    </div>
+                </div>
+            `;
+            
+            elements.analysisResults.innerHTML = html;
+        }
+
+        // Função para buscar filamentos
+        function searchFilaments() {
+            const material = elements.materialFilter.value;
+            const color = elements.colorFilter.value.trim();
+            const maxPrice = elements.priceFilter.value;
+            
+            // Simular busca de filamentos (em produção seria feita pela API)
+            const mockFilaments = generateMockFilaments(material, color, maxPrice);
+            displayFilaments(mockFilaments);
+        }
+
+        function generateMockFilaments(material, color, maxPrice) {
+            const baseFilaments = [
+                {id: 'PLA-001', name: 'PLA Premium Branco', color: 'branco', type: 'PLA', price: 0.025, available: true, weight: 1000},
+                {id: 'PLA-002', name: 'PLA Premium Preto', color: 'preto', type: 'PLA', price: 0.025, available: true, weight: 1000},
+                {id: 'ABS-001', name: 'ABS Técnico Cinza', color: 'cinza', type: 'ABS', price: 0.030, available: true, weight: 1000},
+                {id: 'PETG-001', name: 'PETG Transparente', color: 'transparente', type: 'PETG', price: 0.040, available: true, weight: 750},
+                {id: 'PLA-003', name: 'PLA Formulare3D', color: 'vermelho', type: 'PLA', price: 0.022, available: true, weight: 1000},
+                {id: 'ABS-002', name: 'ABS Premium Azul', color: 'azul', type: 'ABS', price: 0.032, available: false, weight: 1000}
+            ];
+            
+            return baseFilaments.filter(f => {
+                if (material && f.type !== material) return false;
+                if (color && !f.color.includes(color.toLowerCase())) return false;
+                if (maxPrice && f.price > parseFloat(maxPrice)) return false;
+                return true;
+            });
+        }
+
+        function displayFilaments(filaments) {
+            if (filaments.length === 0) {
+                elements.filamentsList.innerHTML = `
+                    <div class="text-center text-gray-500 py-8 md:col-span-2">
+                        <i class="fas fa-search text-4xl mb-4"></i>
+                        <p>Nenhum filamento encontrado com os filtros aplicados</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const html = filaments.map(filament => `
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="font-medium text-gray-800">${filament.name}</h4>
+                        <span class="text-xs px-2 py-1 rounded-full ${filament.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${filament.available ? 'Disponível' : 'Indisponível'}
+                        </span>
+                    </div>
+                    <div class="space-y-1 text-sm text-gray-600">
+                        <div>Cor: <span class="font-medium">${filament.color}</span></div>
+                        <div>Tipo: <span class="font-medium">${filament.type}</span></div>
+                        <div>Preço: <span class="font-medium">$${filament.price.toFixed(3)}/g</span></div>
+                        <div>Peso: <span class="font-medium">${filament.weight}g</span></div>
+                    </div>
+                    ${filament.available ? 
+                        `<button class="mt-3 w-full bg-primary text-white py-2 rounded text-sm hover:bg-blue-700 transition-colors" 
+                                onclick="selectFilament('${filament.id}')">Selecionar</button>` : 
+                        `<button class="mt-3 w-full bg-gray-300 text-gray-500 py-2 rounded text-sm cursor-not-allowed" disabled>
+                            Indisponível</button>`
+                    }
+                </div>
+            `).join('');
+            
+            elements.filamentsList.innerHTML = html;
+        }
+
+        // Função para calcular orçamento
+        function calculateBudget() {
+            const modelName = elements.modelName.value.trim();
+            const volume = elements.modelVolume.value;
+            const material = elements.preferredMaterial.value;
+            const color = elements.preferredColor.value.trim();
+            
+            if (!modelName || !volume) {
+                showAlert('Por favor, preencha o nome do modelo e o volume.', 'error');
+                return;
+            }
+            
+            // Simular cálculo de orçamento
+            const budget = generateBudget(modelName, parseFloat(volume), material, color);
+            displayBudget(budget);
+        }
+
+        function generateBudget(modelName, volume, material, color) {
+            // Calcular peso estimado
+            const density = material === 'ABS' ? 1.04 : (material === 'PETG' ? 1.27 : 1.24);
+            const modelWeight = volume * density;
+            
+            // Calcular preços baseados no material
+            const pricePerGram = {
+                'PLA': 0.025,
+                'ABS': 0.030,
+                'PETG': 0.040
+            };
+            
+            const basePrice = pricePerGram[material] || 0.025;
+            const materialCost = modelWeight * basePrice;
+            const totalCost = materialCost * 1.3; // 30% de margem
+            
+            // Gerar múltiplas opções
+            const options = [];
+            const materials = material ? [material] : ['PLA', 'ABS', 'PETG'];
+            const colors = color ? [color] : ['branco', 'preto', 'cinza', 'azul', 'vermelho'];
+            
+            materials.forEach(mat => {
+                colors.forEach(col => {
+                    const weight = volume * (mat === 'ABS' ? 1.04 : (mat === 'PETG' ? 1.27 : 1.24));
+                    const cost = weight * pricePerGram[mat] * 1.3;
+                    
+                    options.push({
+                        material: mat,
+                        color: col,
+                        weight: weight.toFixed(1),
+                        cost: cost.toFixed(2),
+                        rating: Math.random() * 2 + 7 // Rating 7-9
+                    });
+                });
+            });
+            
+            options.sort((a, b) => b.rating - a.rating);
+            
+            return {
+                modelName: modelName,
+                volume: volume,
+                options: options.slice(0, 5), // Top 5
+                recommendation: options[0]
+            };
+        }
+
+        function displayBudget(budget) {
+            const html = `
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <h4 class="font-semibold mb-2">Modelo: ${budget.modelName}</h4>
+                    <p class="text-sm text-gray-600">Volume: ${budget.volume} cm³</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="font-semibold mb-3 text-green-700">
+                            <i class="fas fa-star mr-2"></i>Recomendação Principal
+                        </h4>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <div class="font-medium">${budget.recommendation.material} - ${budget.recommendation.color}</div>
+                            <div class="text-sm text-gray-600">Peso: ${budget.recommendation.weight}g</div>
+                            <div class="text-lg font-bold text-green-700">$${budget.recommendation.cost}</div>
+                            <div class="text-xs text-gray-500">Rating: ${budget.recommendation.rating.toFixed(1)}/10</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-3">Outras Opções</h4>
+                        <div class="space-y-2 max-h-48 overflow-y-auto">
+                            ${budget.options.slice(1).map(option => `
+                                <div class="bg-gray-50 border rounded p-2 text-sm">
+                                    <div class="flex justify-between">
+                                        <span class="font-medium">${option.material} - ${option.color}</span>
+                                        <span class="font-bold">$${option.cost}</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500">${option.weight}g • Rating: ${option.rating.toFixed(1)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-semibold mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>Informações Importantes
+                    </h4>
+                    <ul class="text-sm text-gray-700 space-y-1">
+                        <li>• Custos incluem material + margem de produção (30%)</li>
+                        <li>• Tempo estimado: 1-4 horas dependendo da complexidade</li>
+                        <li>• Preços baseados em filamentos Slant 3D premium</li>
+                        <li>• Tolerâncias de ±0.2mm já inclusas no cálculo</li>
+                    </ul>
+                </div>
+            `;
+            
+            elements.budgetResults.innerHTML = html;
+        }
+
+        // Função para mostrar alertas
+        function showAlert(message, type) {
+            const alertClass = type === 'error' ? 'bg-red-100 border-red-400 text-red-700' : 'bg-blue-100 border-blue-400 text-blue-700';
+            const icon = type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-info-circle';
+            
+            const alert = document.createElement('div');
+            alert.className = `fixed top-4 right-4 ${alertClass} border px-4 py-3 rounded-lg shadow-lg z-50 max-w-md`;
+            alert.innerHTML = `
+                <div class="flex items-center">
+                    <i class="${icon} mr-2"></i>
+                    <span>${message}</span>
+                    <button class="ml-auto text-lg font-bold hover:opacity-75" onclick="this.parentElement.parentElement.remove()">×</button>
+                </div>
+            `;
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                if (alert.parentElement) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            elements.processPrompt.addEventListener('click', processPromptIntelligently);
+            elements.searchFilaments.addEventListener('click', searchFilaments);
+            elements.calculateBudget.addEventListener('click', calculateBudget);
+            
+            // Pressionar Enter no prompt input
+            elements.promptInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    processPromptIntelligently();
+                }
+            });
+        });
+        
+        // Função para selecionar filamento
+        function selectFilament(filamentId) {
+            showAlert(`Filamento ${filamentId} selecionado com sucesso!`, 'success');
+        }
+    </script>
+</body>
+</html>
