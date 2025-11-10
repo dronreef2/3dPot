@@ -26,7 +26,108 @@ A combinação de hardware de baixo custo com impressão 3D e software open-sour
     └── raspberry-pi-projetos/
 ```
 
-## Parte 1: Insights de Projetos (Hardware + Impressão 3D)
+## 🚀 Primeiros Passos
+
+### Pré-requisitos
+
+Antes de começar, certifique-se de ter o seguinte:
+
+#### Hardware Básico
+- **Para ESP32**: ESP32 DevKit, célula de carga HX711, carretel de filamento
+- **Para Arduino**: Arduino Uno/Nano, motor de passo NEMA17, sensores IR
+- **Para Raspberry Pi**: Raspberry Pi 4, câmera Pi, display (opcional)
+
+#### Software Necessário
+- **Arduino IDE** ou **PlatformIO** (para ESP32/Arduino)
+- **Python 3.8+** (para Raspberry Pi)
+- **OpenSCAD** ou **Tinkercad** (para modelos 3D)
+- **Git** (para controle de versão)
+
+### 🔧 Instalação Rápida
+
+1. **Clone este repositório:**
+   ```bash
+   git clone https://github.com/dronreef2/3dPot.git
+   cd 3dPot
+   ```
+
+2. **Execute o script de instalação:**
+   ```bash
+   chmod +x setup-3dpot.sh
+   ./setup-3dpot.sh
+   ```
+
+3. **Escolha seu projeto:**
+   - **Monitor de Filamento (ESP32)**: `projetos/esp32/monitor-filamento/`
+   - **Esteira Transportadora (Arduino)**: `projetos/arduino/esteira-modular/`
+   - **Estação QC (Raspberry Pi)**: `projetos/raspberry-pi/estacao-qc-visao/`
+
+### 📁 Estrutura dos Projetos
+
+Cada projeto segue esta estrutura padrão:
+```
+projeto/
+├── README.md              # Documentação específica
+├── hardware/              # Esquemáticos e PCBs
+├── modelos-3d/            # Arquivos .scad e .stl
+├── firmware/              # Código para microcontroladores
+├── software/              # Código para computadores
+└── docs/                  # Guias detalhados
+```
+
+### 🛠️ Guias de Desenvolvimento
+
+#### Projeto ESP32 - Monitor de Filamento
+1. **Hardware**: Monte a célula de carga conforme o esquemático
+2. **3D**: Imprime o `suporte-filamento.scad` (ajuste diâmetros conforme necessário)
+3. **Firmware**: Carregue `monitor-filamento.ino` via Arduino IDE
+4. **Teste**: Acesse `http://IP_ESP32.local` para interface web
+
+#### Projeto Arduino - Esteira Transportadora
+1. **Hardware**: Monte o motor de passo e sensores IR
+2. **3D**: Imprime os componentes da `esteira-transportadora.ino`
+3. **Firmware**: Carregue o código via Arduino IDE
+4. **Teste**: Use o monitor serial para controlar velocidades
+
+#### Projeto Raspberry Pi - Estação QC
+1. **Setup**: Instale OpenCV e dependências Python
+2. **3D**: Imprime o suporte da câmera
+3. **Software**: Execute `estacao_qc.py`
+4. **Teste**: Acesse `http://IP_PI:5000` para interface web
+
+### 🔍 Troubleshooting Comum
+
+#### Problemas de Conectividade
+- **ESP32 não conecta ao WiFi**: Verifique SSID e senha no código
+- **Arduino não responde**: Teste com monitor serial a 115200 baud
+- **Raspberry Pi câmera**: Habilite via `raspi-config`
+
+#### Problemas de Hardware
+- **Célula de carga instável**: Verifique conexões e isolação
+- **Motor de passo sem força**: Cheque alimentação (12V para NEMA17)
+- **CâmeraPi não detecta**: Teste com `vcgencmd get_camera`
+
+#### Problemas de Software
+- **Python import errors**: Execute `pip install -r requirements.txt`
+- **Arduino library missing**: Instale via Library Manager
+- **OpenSCAD rendering**: Verifique syntax nos arquivos .scad
+
+### 📚 Recursos Adicionais
+
+- [Guia de Instalação Completo](projetos/toolchain/guia-instalacao.md)
+- [Template de Dashboard](projetos/toolchain/template-dashboard.html)
+- [Contribuindo para o Projeto](CONTRIBUTING.md)
+- [Código de Conduta](CODE_OF_CONDUCT.md)
+
+### 🆘 Precisa de Ajuda?
+
+1. **Issues**: [Abra uma issue](https://github.com/dronreef2/3dPot/issues)
+2. **Discussions**: [Participe das discussões](https://github.com/dronreef2/3dPot/discussions)
+3. **Comunidade**: Junte-se ao nosso Discord (link em breve)
+
+---
+
+## 📖 Parte 1: Insights de Projetos (Hardware + Impressão 3D)
 
 Projetos que exploram a sinergia única entre cada hardware e a impressão 3D.
 
