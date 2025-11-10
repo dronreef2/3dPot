@@ -1,0 +1,61 @@
+# Configuração do Prometheus para 3dPot
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Regras de alerting
+rule_files:
+  - "alerts.yml"
+
+# Configurações de alerting
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Scrape configurations
+scrape_configs:
+  # Monitorar o próprio Prometheus
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Monitorar o Backend
+  - job_name: '3dpot-backend'
+    static_configs:
+      - targets: ['backend:3000']
+    metrics_path: '/api/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # Monitorar o Nginx
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:80']
+    metrics_path: '/nginx_status'
+    scrape_interval: 15s
+
+  # Monitorar o MQTT Broker
+  - job_name: 'mqtt-broker'
+    static_configs:
+      - targets: ['mqtt-broker:1883']
+    scrape_interval: 30s
+
+  # Monitorar o Banco de Dados
+  - job_name: 'database'
+    static_configs:
+      - targets: ['database:80']
+    scrape_interval: 60s
+
+  # Monitorar containers Docker
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['host.docker.internal:9323']
+    scrape_interval: 30s
+
+  # Node Exporter (se instalado no host)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['host.docker.internal:9100']
+    scrape_interval: 30s
