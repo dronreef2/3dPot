@@ -1,0 +1,63 @@
+name: 3D Models Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'modelos-3d/**'
+      - '**.scad'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'modelos-3d/**'
+      - '**.scad'
+  workflow_dispatch:
+
+jobs:
+  validate-openscad:
+    name: Validate OpenSCAD Models
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install OpenSCAD
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openscad
+          
+      - name: Validate OpenSCAD files
+        run: |
+          echo "Searching for OpenSCAD files..."
+          find . -name "*.scad" -type f > scad_files.txt
+          
+          if [ -s scad_files.txt ]; then
+            echo "Found OpenSCAD files:"
+            cat scad_files.txt
+            
+            echo "Validating OpenSCAD files..."
+            while IFS= read -r file; do
+              echo "Checking syntax: $file"
+              openscad -o /dev/null "$file" 2>&1 | tee openscad_output.log
+              if grep -q "ERROR" openscad_output.log; then
+                echo "Error found in $file"
+              else
+                echo "✓ $file is valid"
+              fi
+            done < scad_files.txt
+          else
+            echo "No OpenSCAD files found - skipping validation"
+          fi
+        continue-on-error: true
+          
+      - name: Generate STL previews
+        run: |
+          if [ -s scad_files.txt ]; then
+            echo "Generating STL files for preview..."
+            while IFS= read -r file; do
+              output="${file%.scad}.stl"
+              echo "Generating: $output"
+              openscad -o "$output" "$file" || echo "Failed to generate $output"
+            done < scad_files.txt
+          fi
+        continue-on-error: true

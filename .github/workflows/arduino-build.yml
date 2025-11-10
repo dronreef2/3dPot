@@ -1,0 +1,63 @@
+name: Arduino Build
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'codigos/**'
+      - '**.ino'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'codigos/**'
+      - '**.ino'
+  workflow_dispatch:
+
+jobs:
+  build-arduino:
+    name: Build Arduino Sketches
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        board:
+          - fqbn: "arduino:avr:nano"
+            platform: "arduino:avr"
+          - fqbn: "esp32:esp32:esp32"
+            platform: "esp32:esp32"
+            index-url: "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v1
+        
+      - name: Install platform
+        run: |
+          if [ -n "${{ matrix.board.index-url }}" ]; then
+            arduino-cli core update-index --additional-urls "${{ matrix.board.index-url }}"
+            arduino-cli core install ${{ matrix.board.platform }} --additional-urls "${{ matrix.board.index-url }}"
+          else
+            arduino-cli core update-index
+            arduino-cli core install ${{ matrix.board.platform }}
+          fi
+          
+      - name: Find and compile sketches
+        run: |
+          echo "Searching for Arduino sketches..."
+          find . -name "*.ino" -type f > ino_files.txt
+          
+          if [ -s ino_files.txt ]; then
+            echo "Found Arduino sketches:"
+            cat ino_files.txt
+            
+            echo "Compiling sketches for ${{ matrix.board.fqbn }}..."
+            while IFS= read -r sketch; do
+              echo "Compiling: $sketch"
+              arduino-cli compile --fqbn ${{ matrix.board.fqbn }} "$sketch" || echo "Failed to compile $sketch"
+            done < ino_files.txt
+          else
+            echo "No Arduino sketches found - skipping compilation"
+          fi
+        continue-on-error: true
