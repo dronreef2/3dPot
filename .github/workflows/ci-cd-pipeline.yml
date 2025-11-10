@@ -14,6 +14,8 @@ jobs:
   python-tests:
     name: Python Tests & Quality
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         python-version: [3.8, 3.9, '3.10', '3.11']
@@ -68,6 +70,8 @@ jobs:
   arduino-validation:
     name: Arduino Code Validation
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
     - name: Checkout code
@@ -104,6 +108,8 @@ jobs:
   openscad-validation:
     name: OpenSCAD Model Validation
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
     - name: Checkout code
@@ -145,6 +151,8 @@ jobs:
   documentation:
     name: Documentation Build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
     - name: Checkout code
@@ -184,6 +192,9 @@ jobs:
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
 
     steps:
     - name: Checkout code
@@ -207,6 +218,8 @@ jobs:
   package-release:
     name: Package and Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs: [python-tests, arduino-validation, openscad-validation, documentation, security-scan]
     if: github.ref == 'refs/heads/main'
 
