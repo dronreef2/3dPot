@@ -152,4 +152,4 @@ Este projeto é open-source e está disponível sob a licença MIT.
 
 ## Autor
 
-MiniMax Agent - Análise e documentação de projetos Maker
+Guilherme  dronreef2- Análise e documentação de projetos Maker
