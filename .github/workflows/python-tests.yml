@@ -63,21 +63,19 @@ jobs:
             echo "# 3dPot test placeholder" > tests/__init__.py
             
             # Create basic tests for different components
-            cat > tests/test_basic.py << 'EOF'
-import os
-
-def test_project_structure():
-    assert os.path.exists('README.md'), "README.md should exist"
-    
-def test_arduino_codes():
-    assert os.path.exists('codigos/arduino'), "Arduino codes directory should exist"
-    
-def test_esp32_codes():
-    assert os.path.exists('codigos/esp32'), "ESP32 codes directory should exist"
-    
-def test_3d_models():
-    assert os.path.exists('modelos-3d'), "3D models directory should exist"
-EOF
+            echo 'import os' > tests/test_basic.py
+            echo '' >> tests/test_basic.py
+            echo 'def test_project_structure():' >> tests/test_basic.py
+            echo '    assert os.path.exists("README.md"), "README.md should exist"' >> tests/test_basic.py
+            echo '    ' >> tests/test_basic.py
+            echo 'def test_arduino_codes():' >> tests/test_basic.py
+            echo '    assert os.path.exists("codigos/arduino"), "Arduino codes directory should exist"' >> tests/test_basic.py
+            echo '    ' >> tests/test_basic.py
+            echo 'def test_esp32_codes():' >> tests/test_basic.py
+            echo '    assert os.path.exists("codigos/esp32"), "ESP32 codes directory should exist"' >> tests/test_basic.py
+            echo '    ' >> tests/test_basic.py
+            echo 'def test_3d_models():' >> tests/test_basic.py
+            echo '    assert os.path.exists("modelos-3d"), "3D models directory should exist"' >> tests/test_basic.py
             
             # Run the basic tests
             pytest tests/test_basic.py -v --cov=. --cov-report=term-missing
