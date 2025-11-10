@@ -13,6 +13,9 @@ on:
       - '**.scad'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   validate-openscad:
     name: Validate OpenSCAD Models

@@ -13,6 +13,9 @@ on:
       - '**.ino'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build-arduino:
     name: Build Arduino Sketches
