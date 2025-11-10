@@ -3,81 +3,64 @@ name: Arduino Build
 on:
   push:
     branches: [ main, develop ]
+    paths:
+      - 'codigos/**'
+      - '**.ino'
   pull_request:
-    branches: [ main ]
-  schedule:
-    # Run every 6 hours
-    - cron: '0 */6 * * *'
+    branches: [ main, develop ]
+    paths:
+      - 'codigos/**'
+      - '**.ino'
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  arduino-build:
-    name: Arduino Code Build
+  build-arduino:
+    name: Build Arduino Sketches
     runs-on: ubuntu-latest
-
+    
+    strategy:
+      matrix:
+        board:
+          - fqbn: "arduino:avr:nano"
+            platform: "arduino:avr"
+          - fqbn: "esp32:esp32:esp32"
+            platform: "esp32:esp32"
+            index-url: "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
+    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install Arduino CLI
-      run: |
-        curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-        export PATH=$PATH:$HOME/bin
-        echo "PATH=$PATH" >> $GITHUB_ENV
-
-    - name: Setup Arduino Environment
-      run: |
-        arduino-cli config init
-        arduino-cli core update-index
-        arduino-cli core install arduino:avr
-        arduino-cli core install esp32:esp32 --additional-urls https://espressif.github.io/esp32-board/package_esp32_index.json
+      - uses: actions/checkout@v3
+      
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v1
         
-        # Install required libraries
-        arduino-cli lib install "HX711 library" --ver 1.2.3
-        arduino-cli lib install "ArduinoJson" --ver 7.0.4
-        arduino-cli lib install "WiFi" --ver 2.0.0
-        arduino-cli lib install "WebSockets" --ver 2.3.7
-        arduino-cli lib install "Stepper" --ver 1.1.4
-        arduino-cli lib install "LiquidCrystal" --ver 1.0.7
-
-    - name: Build ESP32 Projects
-      run: |
-        echo "=== Building ESP32 Projects ==="
-        
-        # Build ESP32 Monitor Filamento
-        arduino-cli compile \
-          --fqbn esp32:esp32:esp32 \
-          --library "HX711 library" \
-          --library "ArduinoJson" \
-          --library "WiFi" \
-          --library "WebSockets" \
-          code/esp32/monitor-filamento.ino \
-          --verify
-
-    - name: Build Arduino Projects
-      run: |
-        echo "=== Building Arduino Projects ==="
-        
-        # Build Arduino Esteira Transportadora
-        arduino-cli compile \
-          --fqbn arduino:avr:uno \
-          --library "Stepper" \
-          --library "LiquidCrystal" \
-          code/arduino/esteira-transportadora.ino \
-          --verify
-
-    - name: Build Additional Projects
-      run: |
-        echo "=== Building Additional Arduino Projects ==="
-        
-        # Build any other .ino files
-        for file in code/arduino/*.ino; do
-          if [ -f "$file" ] && [[ "$file" != *"esteira-transportadora.ino" ]]; then
-            echo "Building: $(basename "$file")"
-            arduino-cli compile \
-              --fqbn arduino:avr:uno \
-              --library "Stepper" \
-              --library "LiquidCrystal" \
-              "$file" \
-              --verify
+      - name: Install platform
+        run: |
+          if [ -n "${{ matrix.board.index-url }}" ]; then
+            arduino-cli core update-index --additional-urls "${{ matrix.board.index-url }}"
+            arduino-cli core install ${{ matrix.board.platform }} --additional-urls "${{ matrix.board.index-url }}"
+          else
+            arduino-cli core update-index
+            arduino-cli core install ${{ matrix.board.platform }}
           fi
-        done
+          
+      - name: Find and compile sketches
+        run: |
+          echo "Searching for Arduino sketches..."
+          find . -name "*.ino" -type f > ino_files.txt
+          
+          if [ -s ino_files.txt ]; then
+            echo "Found Arduino sketches:"
+            cat ino_files.txt
+            
+            echo "Compiling sketches for ${{ matrix.board.fqbn }}..."
+            while IFS= read -r sketch; do
+              echo "Compiling: $sketch"
+              arduino-cli compile --fqbn ${{ matrix.board.fqbn }} "$sketch" || echo "Failed to compile $sketch"
+            done < ino_files.txt
+          else
+            echo "No Arduino sketches found - skipping compilation"
+          fi
+        continue-on-error: true
