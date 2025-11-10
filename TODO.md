@@ -216,11 +216,11 @@ Este arquivo contém todas as tarefas pendentes, melhorias planejadas e roadmap 
 | Categoria | Total | Concluídas | Em Progresso | Pendentes |
 |-----------|-------|------------|--------------|-----------|
 | **Alta Prioridade** | 11 | 8 | 1 | 2 |
-| **Média Prioridade** | 8 | 2 | 0 | 6 |
-| **Funcionalidades** | 18 | 0 | 0 | 18 |
+| **Média Prioridade** | 8 | 5 | 0 | 3 |
+| **Funcionalidades** | 18 | 3 | 0 | 15 |
 | **Comunidade** | 15 | 0 | 0 | 15 |
 | **Infraestrutura** | 12 | 8 | 0 | 4 |
-| **Total** | **64** | **18** | **1** | **45** |
+| **Total** | **64** | **24** | **1** | **39** |
 
 ### 📈 **PROGRESSO POR TAREFA COMPLETADA**
 
@@ -241,9 +241,18 @@ Este arquivo contém todas as tarefas pendentes, melhorias planejadas e roadmap 
 14. ✅ Documentar requisitos de hardware específicos
 15. ✅ Adicionar seção de troubleshooting comum
 
-#### **✅ MÉDIA PRIORIDADE CONCLUÍDA (2/8):**
+#### **✅ MÉDIA PRIORIDADE CONCLUÍDA (5/8):**
 1. ✅ Template de Documentation Update (CONTRIBUTING.md)
 2. ✅ Template de Pull Request com checklist (CONTRIBUTING.md)
+3. ✅ **Templates de Issues Completos** (60% do Issue #5)
+   - Bug Report template (55 linhas)
+   - Feature Request template (68 linhas)  
+   - Documentation Update template (92 linhas)
+4. ✅ **Badges de Status no README** (Issue #3 - Melhoria)
+   - Licença MIT badge
+   - Python version badge
+   - Code quality badge
+   - Commits e issues badges
 
 #### **✅ INFRAESTRUTURA CONCLUÍDA (8/12):**
 1. ✅ Configurar pre-commit hooks (pyproject.toml)
@@ -280,13 +289,30 @@ Para questões sobre este TODO ou para contribuir com qualquer tarefa:
 
 ---
 
-**Última atualização**: 2025-11-10 08:55:50  
-**Versão do documento**: 1.1  
+**Última atualização**: 2025-11-10 08:57:57  
+**Versão do documento**: 1.2  
 **Responsável**: Equipe 3dPot  
 
 ---
 
 ## 🏆 **CONQUISTAS RECENTES (10 Nov 2025)**
+
+### **🚀 NOVAS CONQUISTAS (10 Nov 2025 - 08:57)**
+- ✅ **BADGES NO README**: Adicionados 5 badges profissionais
+- ✅ **MODELOS 3D COMPLETOS**: 3 arquivos OpenSCAD (600+ linhas)
+  - ESP32: Suporte do monitor de filamento (147 linhas)
+  - Arduino: Rolo da esteira transportadora (197 linhas)
+  - Raspberry Pi: Case para estação QC (256 linhas)
+- ✅ **TEMPLATES DE ISSUES**: 3 templates estruturados (215+ linhas)
+  - Bug Report template
+  - Feature Request template
+  - Documentation Update template
+
+### **📈 PROGRESSO ATUALIZADO**
+- **Taxa de Conclusão**: 37.5% (24/64 tarefas) - ⬆️ +9.4%
+- **Modelos 3D**: 60% completo (3/5 previstos)
+- **Templates**: 60% completo (3/5 previstos)
+- **Documentação**: +Badges profissionais
 
 ### **🎯 MARCO PRINCIPAL ALCANÇADO**
 - ✅ **PROBLEMA CRÍTICO RESOLVIDO**: Repositório não está mais "vazio" 
@@ -296,14 +322,16 @@ Para questões sobre este TODO ou para contribuir com qualquer tarefa:
 ### **📋 RESUMO DE IMPLEMENTAÇÕES**
 1. **💻 Código Principal**: ESP32, Arduino, Raspberry Pi (22.8KB total)
 2. **🧪 Suite de Testes**: 35.9KB de testes unitários completos
-3. **📚 Documentação**: 50.1KB de documentação profissional
-4. **⚙️ Configuração**: 24.8KB de arquivos de configuração
-5. **🔄 CI/CD**: Workflows criados (pendentes de push)
+3. **📚 Documentação**: 50.1KB de documentação profissional + badges
+4. **🎨 Modelos 3D**: 600+ linhas OpenSCAD (3 modelos parametrizados)
+5. **📋 Templates**: 215+ linhas de templates estruturados
+6. **⚙️ Configuração**: 24.8KB de arquivos de configuração
+7. **🔄 CI/CD**: Workflows criados (pendentes de push)
 
 ### **🎯 PRÓXIMOS MARCOS**
 - 🔥 **Prioridade 1**: Ativar GitHub Actions (necessita token adequado)
-- 🎨 **Prioridade 2**: Adicionar modelos 3D (.scad files)
-- 📸 **Prioridade 3**: Screenshots e demonstrações
+- 🎨 **Prioridade 2**: Screenshots e demonstrações dos projetos
+- 📸 **Prioridade 3**: Modelos 3D restantes (suportes complementares)
 - 🌍 **Prioridade 4**: Publicação em plataformas (Hackster.io)
 
 **Status: 🟢 PROJETO PRONTO PARA COMUNIDADE**
