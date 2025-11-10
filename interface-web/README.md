@@ -56,6 +56,7 @@ Sistema de controle centralizado e responsivo para o projeto 3dPot, integrando o
 - Node.js 16+ 
 - npm ou yarn
 - Git
+- **Hardware opcional**: ESP32, Arduino, Raspberry Pi
 
 ### 1. Clonar e Instalar Dependências
 ```bash
@@ -68,7 +69,38 @@ cd server
 npm install
 ```
 
-### 2. Executar em Desenvolvimento
+### 2. Configuração de Ambiente
+```bash
+# Copiar arquivo de exemplo
+cd server
+cp .env.example .env
+
+# Editar configurações (opcional)
+nano .env
+```
+
+**Configurações importantes para hardware real:**
+```bash
+# Habilitar dispositivos
+ESP32_ENABLED=true
+ARDUINO_ENABLED=true
+RASPBERRY_PI_ENABLED=true
+
+# ESP32 MQTT
+MQTT_SERVER=seu-mqtt-server
+MQTT_USERNAME=seu-usuario
+MQTT_PASSWORD=sua-senha
+
+# Arduino Serial
+ARDUINO_SERIAL_PORT=/dev/ttyUSB0
+
+# Raspberry Pi
+RASPBERRY_PI_HOST=192.168.1.100
+RASPBERRY_PI_USER=pi
+RASPBERRY_PI_PASSWORD=senha
+```
+
+### 3. Executar em Desenvolvimento
 ```bash
 # Terminal 1 - Frontend (porta 3000)
 cd interface-web
@@ -79,7 +111,7 @@ cd server
 npm run dev
 ```
 
-### 3. Build para Produção
+### 4. Build para Produção
 ```bash
 # Frontend
 cd interface-web
@@ -89,6 +121,24 @@ npm run build
 cd server
 npm start
 ```
+
+### 5. Configuração de Hardware
+
+#### ESP32 Monitor de Filamento
+1. Instalar bibliotecas Arduino: WiFi, PubSubClient, ArduinoJson
+2. Configurar SSID e senha WiFi
+3. Configurar servidor MQTT
+4. Upload do código `codigos/esp32/monitor-filamento-advanced.ino`
+
+#### Arduino Esteira
+1. Instalar bibliotecas: Stepper, LiquidCrystal, SoftwareSerial
+2. Conectar via USB ao servidor
+3. Upload do código `codigos/arduino/esteira-avancada.ino`
+
+#### Raspberry Pi QC
+1. Instalar dependências Python: OpenCV, TensorFlow, Flask
+2. Configurar servidor Flask
+3. Executar `codigos/raspberry-pi/estacao-qc-avancada.py`
 
 ## 🎯 Estrutura do Projeto
 
@@ -144,7 +194,72 @@ interface-web/
 - **Relatórios automáticos**: PDF, CSV, análise detalhada
 - **Interface visual**: LED indicators, dashboard em tempo real
 
+## 🤖 Integração com Hardware Real
+
+### Adaptadores de Dispositivos
+O sistema agora suporta integração real com os dispositivos de hardware:
+
+#### 🔌 ESP32 Monitor de Filamento
+- **Protocolo**: MQTT + WebSocket
+- **Funcionalidades**:
+  - Monitoramento em tempo real de peso, temperatura, bateria
+  - Controle remoto de modos (sleep, calibração, alerts)
+  - Threshold configuráveis para alertas
+  - OTA updates e calibração automática
+  
+#### 🏭 Arduino Esteira Transportadora
+- **Protocolo**: Comunicação Serial (USB)
+- **Funcionalidades**:
+  - Controle de velocidade, direção, start/stop
+  - Modo automático e manual
+  - Monitoramento de posição, carga, temperatura
+  - Parada de emergência e diagnóstico
+  
+#### 🔍 Raspberry Pi Estação QC
+- **Protocolo**: API REST + WebSocket
+- **Funcionalidades**:
+  - Inspeção por IA com classificação A/B/C/D/F
+  - Análise estatística e relatórios
+  - Controle de iluminação LED
+  - Integração com TensorFlow/OpenCV
+
+### Gerenciamento Centralizado
+- **DeviceManager**: Coordena todos os adaptadores
+- **Health Monitoring**: Verificação automática de conectividade
+- **Auto-reconnection**: Reconexão automática em caso de falha
+- **Command Queue**: Fila de comandos com timeout
+- **Event System**: Eventos em tempo real para todos os dispositivos
+
+### Configuração de Hardware
+```bash
+# Habilitar dispositivos
+ESP32_ENABLED=true
+ARDUINO_ENABLED=true
+RASPBERRY_PI_ENABLED=true
+
+# Configurações ESP32
+MQTT_SERVER=localhost
+MQTT_PORT=1883
+ESP32_WS_PORT=81
+
+# Configurações Arduino
+ARDUINO_SERIAL_PORT=/dev/ttyUSB0
+ARDUINO_BAUD_RATE=9600
+
+# Configurações Raspberry Pi
+RASPBERRY_PI_HOST=192.168.1.100
+RASPBERRY_PI_PORT=5000
+```
+
 ## 🔧 API Endpoints
+
+### Autenticação
+- `POST /api/auth/login` - Login com credenciais
+- `POST /api/auth/refresh` - Renovar token
+- `POST /api/auth/logout` - Logout seguro
+- `GET /api/auth/me` - Perfil do usuário atual
+- `POST /api/auth/change-password` - Alterar senha
+- `GET /api/auth/health` - Status do serviço
 
 ### Dispositivos
 - `GET /api/devices` - Status de todos os dispositivos
@@ -167,6 +282,8 @@ interface-web/
 
 ## 🌐 WebSocket Events
 
+## 🌐 WebSocket Events
+
 ### Cliente → Servidor
 - `request_device_status` - Solicitar status dos dispositivos
 - `device_control` - Enviar comando para dispositivo
@@ -174,10 +291,21 @@ interface-web/
 - `subscribe_device` - Inscrever-se em updates de dispositivo
 
 ### Servidor → Cliente
+- `connection_confirmed` - Confirmação de conexão
+- `device_status` - Status inicial dos dispositivos
+- `device_status_bulk` - Status de todos os dispositivos
 - `device_update` - Atualização de status do dispositivo
-- `alert` - Novo alerta do sistema
+- `device_data_update` - Dados em tempo real do dispositivo
+- `device_control` - Confirmação de comando
 - `command_response` - Resposta de comando
+- `inspection_result` - Resultado de inspeção (QC)
+- `alert` - Alerta do sistema
+- `system_alert` - Alerta crítico do sistema
+- `device_connected` - Dispositivo conectado
+- `device_disconnected` - Dispositivo desconectado
+- `health_check_update` - Atualização de saúde do sistema
 - `heartbeat` - Pulsação de conexão
+- `alert_acknowledged` - Alerta reconhecido
 
 ## 📊 Recursos de UI/UX
 
@@ -199,13 +327,27 @@ interface-web/
 - **Error handling**: Tratamento gracioso de erros
 - **Toast notifications**: Feedback visual para ações
 
-## 🔐 Segurança e Performance
+## 🔐 Segurança e Autenticação
+
+### Sistema de Autenticação JWT
+- **Login/Logout** com tokens seguros
+- **Refresh tokens** para sessões prolongadas
+- **RBAC (Role-Based Access Control)** com permissões granulares
+- **Proteção contra ataques** (brute force, token hijacking)
+- **Cookies seguros** com httpOnly e sameSite
+
+### Níveis de Usuário
+- **Admin**: Controle total do sistema, gerenciamento de usuários
+- **Operador**: Controle de dispositivos, leitura de analytics
+- **Observador**: Apenas leitura de dados e status
 
 ### Segurança
 - **CORS** configurado adequadamente
 - **Helmet** para headers de segurança
 - **Input validation** em todos os endpoints
 - **Rate limiting** para APIs críticas
+- **JWT tokens** com expiração configurável
+- **Password hashing** com bcrypt
 
 ### Performance
 - **Code splitting** automático
@@ -288,9 +430,40 @@ Este projeto está sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para d
 A Interface Web Mobile Responsiva do 3dPot oferece uma solução completa e moderna para o controle e monitoramento dos dispositivos de hardware, proporcionando:
 
 - ✅ **Experiência de usuário excepcional** em todos os dispositivos
-- ✅ **Integração em tempo real** com os 3 sistemas de hardware
+- ✅ **Integração em tempo real** com os 3 sistemas de hardware real
+- ✅ **Sistema de autenticação seguro** com JWT e RBAC
+- ✅ **Adaptadores de hardware** para ESP32, Arduino e Raspberry Pi
 - ✅ **Análise avançada** com gráficos e relatórios profissionais
+- ✅ **Health monitoring** e auto-recovery
 - ✅ **Escalabilidade** para futuras expansões do projeto
 - ✅ **Manutenibilidade** com código TypeScript bem estruturado
+- ✅ **Logging estruturado** para debugging e monitoring
+- ✅ **Deployment-ready** com Docker e configurações de produção
 
-O sistema está pronto para deployment e uso em ambiente de produção, oferecendo uma base sólida para o ecossistema 3dPot! 🚀
+### 🎯 Funcionalidades Implementadas
+
+**Interface e UX:**
+- Dashboard responsivo mobile-first
+- PWA com installation nativa
+- Tema claro/escuro
+- Animações fluidas com Framer Motion
+
+**Integração de Hardware:**
+- ESP32 via MQTT + WebSocket
+- Arduino via comunicação serial
+- Raspberry Pi via API REST
+- DeviceManager centralizado
+
+**Autenticação e Segurança:**
+- JWT com refresh tokens
+- Sistema de permissões RBAC
+- Proteção contra ataques comuns
+- Sessões seguras com cookies
+
+**Analytics e Relatórios:**
+- Gráficos em tempo real
+- Relatórios automáticos em PDF
+- Análise estatística de qualidade
+- Health monitoring do sistema
+
+O sistema está pronto para deployment e uso em ambiente de produção com hardware real, oferecendo uma base sólida para o ecossistema 3dPot! 🚀
