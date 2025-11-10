@@ -1,4 +1,4 @@
-name: 3D Models Validation
+name: 3dPot OpenSCAD 3D Models
 
 on:
   push:
@@ -18,49 +18,137 @@ permissions:
 
 jobs:
   validate-openscad:
-    name: Validate OpenSCAD Models
+    name: Validate OpenSCAD 3D Models
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v3
-      
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Install OpenSCAD
         run: |
           sudo apt-get update
-          sudo apt-get install -y openscad
+          sudo apt-get install -y openscad libopencsg1 libopencsg-dev
           
-      - name: Validate OpenSCAD files
+      - name: Find OpenSCAD files
         run: |
-          echo "Searching for OpenSCAD files..."
-          find . -name "*.scad" -type f > scad_files.txt
+          echo "Searching for OpenSCAD files in modelos-3d/ directory..."
+          find modelos-3d/ -name "*.scad" -type f > scad_files.txt
           
           if [ -s scad_files.txt ]; then
             echo "Found OpenSCAD files:"
             cat scad_files.txt
-            
-            echo "Validating OpenSCAD files..."
-            while IFS= read -r file; do
-              echo "Checking syntax: $file"
-              openscad -o /dev/null "$file" 2>&1 | tee openscad_output.log
-              if grep -q "ERROR" openscad_output.log; then
-                echo "Error found in $file"
-              else
-                echo "✓ $file is valid"
-              fi
-            done < scad_files.txt
+            echo "Number of models found: $(wc -l < scad_files.txt)"
           else
-            echo "No OpenSCAD files found - skipping validation"
+            echo "No OpenSCAD files found in modelos-3d/ directory"
+            echo "Searching in current directory..."
+            find . -maxdepth 2 -name "*.scad" -type f > scad_files.txt
+            
+            if [ -s scad_files.txt ]; then
+              echo "Found OpenSCAD files in root:"
+              cat scad_files.txt
+            else
+              echo "No OpenSCAD files found anywhere"
+              echo "0" > scad_files.txt
+            fi
+          fi
+          
+      - name: Validate OpenSCAD syntax
+        run: |
+          if [ -s scad_files.txt ] && [ "$(cat scad_files.txt)" != "0" ]; then
+            echo "Validating OpenSCAD syntax..."
+            validated_count=0
+            error_count=0
+            
+            while IFS= read -r file; do
+              echo "=========================================="
+              echo "Validating: $file"
+              echo "=========================================="
+              
+              # Create temporary log file
+              openscad -o /dev/null "$file" 2>&1 | tee openscad_output.log
+              
+              if grep -qi "error" openscad_output.log; then
+                echo "❌ Syntax errors found in $file"
+                cat openscad_output.log
+                error_count=$((error_count + 1))
+              else
+                echo "✅ $file has valid syntax"
+                validated_count=$((validated_count + 1))
+              fi
+              echo ""
+            done < scad_files.txt
+            
+            echo "=========================================="
+            echo "Validation Summary:"
+            echo "Valid models: $validated_count"
+            echo "Models with errors: $error_count"
+            echo "=========================================="
+          else
+            echo "No OpenSCAD files to validate"
+          fi
+        continue-on-error: true
+        
+      - name: Generate STL previews
+        run: |
+          if [ -s scad_files.txt ] && [ "$(cat scad_files.txt)" != "0" ]; then
+            echo "Generating STL files for preview..."
+            generated_count=0
+            failed_count=0
+            
+            while IFS= read -r file; do
+              output="${file%.scad}.stl"
+              echo "Generating STL: $output"
+              
+              if openscad -o "$output" "$file"; then
+                if [ -f "$output" ] && [ -s "$output" ]; then
+                  echo "✅ Successfully generated: $output"
+                  echo "File size: $(du -h "$output" | cut -f1)"
+                  generated_count=$((generated_count + 1))
+                else
+                  echo "❌ Generated file is empty: $output"
+                  failed_count=$((failed_count + 1))
+                fi
+              else
+                echo "❌ Failed to generate STL: $output"
+                failed_count=$((failed_count + 1))
+              fi
+              echo ""
+            done < scad_files.txt
+            
+            echo "=========================================="
+            echo "STL Generation Summary:"
+            echo "Successfully generated: $generated_count"
+            echo "Failed to generate: $failed_count"
+            echo "=========================================="
+          else
+            echo "No OpenSCAD files to process"
+          fi
+        continue-on-error: true
+        
+      - name: Check STL file properties
+        run: |
+          if ls *.stl 1> /dev/null 2>&1; then
+            echo "Checking STL file properties..."
+            for stl_file in *.stl; do
+              if [ -f "$stl_file" ]; then
+                echo "File: $stl_file"
+                echo "Size: $(du -h "$stl_file" | cut -f1)"
+                echo "Lines: $(wc -l < "$stl_file")"
+                echo "---"
+              fi
+            done
+          else
+            echo "No STL files found to check"
           fi
         continue-on-error: true
           
-      - name: Generate STL previews
-        run: |
-          if [ -s scad_files.txt ]; then
-            echo "Generating STL files for preview..."
-            while IFS= read -r file; do
-              output="${file%.scad}.stl"
-              echo "Generating: $output"
-              openscad -o "$output" "$file" || echo "Failed to generate $output"
-            done < scad_files.txt
-          fi
-        continue-on-error: true
+      - name: Upload STL artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: openscad-stl-models
+          path: |
+            scad_files.txt
+            *.stl
+            openscad_output.log

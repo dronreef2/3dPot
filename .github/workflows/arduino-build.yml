@@ -1,4 +1,4 @@
-name: Arduino Build
+name: 3dPot Arduino Build
 
 on:
   push:
@@ -18,27 +18,40 @@ permissions:
 
 jobs:
   build-arduino:
-    name: Build Arduino Sketches
+    name: Build Arduino/ESP32 Sketches
     runs-on: ubuntu-latest
     
     strategy:
+      fail-fast: false
       matrix:
         board:
+          - fqbn: "arduino:avr:uno"
+            platform: "arduino:avr"
+            name: "Arduino Uno"
           - fqbn: "arduino:avr:nano"
             platform: "arduino:avr"
+            name: "Arduino Nano"
           - fqbn: "esp32:esp32:esp32"
             platform: "esp32:esp32"
+            name: "ESP32"
             index-url: "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
     
     steps:
-      - uses: actions/checkout@v3
-      
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1
-        
+        with:
+          version: latest
+          
       - name: Install platform
         run: |
+          arduino-cli config init
+          echo "Installing platform: ${{ matrix.board.platform }}"
+          
           if [ -n "${{ matrix.board.index-url }}" ]; then
+            echo "Adding custom index URL: ${{ matrix.board.index-url }}"
             arduino-cli core update-index --additional-urls "${{ matrix.board.index-url }}"
             arduino-cli core install ${{ matrix.board.platform }} --additional-urls "${{ matrix.board.index-url }}"
           else
@@ -46,21 +59,79 @@ jobs:
             arduino-cli core install ${{ matrix.board.platform }}
           fi
           
-      - name: Find and compile sketches
+      - name: Install common libraries
         run: |
-          echo "Searching for Arduino sketches..."
-          find . -name "*.ino" -type f > ino_files.txt
+          echo "Installing common Arduino libraries..."
+          arduino-cli lib install "ArduinoJson" --ver 7.0.4 || echo "ArduinoJson already installed"
+          arduino-cli lib install "Stepper" --ver 1.1.4 || echo "Stepper already installed"
+          arduino-cli lib install "LiquidCrystal" --ver 1.0.7 || echo "LiquidCrystal already installed"
+          arduino-cli lib install "DHT sensor library" --ver 1.4.4 || echo "DHT library already installed"
+          arduino-cli lib install "HX711 library" --ver 1.2.3 || echo "HX711 library already installed"
+          arduino-cli lib install "WiFi" --ver 2.0.0 || echo "WiFi already installed"
+          arduino-cli lib install "WebSockets" --ver 2.3.7 || echo "WebSockets already installed"
+          
+      - name: Find Arduino sketches
+        run: |
+          echo "Searching for Arduino sketches in codigos/ directory..."
+          find codigos/ -name "*.ino" -type f > ino_files.txt
           
           if [ -s ino_files.txt ]; then
             echo "Found Arduino sketches:"
             cat ino_files.txt
-            
-            echo "Compiling sketches for ${{ matrix.board.fqbn }}..."
-            while IFS= read -r sketch; do
-              echo "Compiling: $sketch"
-              arduino-cli compile --fqbn ${{ matrix.board.fqbn }} "$sketch" || echo "Failed to compile $sketch"
-            done < ino_files.txt
+            echo "Number of sketches found: $(wc -l < ino_files.txt)"
           else
-            echo "No Arduino sketches found - skipping compilation"
+            echo "No Arduino sketches found in codigos/ directory"
+            echo "Searching in current directory..."
+            find . -maxdepth 2 -name "*.ino" -type f > ino_files.txt
+            
+            if [ -s ino_files.txt ]; then
+              echo "Found Arduino sketches in root:"
+              cat ino_files.txt
+            else
+              echo "No Arduino sketches found anywhere"
+              echo "0" > ino_files.txt
+            fi
+          fi
+          
+      - name: Compile Arduino sketches for ${{ matrix.board.name }}
+        run: |
+          if [ -s ino_files.txt ] && [ "$(cat ino_files.txt)" != "0" ]; then
+            echo "Compiling sketches for ${{ matrix.board.name }} (${{ matrix.board.fqbn }})..."
+            compiled_count=0
+            failed_count=0
+            
+            while IFS= read -r sketch; do
+              echo "=========================================="
+              echo "Compiling: $sketch"
+              echo "Target: ${{ matrix.board.fqbn }}"
+              echo "=========================================="
+              
+              if arduino-cli compile --fqbn "${{ matrix.board.fqbn }}" "$sketch" --verify; then
+                echo "✅ Successfully compiled: $sketch"
+                compiled_count=$((compiled_count + 1))
+              else
+                echo "❌ Failed to compile: $sketch"
+                echo "This may be expected if the sketch is for a different board type"
+                failed_count=$((failed_count + 1))
+              fi
+              echo ""
+            done < ino_files.txt
+            
+            echo "=========================================="
+            echo "Compilation Summary for ${{ matrix.board.name }}:"
+            echo "Successfully compiled: $compiled_count"
+            echo "Failed to compile: $failed_count"
+            echo "=========================================="
+          else
+            echo "No sketches to compile for ${{ matrix.board.name }}"
           fi
         continue-on-error: true
+        
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: arduino-build-${{ matrix.board.name }}
+          path: |
+            ino_files.txt
+            build/

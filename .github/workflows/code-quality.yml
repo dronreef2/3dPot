@@ -1,4 +1,4 @@
-name: Code Quality
+name: 3dPot Code Quality
 
 on:
   push:
@@ -16,36 +16,82 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v3
-      
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
+          cache: 'pip'
           
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install black flake8 mypy pylint bandit
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+          
+      - name: Install Python quality tools
+        run: |
+          python -m pip install --upgrade pip wheel setuptools
+          pip install black flake8 mypy pylint isort bandit safety
           
       - name: Check formatting with Black
-        run: black --check --diff . || true
+        run: |
+          black --check --diff . || true
+          echo "Black formatting check completed"
+        continue-on-error: true
+        
+      - name: Check import sorting with isort
+        run: |
+          isort --check-only --diff . || true
+          echo "isort import sorting check completed"
         continue-on-error: true
         
       - name: Lint with flake8
         run: |
+          # Stop build on syntax errors or undefined names
+          echo "Running strict flake8 checks..."
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-        continue-on-error: true
-        
+          # Treat warnings as info
+          echo "Running general flake8 checks..."
+          flake8 . --count --exit-zero --max-complexity=15 --max-line-length=88 --statistics || true
+          
       - name: Type check with MyPy
-        run: mypy . --ignore-missing-imports || true
+        run: |
+          mypy . --ignore-missing-imports --no-strict-optional || true
+          echo "MyPy type checking completed"
         continue-on-error: true
         
       - name: Security check with Bandit
-        run: bandit -r . -ll || true
+        run: |
+          bandit -r . -f json -o bandit-report.json -ll || true
+          bandit -r . -ll || true
+          echo "Bandit security scan completed"
         continue-on-error: true
         
-      - name: Lint with Pylint
-        run: pylint **/*.py --exit-zero || true
+      - name: Vulnerability check with Safety
+        run: |
+          safety check --json --output safety-report.json || true
+          safety check || true
+          echo "Safety vulnerability check completed"
         continue-on-error: true
+        
+      - name: Lint with Pylint (if Python files exist)
+        run: |
+          if find . -name "*.py" -type f | head -1 | grep -q .; then
+            echo "Running Pylint on Python files..."
+            pylint **/*.py --exit-zero --disable=C0111,C0103,R0903,R0913,W0613 || true
+            echo "Pylint analysis completed"
+          else
+            echo "No Python files found - skipping Pylint"
+          fi
+        continue-on-error: true
+        
+      - name: Upload quality reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: quality-reports
+          path: |
+            bandit-report.json
+            safety-report.json
