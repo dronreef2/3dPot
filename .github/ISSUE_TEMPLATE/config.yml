@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 Community Discussion
+    url: https://github.com/dronreef2/3dPot/discussions
+    about: General questions, ideas, and community feedback
+  - name: 📚 Documentation
+    url: https://github.com/dronreef2/3dPot#quick-start---guia-visual-para-iniciantes
+    about: Check our getting started guide and troubleshooting section
+  - name: 🛠️ Hardware Support
+    url: https://github.com/dronreef2/3dPot/issues?q=label%3A%22help+wanted%22
+    about: Browse existing hardware-related questions and solutions
+  - name: 🔧 Software Development
+    url: https://github.com/dronreef2/3dPot/labels
+    about: See current development priorities and status
