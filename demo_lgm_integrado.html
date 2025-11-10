@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Sistema LGM Integrado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .section h2 {
+            color: #3498db;
+            margin-top: 0;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .examples {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .example-item {
+            cursor: pointer;
+            padding: 8px;
+            margin: 5px 0;
+            background-color: #e9ecef;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+        .example-item:hover {
+            background-color: #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Demo - Sistema LGM Integrado</h1>
+        
+        <div class="section">
+            <h2>📊 Status do Sistema</h2>
+            <button onclick="checkStatus()">Verificar Status</button>
+            <div id="statusResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Projeto Completo (Texto → 3D + Análise + Orçamento)</h2>
+            <p>Digite uma descrição do que você quer modelar e o sistema vai:</p>
+            <ul>
+                <li>🤖 Gerar um modelo 3D com AI (se disponível)</li>
+                <li>📊 Analisar o projeto tecnicamente</li>
+                <li>💰 Calcular orçamento completo</li>
+            </ul>
+            
+            <div class="examples">
+                <h4>💡 Exemplos de Prompts:</h4>
+                <div class="example-item" onclick="setPrompt('um carro de corrida vermelho com detalhes metálicos')">
+                    🚗 um carro de corrida vermelho com detalhes metálicos
+                </div>
+                <div class="example-item" onclick="setPrompt('um robô humanoide com olhos LED azuis')">
+                    🤖 um robô humanoide com olhos LED azuis
+                </div>
+                <div class="example-item" onclick="setPrompt('uma xícara de café com vapor realista')">
+                    ☕ uma xícara de café com vapor realista
+                </div>
+                <div class="example-item" onclick="setPrompt('um suporte para celular em formato de árvore')">
+                    🌳 um suporte para celular em formato de árvore
+                </div>
+                <div class="example-item" onclick="setPrompt('um drone quadcopter com proteção de hélices')">
+                    🚁 um drone quadcopter com proteção de hélices
+                </div>
+            </div>
+            
+            <textarea 
+                id="promptInput" 
+                placeholder="Descreva o que você quer modelar em 3D..."
+                rows="4"
+            ></textarea>
+            
+            <button onclick="runCompleteProject()">🚀 Gerar Projeto Completo</button>
+            <div id="projectResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Endpoints Individuais LGM</h2>
+            <p>Teste cada endpoint LGM separadamente:</p>
+            
+            <h3>Texto → 3D</h3>
+            <input type="text" id="textInput" placeholder="Ex: um dado de 6 faces com textura de madeira">
+            <button onclick="generateFromText()">Gerar Modelo 3D</button>
+            
+            <h3>Imagem → 3D</h3>
+            <input type="file" id="imageInput" accept="image/*">
+            <button onclick="generateFromImage()">Gerar Modelo 3D da Imagem</button>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:5000';
+
+        function setPrompt(text) {
+            document.getElementById('promptInput').value = text;
+        }
+
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = 'result';
+            
+            if (isError) {
+                element.className = 'result error';
+                element.textContent = 'Erro: ' + (data.error || data);
+            } else {
+                element.textContent = JSON.stringify(data, null, 2);
+            }
+        }
+
+        function showStatus(message, type = 'info') {
+            const element = document.getElementById('statusResult');
+            element.style.display = 'block';
+            element.className = 'result ' + type;
+            element.textContent = message;
+        }
+
+        async function checkStatus() {
+            try {
+                const response = await fetch(`${BASE_URL}/api/lgm/status`);
+                const data = await response.json();
+                showResult('statusResult', data);
+            } catch (error) {
+                showResult('statusResult', { error: error.message }, true);
+            }
+        }
+
+        async function runCompleteProject() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            if (!prompt) {
+                alert('Por favor, digite uma descrição!');
+                return;
+            }
+
+            showStatus('🚀 Iniciando projeto completo...', 'info');
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/lgm/projeto-completo`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        include_analysis: true,
+                        include_budget: true
+                    })
+                });
+
+                const data = await response.json();
+                showResult('projectResult', data);
+            } catch (error) {
+                showResult('projectResult', { error: error.message }, true);
+            }
+        }
+
+        async function generateFromText() {
+            const prompt = document.getElementById('textInput').value.trim();
+            if (!prompt) {
+                alert('Por favor, digite um prompt!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/lgm/gerar-texto`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        num_outputs: 1,
+                        resolution: 800
+                    })
+                });
+
+                const data = await response.json();
+                alert('Resultado: ' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
+
+        async function generateFromImage() {
+            const fileInput = document.getElementById('imageInput');
+            if (!fileInput.files.length) {
+                alert('Por favor, selecione uma imagem!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('imagem', fileInput.files[0]);
+            formData.append('num_outputs', '1');
+            formData.append('resolution', '800');
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/lgm/gerar-imagem`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                alert('Resultado: ' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
