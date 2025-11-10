@@ -1,8 +1,14 @@
-# 3D Pot - Projetos Maker com Hardware e Impressão 3D
+# 🎯 3dPot - Monitor de Filamento & Automação para Impressão 3D
 
+[![CI Pipeline](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/ci.yml?label=CI%20Pipeline&style=flat-square)](https://github.com/dronreef2/3dPot/actions/workflows/ci.yml)
+[![Python Tests](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/python-tests.yml?label=Python%20Tests&style=flat-square)](https://github.com/dronreef2/3dPot/actions)
+[![Code Quality](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/code-quality.yml?label=Code%20Quality&style=flat-square)](https://github.com/dronreef2/3dPot/actions)
+[![3D Models](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/openscad.yml?label=3D%20Models&style=flat)](https://github.com/dronreef2/3dPot/actions)
+[![Arduino Build](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/arduino-build.yml?label=Arduino%20Build&style=flat)](https://github.com/dronreef2/3dPot/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![Code Quality](https://img.shields.io/badge/code%20quality-A-green)](https://github.com/dronreef2/3dPot)
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+[![Arduino Compatible](https://img.shields.io/badge/Arduino-ESP32%20%7C%20Nano-green.svg)](https://www.arduino.cc/)
+[![3D Models](https://img.shields.io/badge/3D%20Models-OpenSCAD-orange.svg)](https://openscad.org/)
 [![Total Commits](https://img.shields.io/github/commit-activity/w/dronreef2/3dPot)](https://github.com/dronreef2/3dPot/graphs/commit-activity)
 [![Open Issues](https://img.shields.io/github/issues/dronreef2/3dPot)](https://github.com/dronreef2/3dPot/issues)
 [![Closed Issues](https://img.shields.io/github/issues-closed/dronreef2/3dPot)](https://github.com/dronreef2/3dPot/issues?q=is%3Aissue+is%3Aclosed)
