@@ -20,7 +20,6 @@ jobs:
   build-arduino:
     name: Build Arduino/ESP32 Sketches
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     
     strategy:
       fail-fast: false
@@ -43,16 +42,7 @@ jobs:
         
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1
-
-      - name: Cache Arduino CLI and platforms
-        uses: actions/cache@v3
         with:
-          path: |
-            ~/.arduino-cli
-            ~/.arduino15
-          key: arduino-${{ runner.os }}-${{ hashFiles('codigos/**/*.ino') }}
-          restore-keys: |
-            arduino-${{ runner.os }}-        with:
           version: latest
           
       - name: Install platform

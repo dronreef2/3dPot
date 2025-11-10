@@ -3,16 +3,8 @@ name: 3dPot CI Pipeline
 on:
   push:
     branches: [ main, develop ]
-    paths:
-      - 'codigos/**'
-      - 'tests/**'
-      - 'modelos-3d/**'
   pull_request:
     branches: [ main, develop ]
-    paths:
-      - 'codigos/**'
-      - 'tests/**'
-      - 'modelos-3d/**'
   workflow_dispatch:
     inputs:
       python_version:
@@ -34,7 +26,6 @@ jobs:
   lint-and-format:
     name: Code Quality Check
     runs-on: ubuntu-latest
-    timeout-minutes: 8
     
     steps:
       - name: Checkout code
@@ -98,7 +89,6 @@ jobs:
   python-tests:
     name: Python Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -127,36 +117,12 @@ jobs:
         run: |
           if [ -d tests ] && [ "$(ls -A tests)" ]; then
             echo "Running tests in tests/ directory..."
-            pytest tests/ -v \      - name: Cache global pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: global-pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}
-              --cov=. \      - name: Cache global pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: global-pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}
-              --cov-report=xml \      - name: Cache global pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: global-pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}
-              --cov-report=html \      - name: Cache global pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: global-pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}
-              --cov-report=term-missing \      - name: Cache global pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: global-pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}
-              --junitxml=pytest-results.xml \      - name: Cache global pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: global-pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}
+            pytest tests/ -v \
+              --cov=. \
+              --cov-report=xml \
+              --cov-report=html \
+              --cov-report=term-missing \
+              --junitxml=pytest-results.xml \
               --maxfail=5
           else
             echo "No tests directory or tests found - creating basic test structure"
@@ -295,19 +261,11 @@ jobs:
           echo "Documentation: ${{ needs.build-documentation.result }}"
           
           # Determine overall status
-          if [ "${{ needs.lint-and-format.result }}" = "success" ] && \      - name: Cache global pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: global-pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}
+          if [ "${{ needs.lint-and-format.result }}" = "success" ] && \
              [ "${{ needs.python-tests.result }}" = "success" ]; then
             echo "✅ Core tests passed successfully!"
             echo "CI Status: ✅ PASSED" >> $GITHUB_STEP_SUMMARY
-          elif [ "${{ needs.lint-and-format.result }}" = "success" ] || \      - name: Cache global pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: global-pip-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}
+          elif [ "${{ needs.lint-and-format.result }}" = "success" ] || \
                [ "${{ needs.python-tests.result }}" = "success" ]; then
             echo "⚠️ Some tests passed with warnings"
             echo "CI Status: ⚠️ PARTIAL" >> $GITHUB_STEP_SUMMARY

@@ -14,7 +14,6 @@ jobs:
   test:
     name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -29,11 +28,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-      - name: Cache additional dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: pip-python${{ matrix.python-version }}-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}
           
       - name: Install system dependencies
         run: |
