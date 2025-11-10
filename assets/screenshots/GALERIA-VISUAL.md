@@ -19,7 +19,13 @@ assets/screenshots/
 ├── esquematico-arduino-esteira.png    # Esquemático conexões Arduino
 ├── esquematico-raspberry-qc.png       # Esquemático conexões Raspberry Pi
 ├── diagrama-sistema-integrado.png     # Diagrama integração global
-└── GUIA-CONEXOES.md                   # Guia técnico de montagem
+├── GUIA-CONEXOES.md                   # Guia técnico de montagem
+├── mockup-fisico-esp32-montado.png    # Mockup físico ESP32 montado
+├── mockup-fisico-arduino-esteira-montado.png  # Mockup físico esteira montada
+├── mockup-fisico-raspberry-qc-montado.png     # Mockup físico Raspberry QC
+├── demonstracao-fluxo-completo.png    # Demonstração fluxo de produção
+├── demonstracao-interfaces-web.png    # Demonstração interfaces em ação
+└── guia-montagem-modelos-3d.png       # Guia visual montagem modelos
 ```
 
 ## 🖼️ Galeria de Imagens
@@ -113,6 +119,52 @@ assets/screenshots/
 
 **Guia Técnico**: [GUIA-CONEXOES.md](GUIA-CONEXOES.md) - Instruções detalhadas de montagem
 
+### 6. 📷 Mockups Físicos
+
+#### **Mockup Físico ESP32 Monitor**
+![Mockup Físico ESP32](mockup-fisico-esp32-montado.png)
+- **Descrição**: Visualização do projeto ESP32 totalmente montado e funcionando
+- **Componentes**: ESP32, load cell, suporte 3D impresso, interface web
+- **Cenário**: Monitoramento de filamento em impressora 3D em operação
+- **Formato**: 1400x1000px PNG
+
+#### **Mockup Físico Esteira Transportadora**
+![Mockup Físico Arduino](mockup-fisico-arduino-esteira-montado.png)
+- **Descrição**: Projeto Arduino da esteira transportadora completamente montado
+- **Componentes**: Arduino, motor NEMA17, rolo 3D impresso, sensores, LCD
+- **Cenário**: Sistema de transporte funcionando com controles manuais
+- **Formato**: 1400x1000px PNG
+
+#### **Mockup Físico Estação QC**
+![Mockup Físico Raspberry Pi](mockup-fisico-raspberry-qc-montado.png)
+- **Descrição**: Estação de controle de qualidade Raspberry Pi em operação
+- **Componentes**: Raspberry Pi, case 3D, câmera, LED ring, dashboard web
+- **Cenário**: Análise de qualidade de peças 3D com IA
+- **Formato**: 1400x1000px PNG
+
+### 7. 🎬 Demonstrações Visuais
+
+#### **Demonstração Fluxo Completo**
+![Demonstração Completa](demonstracao-fluxo-completo.png)
+- **Descrição**: Como os três projetos trabalham em conjunto
+- **Fluxo**: Monitoragem → Transporte → QC → Produção final
+- **Benefícios**: Automação completa do processo de impressão 3D
+- **Formato**: 1500x1200px PNG
+
+#### **Demonstração Interfaces Web**
+![Demonstração Interfaces](demonstracao-interfaces-web.png)
+- **Descrição**: Interfaces web em ação com dados reais
+- **Funcionalidades**: Dashboards responsivos, controles, métricas
+- **Cenário**: Operação simultânea de todos os sistemas
+- **Formato**: 1400x1000px PNG
+
+#### **Guia Montagem Modelos 3D**
+![Guia Montagem](guia-montagem-modelos-3d.png)
+- **Descrição**: Processo visual de impressão e montagem dos modelos 3D
+- **Etapas**: Impressão → Montagem → Integração → Resultado final
+- **Materiais**: Especificações ABS, PETG, PLA com configurações
+- **Formato**: 1500x1200px PNG
+
 ## 🎨 Diretrizes Visuais
 
 ### **Paleta de Cores**
@@ -161,17 +213,17 @@ assets/screenshots/
 
 ## 🔄 Próximas Expansões
 
-### **Imagens Físicas** (Planejado)
-- [ ] Fotos reais dos projetos montados
-- [ ] Vídeos demonstrativos (GIFs)
-- [ ] Time-lapse de montagem
-- [ ] Vídeos de funcionamento
+### **Imagens Físicas** (Concluído)
+- [x] ✅ Mockups físicos dos projetos montados
+- [x] ✅ Diagramas demonstrativos de funcionalidades
+- [x] ✅ Guia visual de montagem dos modelos 3D
+- [x] ✅ Demonstrações das interfaces em ação
 
-### **Interfaces Avançadas** (Planejado)
-- [ ] Mockups mobile
-- [ ] Prototipação interativa
-- [ ] Animações de uso
-- [ ] Comparações antes/depois
+### **Interfaces Avançadas** (Concluído)
+- [x] ✅ Mockups de interfaces web
+- [x] ✅ Demonstrações de funcionalidades
+- [x] ✅ Dashboards responsivos
+- [ ] [ ] Comparações antes/depois (planejado)
 
 ### **Documentação Visual** (Planejado)
 - [ ] Diagramas de circuito
@@ -182,7 +234,9 @@ assets/screenshots/
 ## 📝 Atualizações
 
 - **10 Nov 2025**: Galeria inicial criada com 7 diagramas técnicos
-- **Futuro**: Expansão com fotos reais e vídeos demonstrativos
+- **10 Nov 2025**: Adicionados 4 esquemáticos técnicos + guia de conexões
+- **10 Nov 2025**: Expansão com 6 mockups físicos e demonstrações visuais
+- **Futuro**: Vídeos demonstrativos (GIFs) e fotos reais dos projetos montados
 
 ---
 

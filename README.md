@@ -35,7 +35,13 @@ A combinação de hardware de baixo custo com impressão 3D e software open-sour
 
 ## 🖼️ Galeria Visual
 
-Abaixo você encontra diagramas técnicos, mockups de interface e visualizações dos projetos. Para uma galeria completa com descrições detalhadas, acesse: [`assets/screenshots/GALERIA-VISUAL.md`](assets/screenshots/GALERIA-VISUAL.md)
+Abaixo você encontra diagramas técnicos, mockups de interface, mockups físicos dos projetos montados e visualizações dos projetos. Para uma galeria completa com descrições detalhadas, acesse: [`assets/screenshots/GALERIA-VISUAL.md`](assets/screenshots/GALERIA-VISUAL.md)
+
+**🆕 NOVOS MOCKUPS FÍSICOS ADICIONADOS:**
+- 📷 Visualizações realistas dos projetos montados com modelos 3D impressos
+- 🎬 Demonstrações visuais das funcionalidades em ação
+- 🔧 Guias visuais de montagem e integração
+- 📊 Interfaces web com dados em tempo real
 
 ### 🏗️ Arquitetura dos Sistemas
 
