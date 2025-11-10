@@ -19,25 +19,81 @@
 
 A combinação de hardware de baixo custo com impressão 3D e software open-source cria um ecossistema poderoso para transformar ideias digitais em objetos físicos inteligentes.
 
-## Estrutura do Repositório
+## 📁 Estrutura do Repositório
 
+### 🏗️ **Organização Visual**
 ```
 3dPot/
-├── README.md
-├── projetos/
-│   ├── esp32/
-│   ├── arduino/
-│   ├── raspberry-pi/
-│   └── toolchain/
-├── codigos/
-│   ├── esp32/
-│   ├── arduino/
-│   └── raspberry-pi/
-└── modelos-3d/
-    ├── esp32-projetos/
-    ├── arduino-projetos/
-    └── raspberry-pi-projetos/
+├── 📄 README.md                    # Documentação principal
+├── 🧪 tests/                       # Sistema de testes (pytest)
+│   ├── unit/                       # Testes unitários
+│   │   ├── test_project_structure.py
+│   │   ├── test_3d_models.py
+│   │   ├── test_arduino/
+│   │   ├── test_esp32/
+│   │   └── test_raspberry_pi/
+│   ├── integration/                # Testes de integração
+│   │   └── test_system_integration.py
+│   ├── requirements-test.txt       # Dependências de teste
+│   └── pytest.ini                 # Configuração pytest
+├── 📂 projetos/                    # Projetos completos
+│   ├── esp32/monitor-filamento/    # Monitor de filamento
+│   ├── arduino/esteira-transportadora/  # EsteTransportadora
+│   ├── raspberry-pi/estacao-qc/    # Estação QC
+│   └── toolchain/                  # Ferramentas auxiliares
+├── 💻 codigos/                     # Código fonte organizado
+│   ├── esp32/                      # Firmware ESP32
+│   ├── arduino/                    # Sketch Arduino
+│   └── raspberry-pi/               # Scripts Python
+├── 🎯 modelos-3d/                  # Modelos OpenSCAD
+│   ├── esp32-projetos/             # Suportes ESP32
+│   ├── arduino-projetos/           # Componentes esteira
+│   └── raspberry-pi-projetos/      # Cases e suportes
+├── 🖼️ assets/screenshots/          # Galeria visual completa
+│   ├── GALERIA-VISUAL.md           # Índice da galeria
+│   ├── GUIA-CONEXOES.md            # Guia técnico detalhado
+│   ├── arquitetura-*.png           # Diagramas de arquitetura
+│   ├── esquematico-*.png           # Esquemáticos técnicos
+│   ├── mockup-fisico-*.png         # Visualizações montadas
+│   └── interface-*.png             # Mockups de interface
+└── 🚀 .github/workflows/           # CI/CD Pipeline
+    ├── ci.yml                      # Pipeline principal
+    ├── openscad.yml                # Validação modelos 3D
+    ├── arduino-build.yml           # Build Arduino/ESP32
+    └── python-tests.yml            # Testes Python
 ```
+
+### 🧪 **Sistema de Testes (pytest)**
+O projeto inclui um **sistema completo de testes** para garantir qualidade:
+
+```bash
+# Executar todos os testes
+./run_tests.sh
+
+# Testes unitários
+python -m pytest tests/unit/ -v
+
+# Testes com coverage
+python -m pytest --cov=codigos/ tests/
+
+# Testes específicos por projeto
+python -m pytest tests/unit/test_esp32/ -v
+```
+
+**Testes Disponíveis:**
+- ✅ **Estrutura do projeto** - Validação de diretórios e arquivos
+- ✅ **Modelos 3D** - Verificação OpenSCAD e organização  
+- ✅ **Integração** - Comunicação entre hardware/software
+- ✅ **Qualidade** - Coverage e validação de código
+
+### 📋 **Checklist de Arquivos Essenciais**
+Para cada projeto implementado, certifique-se de ter:
+- [ ] `README.md` específico do projeto
+- [ ] Código fonte na pasta `codigos/`
+- [ ] Modelos 3D na pasta `modelos-3d/`
+- [ ] Esquemáticos em `assets/screenshots/`
+- [ ] Testes unitários em `tests/unit/`
+- [ ] Documentação visual atualizada
 
 ## 🖼️ Galeria Visual
 
@@ -103,108 +159,315 @@ Abaixo você encontra diagramas técnicos, mockups de interface, mockups físico
 ![Sistema Integrado](assets/screenshots/diagrama-sistema-integrado.png)
 *Integração global: rede WiFi, MQTT, fluxo de produção*
 
+### 🌊 **Fluxo Visual Completo do Sistema**
+
+#### **Como os Projetos Trabalham Juntos**
+![Demonstração Fluxo Completo](assets/screenshots/demonstracao-fluxo-completo.png)
+*Fluxo integrado: Monitor → Transporte → QC → Produção Final*
+
+#### **Demonstração das Interfaces em Ação**
+![Demonstração Interfaces](assets/screenshots/demonstracao-interfaces-web.png)
+*Interfaces web funcionando com dados reais em tempo real*
+
+#### **Processo de Montagem dos Modelos 3D**
+![Guia Montagem 3D](assets/screenshots/guia-montagem-modelos-3d.png)
+*Do arquivo OpenSCAD ao projeto funcionando: impressão → montagem → integração*
+
+### 🔄 **Ciclo Completo de Produção**
+
+```mermaid
+graph LR
+    A[📦 Filamento] --> B[⚖️ Monitor ESP32]
+    B --> C[📊 Interface Web]
+    B --> D[🚨 Alerta Queda]
+    D --> E[🔄 Reabastecimento]
+    
+    B --> F[🚀 Esteira Arduino]
+    F --> G[📷 Sensores IR]
+    G --> H[🎮 Controles Manuais]
+    
+    F --> I[🏭 Estação QC]
+    I --> J[📷 Câmera Pi]
+    J --> K[🤖 Análise OpenCV]
+    K --> L[✅/❌ Aprovação]
+    
+    C --> M[🌐 Dashboard Central]
+    H --> M
+    L --> M
+    M --> N[📈 Relatórios]
+```
+
+**Benefícios do Ecossistema Integrado:**
+- 🔍 **Monitoramento automático** do filamento
+- 🚀 **Transporte inteligente** entre estações
+- 🏭 **Controle de qualidade** com IA
+- 📊 **Dashboard central** com todos os dados
+- 🚨 **Alertas proativos** para manutenção
+- 📈 **Relatórios de produção** automáticos
+
 📖 **Para instruções detalhadas de montagem, consulte**: [`assets/screenshots/GUIA-CONEXOES.md`](assets/screenshots/GUIA-CONEXOES.md)
 
 ---
 
-## 🚀 Primeiros Passos
+## 🚀 Quick Start - Guia Visual para Iniciantes
 
-### Pré-requisitos
+### 📋 Resumo do Sistema
+![Ecossistema 3dPot](assets/screenshots/fluxo-ecosistema-3dpot.png)
 
-Antes de começar, certifique-se de ter o seguinte:
+O **3dPot** é um ecossistema completo que integra **3 projetos inteligentes** para automação de impressão 3D:
 
-#### Hardware Básico
-- **Para ESP32**: ESP32 DevKit, célula de carga HX711, carretel de filamento
-- **Para Arduino**: Arduino Uno/Nano, motor de passo NEMA17, sensores IR
-- **Para Raspberry Pi**: Raspberry Pi 4, câmera Pi, display (opcional)
+| Projeto | Hardware | Função | Dificuldade |
+|---------|----------|--------|-------------|
+| 🔍 **Monitor de Filamento** | ESP32 | Pesagem e monitoramento do filamento | ⭐ Fácil |
+| 🚀 **Esteira Transportadora** | Arduino | Transporte automático de peças | ⭐⭐ Intermediário |
+| 🏭 **Estação QC** | Raspberry Pi | Controle de qualidade com visão | ⭐⭐⭐ Avançado |
 
-#### Software Necessário
-- **Arduino IDE** ou **PlatformIO** (para ESP32/Arduino)
-- **Python 3.8+** (para Raspberry Pi)
-- **OpenSCAD** ou **Tinkercad** (para modelos 3D)
-- **Git** (para controle de versão)
+### 🎯 Como Começar (5 Minutos)
 
-### 🔧 Instalação Rápida
+#### 1️⃣ **Clone e Instale** (2 min)
+```bash
+# Clone o repositório
+git clone https://github.com/dronreef2/3dPot.git
+cd 3dPot
 
-1. **Clone este repositório:**
-   ```bash
-   git clone https://github.com/dronreef2/3dPot.git
-   cd 3dPot
-   ```
+# Instale dependências Python
+pip install -r requirements-test.txt
 
-2. **Execute o script de instalação:**
-   ```bash
-   chmod +x setup-3dpot.sh
-   ./setup-3dpot.sh
-   ```
-
-3. **Escolha seu projeto:**
-   - **Monitor de Filamento (ESP32)**: `projetos/esp32/monitor-filamento/`
-   - **Esteira Transportadora (Arduino)**: `projetos/arduino/esteira-modular/`
-   - **Estação QC (Raspberry Pi)**: `projetos/raspberry-pi/estacao-qc-visao/`
-
-### 📁 Estrutura dos Projetos
-
-Cada projeto segue esta estrutura padrão:
-```
-projeto/
-├── README.md              # Documentação específica
-├── hardware/              # Esquemáticos e PCBs
-├── modelos-3d/            # Arquivos .scad e .stl
-├── firmware/              # Código para microcontroladores
-├── software/              # Código para computadores
-└── docs/                  # Guias detalhados
+# Execute os testes básicos
+python -m pytest tests/unit/test_project_structure.py -v
 ```
 
-### 🛠️ Guias de Desenvolvimento
+#### 2️⃣ **Escolha um Projeto** (1 min)
+- 👶 **Primeiro projeto**: Monitor de Filamento ESP32 (mais simples)
+- 🛠️ **Segundo projeto**: Esteira Transportadora Arduino (intermediário)
+- 🏆 **Desafio**: Estação QC Raspberry Pi (avançado)
 
-#### Projeto ESP32 - Monitor de Filamento
-1. **Hardware**: Monte a célula de carga conforme o esquemático
-2. **3D**: Imprime o `suporte-filamento.scad` (ajuste diâmetros conforme necessário)
-3. **Firmware**: Carregue `monitor-filamento.ino` via Arduino IDE
-4. **Teste**: Acesse `http://IP_ESP32.local` para interface web
+#### 3️⃣ **Acesse os Recursos** (2 min)
+- 📖 [Guia Completo de Conexões](assets/screenshots/GUIA-CONEXOES.md)
+- 🖼️ [Galeria Visual Completa](assets/screenshots/GALERIA-VISUAL.md)
+- 💻 [Código de Exemplo](codigos/)
 
-#### Projeto Arduino - Esteira Transportadora
-1. **Hardware**: Monte o motor de passo e sensores IR
-2. **3D**: Imprime os componentes da `esteira-transportadora.ino`
-3. **Firmware**: Carregue o código via Arduino IDE
-4. **Teste**: Use o monitor serial para controlar velocidades
+---
 
-#### Projeto Raspberry Pi - Estação QC
-1. **Setup**: Instale OpenCV e dependências Python
-2. **3D**: Imprime o suporte da câmera
-3. **Software**: Execute `estacao_qc.py`
-4. **Teste**: Acesse `http://IP_PI:5000` para interface web
+## 🔧 Instalação Detalhada por Projeto
 
-### 🔍 Troubleshooting Comum
+### 🟢 Projeto 1: Monitor de Filamento ESP32 (Recomendado para iniciantes)
 
-#### Problemas de Conectividade
-- **ESP32 não conecta ao WiFi**: Verifique SSID e senha no código
-- **Arduino não responde**: Teste com monitor serial a 115200 baud
-- **Raspberry Pi câmera**: Habilite via `raspi-config`
+![Mockup Físico ESP32](assets/screenshots/mockup-fisico-esp32-montado.png)
 
-#### Problemas de Hardware
-- **Célula de carga instável**: Verifique conexões e isolação
-- **Motor de passo sem força**: Cheque alimentação (12V para NEMA17)
-- **CâmeraPi não detecta**: Teste com `vcgencmd get_camera`
+#### 📦 **Lista de Compras**
+- ESP32 DevKit V1
+- Sensor HX711 + 4x células de carga
+- Protoboard + jumpers
+- LED + resistor 220Ω
+- Carretel de filamento para teste
 
-#### Problemas de Software
-- **Python import errors**: Execute `pip install -r requirements.txt`
-- **Arduino library missing**: Instale via Library Manager
-- **OpenSCAD rendering**: Verifique syntax nos arquivos .scad
+#### 🔌 **Conexões (Super Simples!)**
+![Esquemático ESP32](assets/screenshots/esquematico-esp32-monitor.png)
 
-### 📚 Recursos Adicionais
+```
+ESP32    →    HX711
+GPIO 4   →    DOUT
+GPIO 5   →    SCK
+3.3V     →    VCC
+GND      →    GND
+GPIO 2   →    LED (+ resistor 220Ω)
+```
 
-- [Guia de Instalação Completo](projetos/toolchain/guia-instalacao.md)
-- [Template de Dashboard](projetos/toolchain/template-dashboard.html)
-- [Contribuindo para o Projeto](CONTRIBUTING.md)
-- [Código de Conduta](CODE_OF_CONDUCT.md)
+#### 💻 **Upload do Código**
+```bash
+# Via Arduino IDE
+1. Instale ESP32 board no Arduino IDE
+2. Abra: codigos/esp32/monitor-filamento.ino
+3. Selecione: ESP32 Dev Module
+4. Upload!
 
-### 🆘 Precisa de Ajuda?
+# Via PlatformIO (Recomendado)
+pio device monitoring
+```
 
-1. **Issues**: [Abra uma issue](https://github.com/dronreef2/3dPot/issues)
-2. **Discussions**: [Participe das discussões](https://github.com/dronreef2/3dPot/discussions)
-3. **Comunidade**: Junte-se ao nosso Discord (link em breve)
+#### 🌐 **Acesse a Interface**
+```
+http://IP_DO_ESP32.local
+```
+**Dica**: O ESP32 cria automaticamente uma rede WiFi "3dPot-XXX" se não encontrar sua rede!
+
+---
+
+### 🟠 Projeto 2: EsteTransportadora Arduino
+
+![Mockup Físico Esteira](assets/screenshots/mockup-fisico-arduino-esteira-montado.png)
+
+#### 📦 **Lista de Compras**
+- Arduino Uno ou Nano
+- Motor NEMA17 + Driver A4988
+- 2x Sensores IR
+- Display LCD 16x2
+- Fonte 12V 2A
+- Resistores diversos
+
+#### 🔌 **Conexões Intermediárias**
+![Esquemático Arduino](assets/screenshots/esquematico-arduino-esteira.png)
+
+#### 💻 **Código e Teste**
+```bash
+# Arduino IDE
+1. Abra: codigos/arduino/esteira-transportadora.ino
+2. Selecione: Arduino Uno
+3. Upload + Monitor Serial (115200 baud)
+```
+
+#### 🎮 **Controles Disponíveis**
+- Potenciômetro: Velocidade da esteira
+- Botão: Parar/emergência
+- Monitor Serial: Comandos de controle
+
+---
+
+### 🔴 Projeto 3: Estação QC Raspberry Pi
+
+![Mockup Físico QC](assets/screenshots/mockup-fisico-raspberry-qc-montado.png)
+
+#### 📦 **Lista de Compras**
+- Raspberry Pi 4 (2GB+)
+- Câmera Pi HQ
+- LED Ring 12V
+- Motor NEMA17 + Driver
+- Fonte 12V 5A + 5V 3A
+
+#### 🐍 **Setup do Software**
+```bash
+# No Raspberry Pi
+sudo raspi-config  # Habilite Câmera e I2C
+sudo pip install opencv-python RPi.GPIO paho-mqtt
+
+# Clone e execute
+cd 3dPot
+python codigos/raspberry-pi/estacao_qc.py
+```
+
+#### 🌐 **Dashboard Web**
+```
+http://IP_DO_PI:5000
+```
+**Recursos**: Análise automática, galeria de fotos, relatórios
+
+---
+
+## 🔍 Troubleshooting Comum
+
+### 🚨 **Problemas de Hardware**
+
+| Problema | Causa Provável | Solução |
+|----------|----------------|---------|
+| 🔌 ESP32 não liga | Alimentação USB | Use cabo dados + carga (não só carga) |
+| ⚖️ Célula de carga instável | Vibração/ruído | Monte em superfície estável, cables curtos |
+| 🚀 Motor pulando passos | Alimentação fraca | Verifique 12V 2A, reduce velocidade |
+| 📷 Câmera Pi negra | Interface desabilitada | `sudo raspi-config` → Interface → Camera |
+
+### 🌐 **Problemas de Conectividade**
+
+| Problema | Diagnóstico | Solução |
+|----------|-------------|---------|
+| 📶 ESP32 sem WiFi | LED não pisca | Verifique SSID/senha no código |
+| 🔌 Arduino mudo | Monitor serial vazio | Check 115200 baud, reset button |
+| 🖥️ Pi dashboard offline | 404/connection refused | `ps aux \| grep python` para verificar se está rodando |
+
+### 💻 **Problemas de Software**
+
+```bash
+# Python errors
+pip install --upgrade -r requirements-test.txt
+
+# Arduino libraries
+# Use Library Manager para:
+# - WiFi (ESP32)
+# - LiquidCrystal (LCD)
+# - AccelStepper (motores)
+
+# OpenSCAD models
+openscad -o output.stl model.scad
+```
+
+### 🔧 **Comandos de Diagnóstico Úteis**
+
+```bash
+# ESP32
+pio device list                    # Lista dispositivos
+pio device monitoring             # Monitor serial
+
+# Arduino
+ls /dev/tty*                      # Lista portas USB
+screen /dev/ttyUSB0 115200       # Monitor serial manual
+
+# Raspberry Pi
+vcgencmd get_camera              # Status da câmera
+lsmod | grep i2c                 # Módulos I2C carregados
+systemctl status mosquitto       # MQTT broker status
+```
+
+### 📞 **Precisa de Mais Ajuda?**
+
+1. 🐛 **Issues**: [Abra uma issue](https://github.com/dronreef2/3dPot/issues) com fotos do problema
+2. 💬 **Discussions**: [Participe das discussões](https://github.com/dronreef2/3dPot/discussions)
+3. 📧 **Email**: Para problemas complexos, inclua logs e especificações do hardware
+
+## 📚 Recursos Adicionais
+
+### 🗂️ **Documentação Técnica**
+| Recurso | Descrição | Nível |
+|---------|-----------|-------|
+| 🔌 [Guia de Conexões](assets/screenshots/GUIA-CONEXOES.md) | Diagramas esquemáticos detalhados | ⭐⭐ |
+| 🖼️ [Galeria Visual](assets/screenshots/GALERIA-VISUAL.md) | Mockups, interfaces e diagramas | ⭐ |
+| 🏗️ [Arquiteturas do Sistema](assets/screenshots/) | Diagramas técnicos de cada projeto | ⭐⭐ |
+| 🎯 [Especificações 3D](assets/screenshots/modelos-3d-especificacoes.png) | Modelos OpenSCAD paramétricos | ⭐⭐ |
+
+### 🛠️ **Ferramentas e Setup**
+| Ferramenta | Uso | Link |
+|------------|-----|------|
+| Arduino IDE | Programação ESP32/Arduino | [Download](https://www.arduino.cc/en/software) |
+| PlatformIO | Desenvolvimento profissional | [VSCode Extension](https://marketplace.visualstudio.com/items?itemName=platformio.platformio-ide) |
+| OpenSCAD | Modelagem 3D paramétrica | [Download](https://openscad.org/downloads.html) |
+| KiCad | Design de PCBs | [Download](https://www.kicad.org/download/) |
+
+### 📖 **Guias de Aprendizado**
+- 🎓 **Iniciantes**: Comece com Monitor ESP32, leitura da galeria visual
+- 🔧 **Intermediários**: Esteira Arduino, explore PlatformIO
+- 🏆 **Avançados**: Estação QC, integração MQTT, dashboards
+- 🌐 **IoT**: Protocolos, Home Assistant, automação residencial
+
+### 🤝 **Comunidade e Contribuição**
+- 🐛 [Issues e Bugs](https://github.com/dronreef2/3dPot/issues) - Reporte problemas
+- 💡 [Feature Requests](https://github.com/dronreef2/3dPot/discussions) - Sugira melhorias
+- 🤝 [Contribuições](CONTRIBUTING.md) - Como ajudar o projeto
+- 📋 [Código de Conduta](CODE_OF_CONDUCT.md) - Diretrizes da comunidade
+
+### 🎯 **Próximos Passos**
+
+Após configurar seu primeiro projeto:
+
+1. 📈 **Implemente os outros projetos** seguindo a ordem de dificuldade
+2. 🔗 **Integre o ecossistema** usando MQTT para comunicação
+3. 🏠 **Conecte ao Home Assistant** para automação residencial
+4. 📊 **Crie dashboards customizados** com os dados coletados
+5. 🤝 **Compartilhe suas modificações** com a comunidade
+
+### ⚡ **Dicas de Produtividade**
+
+- **Use PlatformIO** ao invés da Arduino IDE para projetos mais complexos
+- **Imprima os modelos 3D** com configurações de alta qualidade (0.2mm layer height)
+- **Teste cada componente** individualmente antes da integração completa
+- **Mantenha backup** das configurações que funcionam
+- **Documente suas modificações** para facilitar troubleshooting
+
+---
+
+### 🆘 **Suporte da Comunidade**
+
+- 🐛 **Issues**: [Reportar bugs](https://github.com/dronreef2/3dPot/issues) com fotos e logs
+- 💬 **Discussões**: [Perguntas e ideias](https://github.com/dronreef2/3dPot/discussions)  
+- 🔧 **Wiki**: [Documentação expandida](https://github.com/dronreef2/3dPot/wiki) (em desenvolvimento)
+- 📧 **Email**: Para problemas complexos, inclua especificações completas do hardware
 
 ---
 
