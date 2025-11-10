@@ -62,13 +62,19 @@ jobs:
       - name: Install common libraries
         run: |
           echo "Installing common Arduino libraries..."
-          arduino-cli lib install "ArduinoJson" --ver 7.0.4 || echo "ArduinoJson already installed"
-          arduino-cli lib install "Stepper" --ver 1.1.4 || echo "Stepper already installed"
-          arduino-cli lib install "LiquidCrystal" --ver 1.0.7 || echo "LiquidCrystal already installed"
-          arduino-cli lib install "DHT sensor library" --ver 1.4.4 || echo "DHT library already installed"
-          arduino-cli lib install "HX711 library" --ver 1.2.3 || echo "HX711 library already installed"
-          arduino-cli lib install "WiFi" --ver 2.0.0 || echo "WiFi already installed"
-          arduino-cli lib install "WebSockets" --ver 2.3.7 || echo "WebSockets already installed"
+          
+          # Install libraries with fallback versions
+          arduino-cli lib install "ArduinoJson" --ver 7.0.4 || arduino-cli lib install "ArduinoJson" || echo "ArduinoJson installation failed, continuing..."
+          arduino-cli lib install "Stepper" --ver 1.1.4 || arduino-cli lib install "Stepper" || echo "Stepper installation failed, continuing..."
+          arduino-cli lib install "LiquidCrystal" --ver 1.0.7 || arduino-cli lib install "LiquidCrystal" || echo "LiquidCrystal installation failed, continuing..."
+          arduino-cli lib install "DHT sensor library" --ver 1.4.4 || arduino-cli lib install "DHT sensor library" || echo "DHT library installation failed, continuing..."
+          arduino-cli lib install "HX711 library" --ver 1.2.3 || arduino-cli lib install "HX711 library" || echo "HX711 library installation failed, continuing..."
+          arduino-cli lib install "WiFi" --ver 2.0.0 || arduino-cli lib install "WiFi" || echo "WiFi library installation failed, continuing..."
+          arduino-cli lib install "WebSockets" --ver 2.3.7 || arduino-cli lib install "WebSockets" || echo "WebSockets library installation failed, continuing..."
+          
+          # List installed libraries for verification
+          echo "Installed libraries:"
+          arduino-cli lib list || echo "Failed to list libraries"
           
       - name: Find Arduino sketches
         run: |

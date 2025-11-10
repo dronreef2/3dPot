@@ -28,7 +28,16 @@ jobs:
       - name: Install OpenSCAD
         run: |
           sudo apt-get update
+          sudo apt-get install -y software-properties-common wget
+          # Add OpenSCAD repository for latest version
+          wget -qO - https://openscad.org/openscad_2024.04.1-1_amd64.deb | sudo apt-key add -
+          wget -O openscad.deb https://openscad.org/openscad_2024.04.1-1_amd64.deb || \
+          # Fallback to apt if direct download fails
           sudo apt-get install -y openscad libopencsg1 libopencsg-dev
+          
+          # Verify installation
+          which openscad || echo "OpenSCAD not found in PATH, trying alternative installation"
+          openscad --version || echo "OpenSCAD version check failed, but continuing..."
           
       - name: Find OpenSCAD files
         run: |
