@@ -45,6 +45,10 @@ dev = [
     "flake8>=6.0.0",
     "mypy>=1.0.0",
     "pre-commit>=3.0.0",
+    "numpy>=1.24.0",
+    "pillow>=10.0.0",
+    "pyserial>=3.5.0",
+    "isort>=5.12.0",
 ]
 raspberry-pi = [
     "opencv-python>=4.8.0",
