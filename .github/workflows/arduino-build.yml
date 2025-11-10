@@ -1,0 +1,83 @@
+name: Arduino Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+
+jobs:
+  arduino-build:
+    name: Arduino Code Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Arduino CLI
+      run: |
+        curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+        export PATH=$PATH:$HOME/bin
+        echo "PATH=$PATH" >> $GITHUB_ENV
+
+    - name: Setup Arduino Environment
+      run: |
+        arduino-cli config init
+        arduino-cli core update-index
+        arduino-cli core install arduino:avr
+        arduino-cli core install esp32:esp32 --additional-urls https://espressif.github.io/esp32-board/package_esp32_index.json
+        
+        # Install required libraries
+        arduino-cli lib install "HX711 library" --ver 1.2.3
+        arduino-cli lib install "ArduinoJson" --ver 7.0.4
+        arduino-cli lib install "WiFi" --ver 2.0.0
+        arduino-cli lib install "WebSockets" --ver 2.3.7
+        arduino-cli lib install "Stepper" --ver 1.1.4
+        arduino-cli lib install "LiquidCrystal" --ver 1.0.7
+
+    - name: Build ESP32 Projects
+      run: |
+        echo "=== Building ESP32 Projects ==="
+        
+        # Build ESP32 Monitor Filamento
+        arduino-cli compile \
+          --fqbn esp32:esp32:esp32 \
+          --library "HX711 library" \
+          --library "ArduinoJson" \
+          --library "WiFi" \
+          --library "WebSockets" \
+          code/esp32/monitor-filamento.ino \
+          --verify
+
+    - name: Build Arduino Projects
+      run: |
+        echo "=== Building Arduino Projects ==="
+        
+        # Build Arduino Esteira Transportadora
+        arduino-cli compile \
+          --fqbn arduino:avr:uno \
+          --library "Stepper" \
+          --library "LiquidCrystal" \
+          code/arduino/esteira-transportadora.ino \
+          --verify
+
+    - name: Build Additional Projects
+      run: |
+        echo "=== Building Additional Arduino Projects ==="
+        
+        # Build any other .ino files
+        for file in code/arduino/*.ino; do
+          if [ -f "$file" ] && [[ "$file" != *"esteira-transportadora.ino" ]]; then
+            echo "Building: $(basename "$file")"
+            arduino-cli compile \
+              --fqbn arduino:avr:uno \
+              --library "Stepper" \
+              --library "LiquidCrystal" \
+              "$file" \
+              --verify
+          fi
+        done

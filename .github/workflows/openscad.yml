@@ -1,0 +1,59 @@
+name: OpenSCAD Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run weekly on Sundays at 3 AM UTC
+    - cron: '0 3 * * 0'
+
+jobs:
+  openscad:
+    name: 3D Model Validation
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install OpenSCAD
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y openscad libopencsg1
+
+    - name: Validate 3D Models
+      run: |
+        echo "=== Validating OpenSCAD Models ==="
+        
+        # Find and validate all .scad files
+        find . -name "*.scad" -type f | while read -r scad_file; do
+          echo "Validating: $scad_file"
+          output_file="${scad_file%.scad}.stl"
+          
+          openscad \
+            -o "$output_file" \
+            --hardwarnings \
+            "$scad_file"
+          
+          if [ -f "$output_file" ]; then
+            echo "✅ Successfully generated: $output_file"
+            # Check file size (should not be empty)
+            if [ -s "$output_file" ]; then
+              echo "✅ $output_file is valid and not empty"
+            else
+              echo "❌ $output_file is empty"
+              exit 1
+            fi
+          else
+            echo "❌ Failed to generate: $output_file"
+            exit 1
+          fi
+        done
+
+    - name: Upload generated STL files
+      uses: actions/upload-artifact@v3
+      with:
+        name: stl-models
+        path: models/*.stl
