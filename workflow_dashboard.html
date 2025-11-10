@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3dPot - GitHub Actions Monitoring Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
+        
+        .workflow-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .workflow-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .workflow-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .workflow-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .workflow-file {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .workflow-metrics {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 20px;
+            background: #f8f9fa;
+        }
+        
+        .metric {
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .metric-label {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+        
+        .status-good { color: #28a745; }
+        .status-warning { color: #ffc107; }
+        .status-danger { color: #dc3545; }
+        .status-unknown { color: #6c757d; }
+        
+        .runs-history {
+            padding: 20px;
+        }
+        
+        .run-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            transition: background 0.2s ease;
+        }
+        
+        .run-item:hover {
+            background: #e9ecef;
+        }
+        
+        .run-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .run-status.success { background: #28a745; }
+        .run-status.failure { background: #dc3545; }
+        .run-status.cancelled { background: #6c757d; }
+        .run-status.in_progress { background: #007bff; }
+        
+        .run-info {
+            flex-grow: 1;
+        }
+        
+        .run-title {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        
+        .run-details {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .run-duration {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        
+        .recommendations {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .recommendations h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .recommendation-item {
+            background: #f8f9fa;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .recommendation-type {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .recommendation-text {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            transform: scale(1.1);
+            background: #5a67d8;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .error {
+            background: #dc3545;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .workflow-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .workflow-metrics {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 3dPot Workflow Dashboard</h1>
+            <p>Monitoramento em tempo real dos GitHub Actions</p>
+        </div>
+        
+        <div id="loading" class="loading">
+            🔄 Carregando dados dos workflows...
+        </div>
+        
+        <div id="content" style="display: none;">
+            <div class="stats-grid" id="stats-grid">
+                <!-- Stats serão inseridos aqui via JavaScript -->
+            </div>
+            
+            <div class="workflow-grid" id="workflow-grid">
+                <!-- Workflows serão inseridos aqui via JavaScript -->
+            </div>
+            
+            <div class="recommendations" id="recommendations" style="display: none;">
+                <!-- Recomendações serão inseridas aqui via JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <button class="refresh-btn" onclick="loadData()">🔄</button>
+    
+    <script>
+        // Configurações
+        const CONFIG = {
+            workflows: [
+                { name: "CI Pipeline", file: "ci.yml" },
+                { name: "Python Tests", file: "python-tests.yml" },
+                { name: "Code Quality", file: "code-quality.yml" },
+                { name: "Arduino Build", file: "arduino-build.yml" },
+                { name: "OpenSCAD 3D Models", file: "openscad.yml" }
+            ]
+        };
+        
+        // Função principal para carregar dados
+        async function loadData() {
+            const loading = document.getElementById('loading');
+            const content = document.getElementById('content');
+            
+            loading.style.display = 'block';
+            content.style.display = 'none';
+            
+            try {
+                // Tentar carregar do arquivo JSON gerado pelo script Python
+                const response = await fetch('./workflows_status.json');
+                if (!response.ok) {
+                    throw new Error('Arquivo de dados não encontrado');
+                }
+                
+                const data = await response.json();
+                renderDashboard(data);
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                showError('Erro ao carregar dados dos workflows. Certifique-se de que o arquivo workflows_status.json existe.');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+        
+        // Renderizar o dashboard
+        function renderDashboard(data) {
+            const statsGrid = document.getElementById('stats-grid');
+            const workflowGrid = document.getElementById('workflow-grid');
+            const recommendations = document.getElementById('recommendations');
+            
+            // Limpar conteúdo anterior
+            statsGrid.innerHTML = '';
+            workflowGrid.innerHTML = '';
+            
+            // Obter dados de summary e metrics
+            const summary = data.summary;
+            const metrics = data.metrics;
+            
+            // Renderizar estatísticas gerais
+            renderStats(statsGrid, metrics);
+            
+            // Renderizar workflows
+            renderWorkflows(workflowGrid, summary.workflows);
+            
+            // Renderizar recomendações
+            if (metrics.recommendations && metrics.recommendations.length > 0) {
+                renderRecommendations(recommendations, metrics.recommendations);
+                recommendations.style.display = 'block';
+            } else {
+                recommendations.style.display = 'none';
+            }
+            
+            // Mostrar conteúdo
+            document.getElementById('content').style.display = 'block';
+        }
+        
+        // Renderizar estatísticas
+        function renderStats(container, metrics) {
+            const stats = [
+                {
+                    value: metrics.summary.total_workflows,
+                    label: 'Total Workflows',
+                    color: '#667eea'
+                },
+                {
+                    value: metrics.summary.healthy_workflows,
+                    label: 'Workflows Saudáveis',
+                    color: '#28a745'
+                },
+                {
+                    value: `${metrics.summary.average_success_rate}%`,
+                    label: 'Taxa de Sucesso Média',
+                    color: '#007bff'
+                },
+                {
+                    value: metrics.summary.total_runs_analyzed,
+                    label: 'Runs Analisados',
+                    color: '#ffc107'
+                }
+            ];
+            
+            stats.forEach(stat => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.innerHTML = `
+                    <div class="stat-number" style="color: ${stat.color}">${stat.value}</div>
+                    <div class="stat-label">${stat.label}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        // Renderizar workflows
+        function renderWorkflows(container, workflows) {
+            workflows.forEach(workflow => {
+                const card = document.createElement('div');
+                card.className = 'workflow-card';
+                
+                // Determinar classe de cor baseada na taxa de sucesso
+                const successRate = workflow.success_rate;
+                let statusClass = 'status-unknown';
+                if (successRate >= 80) statusClass = 'status-good';
+                else if (successRate >= 50) statusClass = 'status-warning';
+                else statusClass = 'status-danger';
+                
+                card.innerHTML = `
+                    <div class="workflow-header">
+                        <div class="workflow-title">${workflow.name}</div>
+                        <div class="workflow-file">${workflow.file}</div>
+                    </div>
+                    
+                    <div class="workflow-metrics">
+                        <div class="metric">
+                            <div class="metric-value ${statusClass}">${workflow.success_rate}%</div>
+                            <div class="metric-label">Taxa de Sucesso</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${workflow.success_runs}</div>
+                            <div class="metric-label">Sucessos</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${workflow.failure_runs}</div>
+                            <div class="metric-label">Falhas</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${formatDuration(workflow.average_duration_seconds)}</div>
+                            <div class="metric-label">Duração Média</div>
+                        </div>
+                    </div>
+                    
+                    <div class="runs-history">
+                        <h3 style="margin-bottom: 15px; color: #333;">Últimos Runs:</h3>
+                        ${renderRecentRuns(workflow.recent_runs)}
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // Renderizar runs recentes
+        function renderRecentRuns(runs) {
+            if (!runs || runs.length === 0) {
+                return '<p style="color: #666; font-style: italic;">Nenhum run encontrado</p>';
+            }
+            
+            return runs.slice(0, 5).map(run => {
+                const statusClass = getStatusClass(run.conclusion, run.status);
+                const statusText = getStatusText(run.conclusion, run.status);
+                
+                return `
+                    <div class="run-item">
+                        <div class="run-status ${statusClass}"></div>
+                        <div class="run-info">
+                            <div class="run-title">#${run.run_number || 'N/A'} ${run.display_title || ''}</div>
+                            <div class="run-details">
+                                ${run.head_branch || 'N/A'} • ${new Date(run.created_at).toLocaleDateString('pt-BR')} • 
+                                ${run.conclusion || run.status}
+                            </div>
+                        </div>
+                        <div class="run-duration">${formatDuration(run.duration_seconds)}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Renderizar recomendações
+        function renderRecommendations(container, recommendations) {
+            const title = container.querySelector('h2');
+            title.textContent = `💡 Recomendações de Otimização (${recommendations.length})`;
+            
+            recommendations.forEach(rec => {
+                const item = document.createElement('div');
+                item.className = 'recommendation-item';
+                
+                let typeIcon = '⚠️';
+                let typeText = 'Geral';
+                if (rec.type === 'reliability') {
+                    typeIcon = '🔧';
+                    typeText = 'Confiabilidade';
+                } else if (rec.type === 'performance') {
+                    typeIcon = '⚡';
+                    typeText = 'Performance';
+                } else if (rec.type === 'configuration') {
+                    typeIcon = '⚙️';
+                    typeText = 'Configuração';
+                }
+                
+                item.innerHTML = `
+                    <div class="recommendation-type">${typeIcon} ${typeText} - ${rec.workflow}</div>
+                    <div class="recommendation-text">${rec.issue}</div>
+                    <div style="margin-top: 8px; font-weight: 500;">${rec.recommendation}</div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+        
+        // Funções auxiliares
+        function getStatusClass(conclusion, status) {
+            if (status === 'in_progress' || status === 'queued') return 'in_progress';
+            if (conclusion === 'success') return 'success';
+            if (conclusion === 'cancelled') return 'cancelled';
+            return 'failure';
+        }
+        
+        function getStatusText(conclusion, status) {
+            if (status === 'in_progress') return 'Executando';
+            if (status === 'queued') return 'Na fila';
+            if (conclusion === 'success') return 'Sucesso';
+            if (conclusion === 'cancelled') return 'Cancelado';
+            if (conclusion === 'failure') return 'Falha';
+            return 'Desconhecido';
+        }
+        
+        function formatDuration(seconds) {
+            if (seconds < 60) return `${seconds}s`;
+            if (seconds < 3600) {
+                const minutes = Math.floor(seconds / 60);
+                const remaining = seconds % 60;
+                return `${minutes}m ${remaining}s`;
+            }
+            const hours = Math.floor(seconds / 3600);
+            const remainingMinutes = Math.floor((seconds % 3600) / 60);
+            return `${hours}h ${remainingMinutes}m`;
+        }
+        
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            document.querySelector('.container').appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+        
+        // Carregar dados na inicialização
+        document.addEventListener('DOMContentLoaded', loadData);
+        
+        // Auto-refresh a cada 5 minutos
+        setInterval(loadData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
