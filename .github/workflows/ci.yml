@@ -118,7 +118,7 @@ jobs:
       - name: Build documentation
         run: |
           if [ -f docs/conf.py ]; then
-            cd docs && make html
+            sphinx-build -b html docs docs/_build/html
           else
             echo "No documentation to build"
           fi
