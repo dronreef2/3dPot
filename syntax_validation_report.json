@@ -1,0 +1,264 @@
+{
+  "validation_time": "2025-11-10T14:37:00.618277",
+  "validator": "OpenSCAD Sintatic Validator v1.0",
+  "total_files": 6,
+  "valid_files": [
+    {
+      "file": "modelos-3d/central-inteligente/sistema-suportes-auxiliares.scad",
+      "total_lines": 498,
+      "file_size": 13861,
+      "syntax_errors": [],
+      "warnings": [],
+      "structure": {
+        "modules": 8,
+        "functions": 0,
+        "variables": 71,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 30,
+        "while_loops": 0
+      }
+    },
+    {
+      "file": "modelos-3d/central-inteligente/suporte-arduino-esteira.scad",
+      "total_lines": 241,
+      "file_size": 6579,
+      "syntax_errors": [],
+      "warnings": [
+        {
+          "type": "NO_MODULES",
+          "message": "Arquivo não contém módulos ou funções definidos"
+        }
+      ],
+      "structure": {
+        "modules": 0,
+        "functions": 0,
+        "variables": 55,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 12,
+        "while_loops": 0
+      }
+    },
+    {
+      "file": "modelos-3d/central-inteligente/suporte-esp32-hx711.scad",
+      "total_lines": 180,
+      "file_size": 4847,
+      "syntax_errors": [],
+      "warnings": [
+        {
+          "type": "NO_MODULES",
+          "message": "Arquivo não contém módulos ou funções definidos"
+        }
+      ],
+      "structure": {
+        "modules": 0,
+        "functions": 0,
+        "variables": 33,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 12,
+        "while_loops": 0
+      }
+    },
+    {
+      "file": "modelos-3d/central-inteligente/suporte-raspberry-pi-qc.scad",
+      "total_lines": 301,
+      "file_size": 8361,
+      "syntax_errors": [],
+      "warnings": [
+        {
+          "type": "NO_MODULES",
+          "message": "Arquivo não contém módulos ou funções definidos"
+        }
+      ],
+      "structure": {
+        "modules": 0,
+        "functions": 0,
+        "variables": 68,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 19,
+        "while_loops": 0
+      }
+    }
+  ],
+  "syntax_errors": [
+    {
+      "file": "modelos-3d/central-inteligente/chassi-principal.scad",
+      "total_lines": 187,
+      "file_size": 5471,
+      "syntax_errors": [
+        {
+          "line": 20,
+          "type": "MISMATCHED_BRACKETS",
+          "message": "Colchetes não balanceados na linha 20: furos = [..."
+        },
+        {
+          "line": 29,
+          "type": "MISMATCHED_BRACKETS",
+          "message": "Colchetes não balanceados na linha 29: ];..."
+        }
+      ],
+      "warnings": [],
+      "structure": {
+        "modules": 1,
+        "functions": 0,
+        "variables": 35,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 6,
+        "while_loops": 0
+      }
+    },
+    {
+      "file": "modelos-3d/central-inteligente/suporte-fonte-conectores.scad",
+      "total_lines": 374,
+      "file_size": 10460,
+      "syntax_errors": [
+        {
+          "line": 38,
+          "type": "MISMATCHED_BRACKETS",
+          "message": "Colchetes não balanceados na linha 38: esp32_conectores = [..."
+        },
+        {
+          "line": 43,
+          "type": "MISMATCHED_BRACKETS",
+          "message": "Colchetes não balanceados na linha 43: ];..."
+        },
+        {
+          "line": 46,
+          "type": "MISMATCHED_BRACKETS",
+          "message": "Colchetes não balanceados na linha 46: arduino_conectores = [..."
+        },
+        {
+          "line": 51,
+          "type": "MISMATCHED_BRACKETS",
+          "message": "Colchetes não balanceados na linha 51: ];..."
+        },
+        {
+          "line": 54,
+          "type": "MISMATCHED_BRACKETS",
+          "message": "Colchetes não balanceados na linha 54: rpi_conectores = [..."
+        },
+        {
+          "line": 59,
+          "type": "MISMATCHED_BRACKETS",
+          "message": "Colchetes não balanceados na linha 59: ];..."
+        },
+        {
+          "line": 62,
+          "type": "MISMATCHED_BRACKETS",
+          "message": "Colchetes não balanceados na linha 62: motor_conectores = [..."
+        },
+        {
+          "line": 66,
+          "type": "MISMATCHED_BRACKETS",
+          "message": "Colchetes não balanceados na linha 66: ];..."
+        }
+      ],
+      "warnings": [],
+      "structure": {
+        "modules": 1,
+        "functions": 0,
+        "variables": 62,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 3,
+        "for_loops": 21,
+        "while_loops": 0
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "file": "modelos-3d/central-inteligente/suporte-arduino-esteira.scad",
+      "total_lines": 241,
+      "file_size": 6579,
+      "syntax_errors": [],
+      "warnings": [
+        {
+          "type": "NO_MODULES",
+          "message": "Arquivo não contém módulos ou funções definidos"
+        }
+      ],
+      "structure": {
+        "modules": 0,
+        "functions": 0,
+        "variables": 55,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 12,
+        "while_loops": 0
+      }
+    },
+    {
+      "file": "modelos-3d/central-inteligente/suporte-esp32-hx711.scad",
+      "total_lines": 180,
+      "file_size": 4847,
+      "syntax_errors": [],
+      "warnings": [
+        {
+          "type": "NO_MODULES",
+          "message": "Arquivo não contém módulos ou funções definidos"
+        }
+      ],
+      "structure": {
+        "modules": 0,
+        "functions": 0,
+        "variables": 33,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 12,
+        "while_loops": 0
+      }
+    },
+    {
+      "file": "modelos-3d/central-inteligente/suporte-raspberry-pi-qc.scad",
+      "total_lines": 301,
+      "file_size": 8361,
+      "syntax_errors": [],
+      "warnings": [
+        {
+          "type": "NO_MODULES",
+          "message": "Arquivo não contém módulos ou funções definidos"
+        }
+      ],
+      "structure": {
+        "modules": 0,
+        "functions": 0,
+        "variables": 68,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 19,
+        "while_loops": 0
+      }
+    }
+  ]
+}

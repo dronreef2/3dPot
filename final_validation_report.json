@@ -1,0 +1,274 @@
+{
+  "validation_time": "2025-11-10T14:37:46.570218",
+  "validator": "Improved OpenSCAD Validator v2.0",
+  "total_files": 6,
+  "valid_files": [
+    {
+      "file": "modelos-3d/central-inteligente/chassi-principal.scad",
+      "name": "chassi-principal.scad",
+      "total_lines": 187,
+      "file_size": 5471,
+      "errors": [],
+      "warnings": [],
+      "structure": {
+        "modules": 1,
+        "functions": 0,
+        "variables": 0,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 6,
+        "while_loops": 0,
+        "linear_extrudes": 3
+      },
+      "objects_defined": 1
+    },
+    {
+      "file": "modelos-3d/central-inteligente/sistema-suportes-auxiliares.scad",
+      "name": "sistema-suportes-auxiliares.scad",
+      "total_lines": 498,
+      "file_size": 13861,
+      "errors": [],
+      "warnings": [
+        "Alto número de loops pode afectar performance de renderização",
+        "Arquivo muito grande - considere modularização"
+      ],
+      "structure": {
+        "modules": 8,
+        "functions": 0,
+        "variables": 0,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 30,
+        "while_loops": 0,
+        "linear_extrudes": 9
+      },
+      "objects_defined": 8
+    },
+    {
+      "file": "modelos-3d/central-inteligente/suporte-arduino-esteira.scad",
+      "name": "suporte-arduino-esteira.scad",
+      "total_lines": 241,
+      "file_size": 6579,
+      "errors": [],
+      "warnings": [
+        "Código principal sem módulo - pode ser difícil de reutilizar"
+      ],
+      "structure": {
+        "modules": 0,
+        "functions": 0,
+        "variables": 0,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 12,
+        "while_loops": 0,
+        "linear_extrudes": 2
+      },
+      "objects_defined": 0
+    },
+    {
+      "file": "modelos-3d/central-inteligente/suporte-esp32-hx711.scad",
+      "name": "suporte-esp32-hx711.scad",
+      "total_lines": 180,
+      "file_size": 4847,
+      "errors": [],
+      "warnings": [
+        "Código principal sem módulo - pode ser difícil de reutilizar"
+      ],
+      "structure": {
+        "modules": 0,
+        "functions": 0,
+        "variables": 0,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 12,
+        "while_loops": 0,
+        "linear_extrudes": 2
+      },
+      "objects_defined": 0
+    },
+    {
+      "file": "modelos-3d/central-inteligente/suporte-fonte-conectores.scad",
+      "name": "suporte-fonte-conectores.scad",
+      "total_lines": 374,
+      "file_size": 10460,
+      "errors": [],
+      "warnings": [
+        "Alto número de loops pode afectar performance de renderização"
+      ],
+      "structure": {
+        "modules": 1,
+        "functions": 0,
+        "variables": 0,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 3,
+        "for_loops": 21,
+        "while_loops": 0,
+        "linear_extrudes": 5
+      },
+      "objects_defined": 1
+    },
+    {
+      "file": "modelos-3d/central-inteligente/suporte-raspberry-pi-qc.scad",
+      "name": "suporte-raspberry-pi-qc.scad",
+      "total_lines": 301,
+      "file_size": 8361,
+      "errors": [],
+      "warnings": [
+        "Código principal sem módulo - pode ser difícil de reutilizar"
+      ],
+      "structure": {
+        "modules": 0,
+        "functions": 0,
+        "variables": 0,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 19,
+        "while_loops": 0,
+        "linear_extrudes": 3
+      },
+      "objects_defined": 0
+    }
+  ],
+  "error_files": [],
+  "warnings": [
+    {
+      "file": "modelos-3d/central-inteligente/sistema-suportes-auxiliares.scad",
+      "name": "sistema-suportes-auxiliares.scad",
+      "total_lines": 498,
+      "file_size": 13861,
+      "errors": [],
+      "warnings": [
+        "Alto número de loops pode afectar performance de renderização",
+        "Arquivo muito grande - considere modularização"
+      ],
+      "structure": {
+        "modules": 8,
+        "functions": 0,
+        "variables": 0,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 30,
+        "while_loops": 0,
+        "linear_extrudes": 9
+      },
+      "objects_defined": 8
+    },
+    {
+      "file": "modelos-3d/central-inteligente/suporte-arduino-esteira.scad",
+      "name": "suporte-arduino-esteira.scad",
+      "total_lines": 241,
+      "file_size": 6579,
+      "errors": [],
+      "warnings": [
+        "Código principal sem módulo - pode ser difícil de reutilizar"
+      ],
+      "structure": {
+        "modules": 0,
+        "functions": 0,
+        "variables": 0,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 12,
+        "while_loops": 0,
+        "linear_extrudes": 2
+      },
+      "objects_defined": 0
+    },
+    {
+      "file": "modelos-3d/central-inteligente/suporte-esp32-hx711.scad",
+      "name": "suporte-esp32-hx711.scad",
+      "total_lines": 180,
+      "file_size": 4847,
+      "errors": [],
+      "warnings": [
+        "Código principal sem módulo - pode ser difícil de reutilizar"
+      ],
+      "structure": {
+        "modules": 0,
+        "functions": 0,
+        "variables": 0,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 12,
+        "while_loops": 0,
+        "linear_extrudes": 2
+      },
+      "objects_defined": 0
+    },
+    {
+      "file": "modelos-3d/central-inteligente/suporte-fonte-conectores.scad",
+      "name": "suporte-fonte-conectores.scad",
+      "total_lines": 374,
+      "file_size": 10460,
+      "errors": [],
+      "warnings": [
+        "Alto número de loops pode afectar performance de renderização"
+      ],
+      "structure": {
+        "modules": 1,
+        "functions": 0,
+        "variables": 0,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 3,
+        "for_loops": 21,
+        "while_loops": 0,
+        "linear_extrudes": 5
+      },
+      "objects_defined": 1
+    },
+    {
+      "file": "modelos-3d/central-inteligente/suporte-raspberry-pi-qc.scad",
+      "name": "suporte-raspberry-pi-qc.scad",
+      "total_lines": 301,
+      "file_size": 8361,
+      "errors": [],
+      "warnings": [
+        "Código principal sem módulo - pode ser difícil de reutilizar"
+      ],
+      "structure": {
+        "modules": 0,
+        "functions": 0,
+        "variables": 0,
+        "includes": 0,
+        "use": 0
+      },
+      "complexity": {
+        "if_statements": 0,
+        "for_loops": 19,
+        "while_loops": 0,
+        "linear_extrudes": 3
+      },
+      "objects_defined": 0
+    }
+  ]
+}

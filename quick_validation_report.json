@@ -1,0 +1,58 @@
+{
+  "validation_time": "2025-11-10T14:35:00",
+  "summary": {
+    "total_files": 6,
+    "valid_files": 0,
+    "error_files": 6
+  },
+  "files": [
+    {
+      "file": "chassi-principal.scad",
+      "lines": 187,
+      "code_lines": 126,
+      "status": "ERROR",
+      "message": "QObject::startTimer: Timers can only be used with threads started with QThread\nUnable to open a connection to the X server.\nDISPLAY=\nCan't create OpenGL OffscreenView. Code: -1. Exiting.",
+      "size": 5471
+    },
+    {
+      "file": "sistema-suportes-auxiliares.scad",
+      "lines": 498,
+      "code_lines": 341,
+      "status": "ERROR",
+      "message": "QObject::startTimer: Timers can only be used with threads started with QThread\nUnable to open a connection to the X server.\nDISPLAY=\nCan't create OpenGL OffscreenView. Code: -1. Exiting.",
+      "size": 13861
+    },
+    {
+      "file": "suporte-arduino-esteira.scad",
+      "lines": 241,
+      "code_lines": 165,
+      "status": "ERROR",
+      "message": "QObject::startTimer: Timers can only be used with threads started with QThread\nUnable to open a connection to the X server.\nDISPLAY=\nCan't create OpenGL OffscreenView. Code: -1. Exiting.",
+      "size": 6579
+    },
+    {
+      "file": "suporte-esp32-hx711.scad",
+      "lines": 180,
+      "code_lines": 122,
+      "status": "ERROR",
+      "message": "QObject::startTimer: Timers can only be used with threads started with QThread\nUnable to open a connection to the X server.\nDISPLAY=\nCan't create OpenGL OffscreenView. Code: -1. Exiting.",
+      "size": 4847
+    },
+    {
+      "file": "suporte-fonte-conectores.scad",
+      "lines": 374,
+      "code_lines": 276,
+      "status": "ERROR",
+      "message": "QObject::startTimer: Timers can only be used with threads started with QThread\nUnable to open a connection to the X server.\nDISPLAY=\nCan't create OpenGL OffscreenView. Code: -1. Exiting.",
+      "size": 10460
+    },
+    {
+      "file": "suporte-raspberry-pi-qc.scad",
+      "lines": 301,
+      "code_lines": 211,
+      "status": "ERROR",
+      "message": "QObject::startTimer: Timers can only be used with threads started with QThread\nUnable to open a connection to the X server.\nDISPLAY=\nCan't create OpenGL OffscreenView. Code: -1. Exiting.",
+      "size": 8361
+    }
+  ]
+}
