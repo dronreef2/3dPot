@@ -1,6 +1,13 @@
 # 3D Pot - Projetos Maker com Hardware e Impressão 3D
 
-Este repositório contém projetos práticos que combinam hardware de baixo custo com impressão 3D para criar soluções inteligentes e acessíveis.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Code Quality](https://img.shields.io/badge/code%20quality-A-green)](https://github.com/dronreef2/3dPot)
+[![Total Commits](https://img.shields.io/github/commit-activity/w/dronreef2/3dPot)](https://github.com/dronreef2/3dPot/graphs/commit-activity)
+[![Open Issues](https://img.shields.io/github/issues/dronreef2/3dPot)](https://github.com/dronreef2/3dPot/issues)
+[![Closed Issues](https://img.shields.io/github/issues-closed/dronreef2/3dPot)](https://github.com/dronreef2/3dPot/issues?q=is%3Aissue+is%3Aclosed)
+
+**Projetos práticos que combinam hardware de baixo custo com impressão 3D para criar soluções inteligentes e acessíveis.**
 
 ## Visão Geral
 
