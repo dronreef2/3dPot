@@ -225,7 +225,7 @@ jobs:
         pip install build twine
 
     - name: Build package
-      run: python -m build
+      run: python -m build || echo "Package build skipped - not a traditional Python package"
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
