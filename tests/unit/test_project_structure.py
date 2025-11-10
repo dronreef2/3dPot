@@ -3,11 +3,12 @@ Testes para validação da estrutura geral do projeto 3dPot.
 Verifica se todos os componentes essenciais estão presentes e organizados corretamente.
 """
 
-import pytest
-import os
 import json
-from pathlib import Path
+import os
 import subprocess
+from pathlib import Path
+
+import pytest
 
 
 class TestProjectStructure:

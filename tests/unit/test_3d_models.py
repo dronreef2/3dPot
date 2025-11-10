@@ -3,13 +3,14 @@ Testes para validação dos modelos 3D do projeto 3dPot.
 Verifica a estrutura, sintaxe e qualidade dos arquivos OpenSCAD.
 """
 
-import pytest
+import json
 import os
 import re
-from pathlib import Path
 import subprocess
 import tempfile
-import json
+from pathlib import Path
+
+import pytest
 
 
 class TestOpenSCADModels:

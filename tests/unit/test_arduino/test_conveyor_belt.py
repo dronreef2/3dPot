@@ -3,13 +3,15 @@ Testes para a esteira transportadora Arduino.
 Simula o controle de motores, sensores e interface.
 """
 
-import pytest
 import json
-import time
-from unittest.mock import patch, MagicMock, Mock
-import serial
-import sys
 import os
+import sys
+import time
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
+import serial
+
 
 class TestConveyorBeltArduino:
     """Testes para a esteira transportadora Arduino."""

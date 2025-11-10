@@ -3,14 +3,15 @@ Testes unitários para o módulo de Estabelecimento QC Raspberry Pi.
 Testa as funcionalidades principais de visão computacional e controle de qualidade.
 """
 
-import pytest
+import io
 import os
 import sys
 import unittest.mock as mock
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 import numpy as np
+import pytest
 from PIL import Image
-import io
 
 # Adiciona o diretório do código ao path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../codigos/raspberry-pi'))

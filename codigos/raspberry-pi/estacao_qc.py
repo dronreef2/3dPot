@@ -4,16 +4,17 @@ Estação de Controle de Qualidade com Visão Computacional
 Raspberry Pi + OpenCV + Web Interface
 """
 
+import json
+import logging
+import os
+import time
+from threading import Event, Thread
+
 import cv2
 import numpy as np
-import time
-import json
-import os
-from flask import Flask, render_template, request, jsonify
-from picamera2 import Picamera2
 import RPi.GPIO as GPIO
-from threading import Thread, Event
-import logging
+from flask import Flask, jsonify, render_template, request
+from picamera2 import Picamera2
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)

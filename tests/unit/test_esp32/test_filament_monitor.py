@@ -3,14 +3,16 @@ Testes para a funcionalidade do monitor de filamento ESP32.
 Estes testes simulam o comportamento do hardware e da rede.
 """
 
-import pytest
 import json
-import time
-from unittest.mock import patch, MagicMock, Mock
-import requests
+import os
 import subprocess
 import sys
-import os
+import time
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
+import requests
+
 
 class TestESP32FilamentMonitor:
     """Testes para o monitor de filamento ESP32."""

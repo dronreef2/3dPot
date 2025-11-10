@@ -1,7 +1,11 @@
 import os
 
 from external_api.data_sources import *
-from external_api.function_utils import MCP_FUNCTION_LIST_JSON_FILE, ToolResult, load_function_proxys
+from external_api.function_utils import (
+    MCP_FUNCTION_LIST_JSON_FILE,
+    ToolResult,
+    load_function_proxys,
+)
 
 proxies = {}
 _, proxies = load_function_proxys(os.path.join(os.path.dirname(__file__), MCP_FUNCTION_LIST_JSON_FILE))

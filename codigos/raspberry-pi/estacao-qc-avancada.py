@@ -24,36 +24,37 @@ Versão: 2.0
 Data: 2025-11-10
 """
 
-import os
-import sys
-import time
+import datetime
 import json
 import logging
-import sqlite3
-import threading
-import datetime
+import os
 import smtplib
-import schedule
+import sqlite3
+import sys
+import threading
+import time
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
-from pathlib import Path
-import cv2
-import numpy as np
-import RPi.GPIO as GPIO
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-from flask import Flask, render_template, jsonify, request, send_file
-from flask_socketio import SocketIO, emit
-import psutil
-import tensorflow as tf
-from PIL import Image, ImageDraw, ImageFont
-from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib import colors
-from reportlab.lib.units import inch
-import requests
 from io import BytesIO
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+import cv2
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
+import psutil
+import requests
+import RPi.GPIO as GPIO
+import schedule
+import tensorflow as tf
+from flask import Flask, jsonify, render_template, request, send_file
+from flask_socketio import SocketIO, emit
+from PIL import Image, ImageDraw, ImageFont
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 # Configurações do sistema
 DATABASE_PATH = "/home/pi/3dpot/data/qc_database.db"

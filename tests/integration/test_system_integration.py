@@ -3,15 +3,16 @@ Testes de integração para o projeto 3dPot.
 Testa a interação entre diferentes componentes: hardware, software e interface web.
 """
 
-import pytest
-import os
 import json
-import time
+import os
 import subprocess
-from pathlib import Path
-from unittest.mock import patch, MagicMock
-import requests
 import threading
+import time
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
+import requests
 
 
 class TestHardwareIntegration:

@@ -5,10 +5,9 @@
 BaseApi (基类)
 """
 import inspect
+import os
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
-import os
-
 
 EXCLUDE_METHODS = ['get_capabilities', 'get_api_info', 'source_name', 'get_source_info']
 
