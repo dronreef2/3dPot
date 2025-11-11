@@ -1,6 +1,6 @@
 """
 Aplicação FastAPI Principal - 3dPot v2.0
-Sistema de Prototipagem Sob Demanda
+Sistema de Prototipagem Sob Demanda com Autenticação JWT OAuth2 Completa
 """
 
 import json
@@ -26,7 +26,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 # Core imports
-from .core.config import DATABASE_URL, SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, MODELS_STORAGE_PATH
+from .core.config import DATABASE_URL, SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, MODELS_STORAGE_PATH, settings
 from .models import Base, User, Project, Conversation, Model3D, Simulation, Budget
 from .schemas import *
 
@@ -35,6 +35,13 @@ from .services.conversational_service import ConversationalService
 from .services.modeling_service import ModelingService  
 from .services.simulation_service import SimulationService
 from .services.budgeting_service import BudgetingService
+
+# Routes & Middleware
+from .routes.auth import auth_router
+from .middleware.auth import (
+    get_current_user, get_current_active_user, get_current_superuser,
+    setup_authentication_middleware, cors_allow_credentials
+)
 
 # Setup logging
 logging.basicConfig(
@@ -58,41 +65,20 @@ def get_db():
     finally:
         db.close()
 
-# Security
+# Database setup
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_db():
+    """Dependency para obter sessão do banco"""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# Security (usando o sistema robusto do middleware)
 security = HTTPBearer()
-
-# JWT Functions (placeholder implementation)
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    """Criar token JWT (implementação simplificada)"""
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    # Implementar codificação JWT real
-    return "dummy_token_" + str(expire)
-
-def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Verificar token JWT (implementação simplificada)"""
-    # Implementar verificação JWT real
-    if credentials.scheme != "Bearer":
-        raise HTTPException(status_code=403, detail="Invalid authentication scheme")
-    
-    # Por agora, assumir token válido se não está vazio
-    if not credentials.credentials:
-        raise HTTPException(status_code=403, detail="Invalid token")
-    
-    return credentials.credentials
-
-def get_current_user(db: Session = Depends(get_db), token: str = Depends(verify_token)) -> User:
-    """Obter usuário atual baseado no token"""
-    # Implementar decodificação JWT real
-    # Por agora, usar o primeiro usuário como exemplo
-    user = db.query(User).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
-    return user
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -116,18 +102,24 @@ app = FastAPI(
     title="3dPot v2.0",
     description="Sistema de Prototipagem Sob Demanda - Conversação Inteligente → Modelagem 3D → Simulação → Orçamento",
     version="2.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+# Configure CORS
+cors_config = cors_allow_credentials()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_config["allow_origins"],
+    allow_credentials=cors_config["allow_credentials"],
+    allow_methods=cors_config["allow_methods"],
+    allow_headers=cors_config["allow_headers"],
 )
 
 # Middleware
 app.add_middleware(GZipMiddleware, minimum_size=1000)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Configurar adequadamente para produção
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+setup_authentication_middleware(app)
 
 # Static files
 if MODELS_STORAGE_PATH.exists():
@@ -140,21 +132,11 @@ simulation_service = SimulationService()
 budgeting_service = BudgetingService()
 
 # =============================================================================
-# ENDPOINTS DE AUTENTICAÇÃO
+# ROTAS DE AUTENTICAÇÃO
 # =============================================================================
 
-@app.post("/api/v1/auth/login", response_model=Token)
-async def login(login_data: LoginRequest, db: Session = Depends(get_db)):
-    """Autenticação de usuário"""
-    # Implementar lógica de autenticação JWT
-    # Por enquanto, usar autenticação simples
-    user = db.query(User).filter(User.username == login_data.username).first()
-    if not user or user.hashed_password != login_data.password:  # Hash na implementação real
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Credenciais inválidas",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+# Incluir rotas de autenticação robustas
+app.include_router(auth_router)
     
     # Gerar token JWT
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

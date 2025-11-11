@@ -18,23 +18,61 @@ from sqlalchemy.orm import relationship
 Base = declarative_base()
 
 class User(Base):
-    """Modelo de usuário"""
+    """Modelo de usuário com autenticação completa"""
     __tablename__ = "users"
     
+    # Basic info
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     email = Column(String(255), unique=True, nullable=False, index=True)
     username = Column(String(50), unique=True, nullable=False, index=True)
     full_name = Column(String(100), nullable=True)
     hashed_password = Column(String(255), nullable=False)
+    
+    # Status
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
+    is_verified = Column(Boolean, default=False)
+    
+    # Role and permissions
     role = Column(Enum('user', 'premium', 'admin', name='user_role'), default='user')
+    permissions = Column(JSON, default=list)
+    
+    # Auth fields
+    refresh_tokens = Column(JSON, default=list)  # List of active refresh tokens
+    last_login = Column(DateTime, nullable=True)
+    login_attempts = Column(Integer, default=0)
+    locked_until = Column(DateTime, nullable=True)
+    
+    # Password reset
+    reset_token = Column(String(255), nullable=True)
+    reset_token_expires = Column(DateTime, nullable=True)
+    
+    # Email verification
+    verification_token = Column(String(255), nullable=True)
+    verification_token_expires = Column(DateTime, nullable=True)
+    
+    # Profile
+    avatar_url = Column(String(500), nullable=True)
+    bio = Column(Text, nullable=True)
+    company = Column(String(100), nullable=True)
+    website = Column(String(200), nullable=True)
+    preferences = Column(JSON, default=dict)
+    
+    # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    deleted_at = Column(DateTime, nullable=True)  # Soft delete
     
     # Relationships
     projects = relationship("Project", back_populates="owner")
     conversations = relationship("Conversation", back_populates="user")
+    refresh_token_records = relationship("RefreshToken", back_populates="user")
+    
+    def is_locked(self) -> bool:
+        """Verifica se a conta está bloqueada"""
+        if self.locked_until is None:
+            return False
+        return datetime.utcnow() < self.locked_until
 
 class Project(Base):
     """Modelo de projeto de prototipagem"""
@@ -290,3 +328,37 @@ class AuditLog(Base):
     user_agent = Column(Text, nullable=True)
     
     timestamp = Column(DateTime, default=datetime.utcnow)
+
+class RefreshToken(Base):
+    """Modelo para refresh tokens"""
+    __tablename__ = "refresh_tokens"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    
+    # Token info
+    token = Column(String(500), unique=True, nullable=False, index=True)
+    hashed_token = Column(String(255), nullable=False)
+    
+    # Status
+    is_active = Column(Boolean, default=True)
+    is_revoked = Column(Boolean, default=False)
+    
+    # Device and location info
+    device_info = Column(JSON, default=dict)
+    ip_address = Column(String(45), nullable=True)
+    user_agent = Column(Text, nullable=True)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=False)
+    last_used = Column(DateTime, nullable=True)
+    revoked_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    user = relationship("User", back_populates="refresh_token_records")
+    
+    # Constraints
+    __table_args__ = (
+        UniqueConstraint('token', name='uq_refresh_token'),
+    )

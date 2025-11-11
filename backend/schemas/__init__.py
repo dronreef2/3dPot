@@ -273,11 +273,199 @@ class APIResponse(BaseModel):
     data: Optional[Any] = None
     error: Optional[str] = None
 
-# Authentication Schemas
-class Token(BaseModel):
-    access_token: str
-    token_type: str
+# Authentication Schemas - Complete JWT OAuth2 System
 
+# Password validation patterns
+PASSWORD_REGEX = {
+    'upper': r'[A-Z]',
+    'lower': r'[a-z]', 
+    'digit': r'\d',
+    'special': r'[!@#$%^&*(),.?":{}|<>]'
+}
+
+class PasswordValidation(BaseModel):
+    """Validação de senha"""
+    has_uppercase: bool = False
+    has_lowercase: bool = False
+    has_digit: bool = False
+    has_special: bool = False
+    min_length: bool = False
+    
+    @classmethod
+    def validate_password(cls, password: str, 
+                         min_length: int = 8,
+                         require_upper: bool = True,
+                         require_lower: bool = True,
+                         require_digit: bool = True,
+                         require_special: bool = True) -> 'PasswordValidation':
+        """Valida senha e retorna resultado detalhado"""
+        import re
+        
+        return cls(
+            has_uppercase=bool(re.search(PASSWORD_REGEX['upper'], password)) or not require_upper,
+            has_lowercase=bool(re.search(PASSWORD_REGEX['lower'], password)) or not require_lower,
+            has_digit=bool(re.search(PASSWORD_REGEX['digit'], password)) or not require_digit,
+            has_special=bool(re.search(PASSWORD_REGEX['special'], password)) or not require_special,
+            min_length=len(password) >= min_length
+        )
+
+# Auth requests
+class UserRegister(BaseModel):
+    """Registro de novo usuário"""
+    email: EmailStr = Field(..., description="Email do usuário")
+    username: str = Field(..., min_length=3, max_length=50, regex=r'^[a-zA-Z0-9_-]+$',
+                         description="Nome de usuário único")
+    full_name: Optional[str] = Field(None, max_length=100, description="Nome completo")
+    password: str = Field(..., min_length=8, description="Senha")
+    company: Optional[str] = Field(None, max_length=100, description="Empresa")
+    website: Optional[str] = Field(None, max_length=200, description="Site pessoal")
+    
+    @validator('username')
+    def username_alphanumeric(cls, v):
+        if not v.replace('_', '').replace('-', '').isalnum():
+            raise ValueError('Username deve conter apenas letras, números, underscore e hífen')
+        return v
+    
+    @validator('password')
+    def password_complexity(cls, v):
+        validation = PasswordValidation.validate_password(v)
+        if not all([validation.has_uppercase, validation.has_lowercase, 
+                   validation.has_digit, validation.min_length]):
+            raise ValueError('Senha deve conter pelo menos 8 caracteres, 1 letra maiúscula, 1 letra minúscula e 1 número')
+        return v
+
+class UserLogin(BaseModel):
+    """Login de usuário"""
+    username: str = Field(..., description="Username ou email")
+    password: str = Field(..., description="Senha")
+    remember_me: bool = Field(default=False, description="Manter login por mais tempo")
+    device_info: Optional[Dict[str, Any]] = Field(default_factory=dict, 
+                                                 description="Informações do dispositivo")
+
+class UserLoginResponse(BaseModel):
+    """Resposta de login"""
+    access_token: str = Field(..., description="Token de acesso JWT")
+    refresh_token: str = Field(..., description="Token de refresh")
+    token_type: str = Field(default="bearer", description="Tipo do token")
+    expires_in: int = Field(..., description="Tempo de expiração em segundos")
+    user: 'UserPublic' = Field(..., description="Dados públicos do usuário")
+
+class RefreshTokenRequest(BaseModel):
+    """Request para renovar token"""
+    refresh_token: str = Field(..., description="Token de refresh")
+    
+class PasswordResetRequest(BaseModel):
+    """Solicitação de reset de senha"""
+    email: EmailStr = Field(..., description="Email do usuário")
+    
+class PasswordResetConfirm(BaseModel):
+    """Confirmação de reset de senha"""
+    token: str = Field(..., description="Token de reset")
+    new_password: str = Field(..., min_length=8, description="Nova senha")
+
+class ChangePasswordRequest(BaseModel):
+    """Troca de senha para usuário logado"""
+    current_password: str = Field(..., description="Senha atual")
+    new_password: str = Field(..., min_length=8, description="Nova senha")
+    
+    @validator('new_password')
+    def password_complexity(cls, v):
+        validation = PasswordValidation.validate_password(v)
+        if not all([validation.has_uppercase, validation.has_lowercase, 
+                   validation.has_digit, validation.min_length]):
+            raise ValueError('Senha deve conter pelo menos 8 caracteres, 1 letra maiúscula, 1 letra minúscula e 1 número')
+        return v
+
+class EmailVerificationRequest(BaseModel):
+    """Solicitação de verificação de email"""
+    email: EmailStr = Field(..., description="Email para verificar")
+
+# Auth responses
+class Token(BaseModel):
+    """Token JWT simples"""
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+
+class TokenData(BaseModel):
+    """Dados decodificados do token"""
+    user_id: Optional[str] = None
+    username: Optional[str] = None
+    role: Optional[str] = None
+    
+class UserPublic(BaseModel):
+    """Dados públicos do usuário"""
+    id: UUID
+    email: str
+    username: str
+    full_name: Optional[str]
+    role: str
+    is_active: bool
+    is_verified: bool
+    company: Optional[str]
+    website: Optional[str]
+    avatar_url: Optional[str]
+    created_at: datetime
+    last_login: Optional[datetime]
+    
+    class Config:
+        from_attributes = True
+
+class UserProfileUpdate(BaseModel):
+    """Atualização de perfil do usuário"""
+    full_name: Optional[str] = Field(None, max_length=100)
+    company: Optional[str] = Field(None, max_length=100)
+    website: Optional[str] = Field(None, max_length=200)
+    bio: Optional[str] = Field(None, max_length=500)
+    preferences: Optional[Dict[str, Any]] = Field(default_factory=dict)
+
+class AuthMessage(BaseModel):
+    """Mensagens de autenticação"""
+    message: str
+    type: str = Field(default="info", regex="^(info|success|warning|error)$")
+    code: Optional[str] = None
+
+class AuthResponse(BaseModel):
+    """Resposta padronizada de autenticação"""
+    success: bool
+    message: str
+    data: Optional[Any] = None
+    error: Optional[str] = None
+
+# Session management
+class SessionInfo(BaseModel):
+    """Informações da sessão"""
+    session_id: str
+    device_info: Dict[str, Any]
+    ip_address: str
+    user_agent: str
+    created_at: datetime
+    last_used: datetime
+    is_active: bool
+
+class SessionList(BaseModel):
+    """Lista de sessões do usuário"""
+    sessions: List[SessionInfo]
+    current_session_id: str
+
+class RevokeSessionRequest(BaseModel):
+    """Revogar sessão específica"""
+    session_id: str = Field(..., description="ID da sessão para revogar")
+
+class RevokeAllSessionsRequest(BaseModel):
+    """Revogar todas as sessões exceto a atual"""
+    confirm: bool = Field(..., description="Confirmação para revogar todas as sessões")
+
+# Rate limiting
+class RateLimitInfo(BaseModel):
+    """Informações de rate limiting"""
+    requests_per_minute: int
+    requests_per_hour: int
+    remaining_minute: int
+    remaining_hour: int
+    reset_time: datetime
+
+# Old schemas compatibility
 class TokenData(BaseModel):
     username: Optional[str] = None
 

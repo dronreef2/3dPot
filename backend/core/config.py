@@ -1,10 +1,13 @@
 """
 Backend FastAPI Evolutivo - 3dPot v2.0
 Sistema de Prototipagem Sob Demanda
+Configurações completas para Sprint 1
 """
 
 import os
 from pathlib import Path
+from typing import Optional, List
+from pydantic import BaseSettings, validator
 
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent
@@ -14,10 +17,22 @@ ROOT_DIR = BASE_DIR.parent
 API_VERSION = "v1"
 API_PREFIX = f"/api/{API_VERSION}"
 
-# Security
+# Security & JWT Configuration
 SECRET_KEY = os.environ.get("SECRET_KEY", "CHANGE_ME_IN_PRODUCTION")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+REFRESH_TOKEN_EXPIRE_DAYS = int(os.environ.get("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
+
+# Password validation
+PASSWORD_MIN_LENGTH = int(os.environ.get("PASSWORD_MIN_LENGTH", "8"))
+PASSWORD_REQUIRE_UPPERCASE = os.environ.get("PASSWORD_REQUIRE_UPPERCASE", "true").lower() == "true"
+PASSWORD_REQUIRE_LOWERCASE = os.environ.get("PASSWORD_REQUIRE_LOWERCASE", "true").lower() == "true"
+PASSWORD_REQUIRE_NUMBERS = os.environ.get("PASSWORD_REQUIRE_NUMBERS", "true").lower() == "true"
+PASSWORD_REQUIRE_SPECIAL = os.environ.get("PASSWORD_REQUIRE_SPECIAL", "true").lower() == "true"
+
+# Rate limiting
+RATE_LIMIT_PER_MINUTE = int(os.environ.get("RATE_LIMIT_PER_MINUTE", "60"))
+RATE_LIMIT_PER_HOUR = int(os.environ.get("RATE_LIMIT_PER_HOUR", "1000"))
 
 # Database
 POSTGRES_SERVER = os.environ.get("POSTGRES_SERVER", "localhost")
