@@ -16,11 +16,11 @@ from fastapi.middleware.base import BaseHTTPMiddleware
 from sqlalchemy.orm import Session
 import jwt
 
-from core.config import settings
-from models import User
-from services.auth_service import auth_service
-from schemas import TokenData, UserPublic
-from database import get_db
+from .config import settings
+from ..models import User
+from ..services.auth_service import auth_service
+from ..schemas import TokenData, UserPublic
+from ..database import get_db
 
 # Configurar logging
 logger = logging.getLogger(__name__)

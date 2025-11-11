@@ -27,8 +27,11 @@ from sqlalchemy.orm import sessionmaker
 
 # Core imports
 from .core.config import DATABASE_URL, SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, MODELS_STORAGE_PATH, settings
-from .models import Base, User, Project, Conversation, Model3D, Simulation, Budget
-from .schemas import *
+from .models import Base, User, Project, Conversation, Model3D, Simulation
+from .schemas import UserCreate, User, ProjectCreate, ProjectUpdate, Project, ProjectList
+from .schemas import ConversationalRequest, ConversationalResponse
+from .schemas import SimulationCreate, Simulation
+from .schemas import BudgetCreate, Budget
 
 # Services
 from .services.conversational_service import ConversationalService
@@ -56,18 +59,6 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
-
-# Database setup
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def get_db():
-    """Dependency para obter sessão do banco"""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 # Database setup
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
@@ -153,47 +144,9 @@ app.include_router(simulation_router, prefix="/api", tags=["simulation"])
 
 # Include intelligent budgeting routes (Sprint 5)
 app.include_router(budgeting_router, prefix="/api", tags=["budgeting"])
-    
-    # Gerar token JWT
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
-    
-    return {"access_token": access_token, "token_type": "bearer"}
-
-@app.post("/api/v1/auth/register", response_model=User)
-async def register(user_data: UserCreate, db: Session = Depends(get_db)):
-    """Registrar novo usuário"""
-    # Verificar se usuário já existe
-    if db.query(User).filter(User.email == user_data.email).first():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email já cadastrado"
-        )
-    
-    if db.query(User).filter(User.username == user_data.username).first():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username já existe"
-        )
-    
-    # Criar usuário (implementar hash de senha)
-    user = User(
-        email=user_data.email,
-        username=user_data.username,
-        full_name=user_data.full_name,
-        hashed_password=user_data.password  # Implementar hash
-    )
-    
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    
-    return user
 
 # =============================================================================
-# ENDPOINTS DE PROJETOS
+# ENDPOINTS DE AUTENTICAÇÃO
 # =============================================================================
 
 @app.post("/api/v1/projects/", response_model=Project)
