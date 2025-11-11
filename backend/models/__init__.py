@@ -67,6 +67,7 @@ class User(Base):
     projects = relationship("Project", back_populates="owner")
     conversations = relationship("Conversation", back_populates="user")
     refresh_token_records = relationship("RefreshToken", back_populates="user")
+    simulations = relationship("Simulation", back_populates="user")
     
     def is_locked(self) -> bool:
         """Verifica se a conta está bloqueada"""
@@ -363,3 +364,15 @@ class RefreshToken(Base):
     __table_args__ = (
         UniqueConstraint('token', name='uq_refresh_token'),
     )
+
+# Import simulation models to ensure they're loaded
+from .simulation import (
+    Simulation, 
+    SimulationTemplate, 
+    SimulationResult, 
+    SimulationExecutionLog,
+    MaterialProperties,
+    SimulationComparison,
+    get_default_templates,
+    get_default_materials
+)

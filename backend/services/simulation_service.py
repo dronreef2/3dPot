@@ -8,16 +8,20 @@ import logging
 import os
 import time
 import tempfile
+import hashlib
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any, Tuple, Union
 from uuid import UUID
+from datetime import datetime
 
 import numpy as np
 import pybullet as p
 import trimesh
 from sqlalchemy.orm import Session
+import redis
+import pickle
 
-from ..core.config import MODELS_STORAGE_PATH, TEMP_STORAGE_PATH
+from ..core.config import MODELS_STORAGE_PATH, TEMP_STORAGE_PATH, REDIS_URL
 from ..models import Simulation, Model3D
 from ..schemas import SimulationCreate
 
@@ -29,10 +33,85 @@ class SimulationService:
     def __init__(self):
         self.storage_path = MODELS_STORAGE_PATH
         self.temp_path = TEMP_STORAGE_PATH
+        self.redis_client = None
         
         # Garantir que os diretórios existam
         self.storage_path.mkdir(parents=True, exist_ok=True)
         self.temp_path.mkdir(parents=True, exist_ok=True)
+        
+        # Inicializar Redis
+        self._initialize_redis()
+        
+        # Configurações de simulação
+        self.simulation_configs = {
+            "drop_test": {
+                "default_height": 1.0,
+                "max_height": 5.0,
+                "default_drops": 5,
+                "max_drops": 20,
+                "gravity": -9.8,
+                "max_time": 10.0
+            },
+            "stress_test": {
+                "default_max_force": 1000,
+                "max_force": 10000,
+                "default_increment": 100,
+                "max_increment": 1000
+            },
+            "motion_test": {
+                "default_duration": 10.0,
+                "max_duration": 60.0,
+                "default_velocity": 1.0,
+                "max_velocity": 10.0,
+                "trajectory_types": ["circular", "linear", "figure_8"]
+            },
+            "fluid_test": {
+                "default_density": 1.2,  # kg/m³ (ar)
+                "max_density": 1000.0,  # kg/m³ (água)
+                "default_coefficient": 0.47,
+                "max_coefficient": 1.2
+            }
+        }
+    
+    def _initialize_redis(self):
+        """Inicializar cliente Redis para cache"""
+        try:
+            self.redis_client = redis.from_url(REDIS_URL, decode_responses=False)
+            # Teste de conexão
+            self.redis_client.ping()
+            logger.info("Redis conectado com sucesso")
+        except Exception as e:
+            logger.warning(f"Redis não disponível: {e}. Cache desabilitado.")
+            self.redis_client = None
+    
+    def _get_cache_key(self, model_path: str, simulation_type: str, parameters: Dict) -> str:
+        """Gerar chave de cache para simulação"""
+        param_str = json.dumps(parameters, sort_keys=True)
+        content_hash = hashlib.md5(f"{model_path}{param_str}".encode()).hexdigest()
+        return f"simulation:{simulation_type}:{content_hash}"
+    
+    def _cache_result(self, cache_key: str, result: Dict[str, Any], ttl: int = 3600):
+        """Cachear resultado da simulação"""
+        if self.redis_client:
+            try:
+                serialized_result = pickle.dumps(result)
+                self.redis_client.setex(cache_key, ttl, serialized_result)
+                logger.debug(f"Resultado cacheado: {cache_key}")
+            except Exception as e:
+                logger.warning(f"Erro ao cachear resultado: {e}")
+    
+    def _get_cached_result(self, cache_key: str) -> Optional[Dict[str, Any]]:
+        """Recuperar resultado do cache"""
+        if self.redis_client:
+            try:
+                cached_data = self.redis_client.get(cache_key)
+                if cached_data:
+                    result = pickle.loads(cached_data)
+                    logger.debug(f"Resultado recuperado do cache: {cache_key}")
+                    return result
+            except Exception as e:
+                logger.warning(f"Erro ao recuperar cache: {e}")
+        return None
     
     async def start_simulation(self, db: Session, simulation_data: SimulationCreate) -> Simulation:
         """
@@ -564,3 +643,274 @@ class SimulationService:
     def get_model_simulations(self, db: Session, model_id: UUID) -> List[Simulation]:
         """Obter todas as simulações de um modelo"""
         return db.query(Simulation).filter(Simulation.modelo_3d_id == model_id).all()
+    
+    # ========== MÉTODOS PARA CELERY ==========
+    
+    def execute_simulation_async(self, simulation_id: UUID, model_path: str, 
+                               simulation_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Executar simulação de forma assíncrona (para Celery)
+        """
+        try:
+            # Verificar cache primeiro
+            cache_key = self._get_cache_key(model_path, simulation_data["tipo"], 
+                                          simulation_data.get("parametros", {}))
+            cached_result = self._get_cached_result(cache_key)
+            
+            if cached_result:
+                logger.info(f"Usando resultado cacheado para simulação {simulation_id}")
+                return {"status": "completed", "result": cached_result, "cached": True}
+            
+            # Executar simulação
+            model_3d_mock = type('MockModel', (), {'arquivo_path': model_path})()
+            simulation_data_mock = type('MockSimulationData', (), simulation_data)()
+            
+            result = self._execute_simulation_sync(simulation_id, model_3d_mock, simulation_data_mock)
+            
+            # Cachear resultado
+            if result.get("status") == "completed":
+                self._cache_result(cache_key, result)
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Erro na simulação assíncrona {simulation_id}: {e}")
+            return {
+                "status": "failed", 
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
+    
+    def _execute_simulation_sync(self, simulation_id: UUID, model_3d: Any, 
+                               simulation_data: Any) -> Dict[str, Any]:
+        """Executar simulação síncrona (usado pelo Celery)"""
+        tipo = simulation_data.tipo_simulacao if hasattr(simulation_data, 'tipo_simulacao') else simulation_data["tipo"]
+        
+        if tipo == "drop_test":
+            return self._run_drop_test_sync(simulation_id, model_3d, simulation_data)
+        elif tipo == "stress_test":
+            return self._run_stress_test_sync(simulation_id, model_3d, simulation_data)
+        elif tipo == "motion":
+            return self._run_motion_test_sync(simulation_id, model_3d, simulation_data)
+        elif tipo == "fluid":
+            return self._run_fluid_test_sync(simulation_id, model_3d, simulation_data)
+        else:
+            raise ValueError(f"Tipo de simulação não suportado: {tipo}")
+    
+    # ========== MÉTODOS SINCRONIZADOS PARA CELERY ==========
+    
+    def _run_drop_test_sync(self, simulation_id: UUID, model_3d: Any, 
+                          simulation_data: Any) -> Dict[str, Any]:
+        """Versão síncrona do teste de queda"""
+        try:
+            # Inicializar PyBullet
+            physics_client = self._initialize_pybullet()
+            
+            # Carregar modelo 3D
+            model_path = Path(model_3d.arquivo_path)
+            body_id = self._load_3d_model_to_pybullet(model_path, physics_client)
+            
+            # Configurar parâmetros
+            params = simulation_data.parametros if hasattr(simulation_data, 'parametros') else simulation_data.get("parametros", {})
+            drop_height = params.get("drop_height", 1.0)
+            num_drops = params.get("num_drops", 5)
+            gravity = -9.8
+            
+            results = {
+                "tipo": "drop_test",
+                "testes": [],
+                "metricas": {},
+                "status": "completed",
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            start_time = time.time()
+            
+            for drop_num in range(num_drops):
+                # Resetar posição
+                p.resetBasePositionAndOrientation(body_id, [0, 0, drop_height], [0, 0, 0, 1])
+                p.resetBaseVelocity(body_id, [0, 0, 0], [0, 0, 0])
+                p.setGravity(0, 0, gravity)
+                
+                # Simular queda
+                velocities = []
+                positions = []
+                collision_points = []
+                
+                simulation_time = 0
+                dt = 1/240
+                
+                while simulation_time < 5.0:
+                    p.stepSimulation()
+                    simulation_time += dt
+                    
+                    pos, orn = p.getBasePositionAndOrientation(body_id)
+                    vel, ang_vel = p.getBaseVelocity(body_id)
+                    
+                    velocities.append(vel)
+                    positions.append(pos)
+                    
+                    # Detectar contato
+                    contact_points = p.getContactPoints(body_id, -1)
+                    if contact_points and not collision_points:
+                        collision_points.append({
+                            "time": simulation_time,
+                            "position": pos,
+                            "velocity": vel
+                        })
+                    
+                    # Parar se objeto parar
+                    if len(velocities) > 60:
+                        recent_vel = velocities[-10:]
+                        if all(abs(v[2]) < 0.1 for v in recent_vel):
+                            break
+                
+                # Analisar resultado
+                teste_resultado = self._analyze_drop_test(
+                    drop_num, positions, velocities, collision_points
+                )
+                results["testes"].append(teste_resultado)
+            
+            results["metricas"] = self._calculate_drop_test_metrics(results["testes"])
+            results["duracao_total"] = time.time() - start_time
+            
+            p.disconnect(physics_client)
+            
+            return results
+            
+        except Exception as e:
+            logger.error(f"Erro no teste de queda síncrono: {e}")
+            return {
+                "status": "failed",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
+    
+    def _run_stress_test_sync(self, simulation_id: UUID, model_3d: Any, 
+                            simulation_data: Any) -> Dict[str, Any]:
+        """Versão síncrona do teste de stress"""
+        try:
+            physics_client = self._initialize_pybullet()
+            
+            model_path = Path(model_3d.arquivo_path)
+            body_id = self._load_3d_model_to_pybullet(model_path, physics_client)
+            
+            params = simulation_data.parametros if hasattr(simulation_data, 'parametros') else simulation_data.get("parametros", {})
+            max_force = params.get("max_force", 1000)
+            force_direction = params.get("force_direction", [0, 0, 1])
+            force_increment = params.get("force_increment", 100)
+            
+            results = {
+                "tipo": "stress_test",
+                "testes_forca": [],
+                "metricas": {},
+                "ponto_ruptura": None,
+                "status": "completed",
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            current_force = 0
+            while current_force <= max_force:
+                p.resetBasePositionAndOrientation(body_id, [0, 0, 0.5], [0, 0, 0, 1])
+                p.resetBaseVelocity(body_id, [0, 0, 0], [0, 0, 0])
+                
+                force = [f * current_force for f in force_direction]
+                p.applyExternalForce(body_id, -1, force, [0, 0, 0], p.LINK_FRAME)
+                
+                for _ in range(240):
+                    p.stepSimulation()
+                
+                pos, orn = p.getBasePositionAndOrientation(body_id)
+                vel, ang_vel = p.getBaseVelocity(body_id)
+                displacement = np.linalg.norm(np.array(pos))
+                
+                teste_result = {
+                    "forca": current_force,
+                    "posicao_final": pos,
+                    "velocidade_final": vel,
+                    "deslocamento": displacement
+                }
+                
+                results["testes_forca"].append(teste_result)
+                
+                if displacement > 0.5:
+                    results["ponto_ruptura"] = current_force
+                    break
+                
+                current_force += force_increment
+            
+            results["metricas"] = self._calculate_stress_test_metrics(results)
+            
+            p.disconnect(physics_client)
+            
+            return results
+            
+        except Exception as e:
+            logger.error(f"Erro no teste de stress síncrono: {e}")
+            return {
+                "status": "failed",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
+    
+    def _run_motion_test_sync(self, simulation_id: UUID, model_3d: Any, 
+                            simulation_data: Any) -> Dict[str, Any]:
+        """Versão síncrona do teste de movimento"""
+        # Implementação similar para movimento e fluido
+        return {"status": "not_implemented", "message": "Motion test sync not implemented yet"}
+    
+    def _run_fluid_test_sync(self, simulation_id: UUID, model_3d: Any, 
+                           simulation_data: Any) -> Dict[str, Any]:
+        """Versão síncrona do teste de fluido"""
+        # Implementação similar para fluido
+        return {"status": "not_implemented", "message": "Fluid test sync not implemented yet"}
+    
+    # ========== UTILITÁRIOS E VALIDAÇÃO ==========
+    
+    def validate_simulation_parameters(self, simulation_type: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+        """Validar parâmetros de simulação"""
+        config = self.simulation_configs.get(simulation_type, {})
+        errors = []
+        warnings = []
+        
+        if simulation_type == "drop_test":
+            height = parameters.get("drop_height", 1.0)
+            if height > config.get("max_height", 5.0):
+                errors.append(f"Altura máxima permitida: {config['max_height']}m")
+            
+            drops = parameters.get("num_drops", 5)
+            if drops > config.get("max_drops", 20):
+                warnings.append(f"Many drops may slow simulation (max: {config['max_drops']})")
+        
+        elif simulation_type == "stress_test":
+            max_force = parameters.get("max_force", 1000)
+            if max_force > config.get("max_force", 10000):
+                errors.append(f"Força máxima permitida: {config['max_force']}N")
+            
+            increment = parameters.get("force_increment", 100)
+            if increment > config.get("max_increment", 1000):
+                errors.append(f"Incremento máximo: {config['max_increment']}N")
+        
+        return {
+            "valid": len(errors) == 0,
+            "errors": errors,
+            "warnings": warnings,
+            "suggested_parameters": self._suggest_parameters(simulation_type, parameters)
+        }
+    
+    def _suggest_parameters(self, simulation_type: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+        """Sugerir parâmetros otimizados"""
+        config = self.simulation_configs.get(simulation_type, {})
+        suggested = parameters.copy()
+        
+        if simulation_type == "drop_test":
+            suggested["drop_height"] = min(
+                parameters.get("drop_height", config["default_height"]),
+                config["max_height"]
+            )
+            suggested["num_drops"] = min(
+                parameters.get("num_drops", config["default_drops"]),
+                config["max_drops"]
+            )
+        
+        return suggested

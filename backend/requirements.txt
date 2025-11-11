@@ -43,6 +43,15 @@ opencascade-python==7.6.2
 python-opencascade==0.19.0
 meshio==5.3.4
 
+# Physics Simulation & Visualization
+matplotlib==3.8.2
+seaborn==0.13.0
+plotly==5.17.0
+networkx==3.2.1
+shapely==2.0.2
+rtree==1.1.0
+
+
 # File Processing
 openpyxl==3.1.2
 pandas==2.1.4
