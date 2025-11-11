@@ -41,6 +41,7 @@ from .routes.auth import auth_router
 from .routes.conversational import router as conversational_router
 from .routes.modeling import router as modeling_router
 from .routes.simulation import router as simulation_router
+from .routes.budgeting import router as budgeting_router
 from .middleware.auth import (
     get_current_user, get_current_active_user, get_current_superuser,
     setup_authentication_middleware, cors_allow_credentials
@@ -149,6 +150,9 @@ app.include_router(modeling_router)
 
 # Include simulation routes (Sprint 4)
 app.include_router(simulation_router, prefix="/api", tags=["simulation"])
+
+# Include intelligent budgeting routes (Sprint 5)
+app.include_router(budgeting_router, prefix="/api", tags=["budgeting"])
     
     # Gerar token JWT
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

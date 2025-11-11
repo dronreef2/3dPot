@@ -376,3 +376,16 @@ from .simulation import (
     get_default_templates,
     get_default_materials
 )
+
+# Import intelligent budgeting models for Sprint 5
+from .budgeting import (
+    IntelligentBudget,
+    BudgetMaterial,
+    BudgetSupplier,
+    SupplierQuote,
+    Slant3DQuote,
+    BudgetTimeline,
+    BudgetAnalytics,
+    BudgetCache,
+    Budget  # Backwards compatibility alias
+)
