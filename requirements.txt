@@ -1,0 +1,295 @@
+# 3dPot v2.0 - Sistema de Prototipagem Sob Demanda
+# Requirements completos para backend e dependências
+
+# =============================================================================
+# WEB FRAMEWORK & API
+# =============================================================================
+
+# FastAPI Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# HTTP Client & APIs
+httpx==0.25.2
+requests==2.31.0
+aiohttp==3.9.1
+
+# =============================================================================
+# DATABASE & ORM
+# =============================================================================
+
+# PostgreSQL
+sqlalchemy[asyncio]==2.0.23
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+
+# Database Management
+alembic==1.12.1
+aiosqlite==0.19.0
+
+# =============================================================================
+# DATA VALIDATION & SERIALIZATION
+# =============================================================================
+
+# Pydantic for validation
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Email validation
+email-validator==2.1.0
+
+# =============================================================================
+# AUTHENTICATION & SECURITY
+# =============================================================================
+
+# JWT & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+cryptography==41.0.8
+
+# =============================================================================
+# BACKGROUND TASKS & CACHING
+# =============================================================================
+
+# Celery for async tasks
+celery==5.3.4
+redis==5.0.1
+
+# =============================================================================
+# 3D MODELING & SIMULATION
+# =============================================================================
+
+# 3D Processing
+cadquery==2.3.2
+trimesh==4.0.5
+
+# Physics Simulation
+pybullet==3.2.6
+
+# Numerical Computing
+numpy==1.24.3
+scipy==1.11.4
+
+# 3D File Processing
+open3d==0.18.0
+meshio==5.3.4
+
+# =============================================================================
+# FILE PROCESSING & CONVERSION
+# =============================================================================
+
+# Document Processing
+openpyxl==3.1.2
+pandas==2.1.4
+reportlab==4.0.7
+
+# PDF Generation
+weasyprint==60.2
+jinja2==3.1.2
+
+# Image Processing
+Pillow==10.1.0
+opencv-python==4.8.1.78
+imageio==2.31.5
+
+# =============================================================================
+# STORAGE & FILES
+# =============================================================================
+
+# S3/MinIO Storage
+boto3==1.34.0
+minio==7.2.0
+
+# File Utilities
+python-magic==0.4.27
+pathlib2==2.3.7
+
+# =============================================================================
+# MONITORING & LOGGING
+# =============================================================================
+
+# Metrics & Monitoring
+prometheus-client==0.19.0
+structlog==23.2.0
+
+# Logging
+coloredlogs==15.0.1
+loguru==0.7.2
+
+# =============================================================================
+# EXTERNAL API INTEGRATIONS
+# =============================================================================
+
+# Note: Actual API keys configured via environment variables
+# Octopart API (via httpx)
+# DigiKey API (via httpx)
+# Minimax M2 API (via httpx)
+# NVIDIA NIM API (via httpx)
+
+# =============================================================================
+# DEVELOPMENT & TESTING
+# =============================================================================
+
+# Testing Framework
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-xdist==3.3.1
+httpx==0.25.2
+factory-boy==3.3.0
+
+# Code Quality
+black==23.11.0
+isort==5.12.0
+flake8==6.1.0
+mypy==1.7.1
+pre-commit==3.6.0
+
+# =============================================================================
+# DOCUMENTATION
+# =============================================================================
+
+# Documentation Generation
+mkdocs==1.5.3
+mkdocs-material==9.4.8
+mkdocs-mermaid2-plugin==1.1.1
+mkdocs-markdownextras==1.0.1
+
+# =============================================================================
+# UTILITIES & HELPERS
+# =============================================================================
+
+# Date & Time
+python-dateutil==2.8.2
+pytz==2023.3
+
+# Configuration
+python-dotenv==1.0.0
+pyyaml==6.0.1
+
+# Text Processing
+textdistance==4.5.0
+fuzzywuzzy==0.18.0
+
+# Mathematical Utilities
+sympy==1.12
+fractions==0.3.1
+
+# =============================================================================
+# SYSTEM & ENVIRONMENT
+# =============================================================================
+
+# System Information
+psutil==5.9.6
+cpuinfo==9.0.0
+
+# Environment
+python-decouple==3.8
+configparser==6.0.0
+
+# =============================================================================
+# SPECIALIZED DEPENDENCIES
+# =============================================================================
+
+# WebGL/3D Libraries (for development)
+# pyopengl==3.1.7
+# pyglet==2.0.11
+
+# Machine Learning (future use)
+# scikit-learn==1.3.2
+# torch==2.1.1
+
+# Computer Vision
+# tensorflow==2.15.0
+# opencv-contrib-python==4.8.1.78
+
+# =============================================================================
+# PRODUCTION DEPENDENCIES
+# =============================================================================
+
+# WSGI Server for production
+gunicorn==21.2.0
+uvloop==0.19.0
+
+# Health Checks
+health-check==0.1.0
+
+# Rate Limiting
+slowapi==0.1.9
+
+# Error Tracking
+sentry-sdk[fastapi]==1.38.0
+
+# =============================================================================
+# OPTIONAL DEPENDENCIES
+# =============================================================================
+
+# Additional 3D tools (optional)
+# freecad-python==0.19.1
+# solidpython==0.2.0
+
+# Advanced simulation
+# pyvista==0.43.1
+# vtk==9.3.1
+
+# Database extensions
+# pgvector==0.2.4  # Vector similarity for AI
+
+# =============================================================================
+# LEGACY COMPATIBILITY
+# =============================================================================
+
+# Flask (for legacy compatibility)
+# flask==2.3.3
+# flask-cors==4.0.0
+# flask-socketio==5.3.6
+
+# Serial communication (legacy hardware)
+pyserial==3.5
+
+# =============================================================================
+# PLATFORM SPECIFIC (optional)
+# =============================================================================
+
+# Windows specific
+# pywin32==306
+
+# Linux specific
+# python-dbus==1.3.2
+
+# Raspberry Pi specific
+# RPi.GPIO==0.7.1
+
+# =============================================================================
+# INSTALLATION NOTES
+# =============================================================================
+
+# For development:
+# pip install -r requirements.txt
+
+# For production:
+# pip install -r requirements.txt --no-cache-dir
+
+# With optional dependencies:
+# pip install -r requirements.txt[dev,docs,sim]
+
+# For specific platforms:
+# pip install -r requirements.txt --only=all
+
+# =============================================================================
+# QUICK START COMMANDS
+# =============================================================================
+
+# Basic installation:
+# pip install fastapi uvicorn sqlalchemy asyncpg redis
+
+# With all dependencies:
+# pip install -r requirements.txt
+
+# For development with dev tools:
+# pip install -r requirements.txt black isort pytest mypy
+
+# For production:
+# pip install -r requirements.txt --no-deps
