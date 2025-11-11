@@ -19,8 +19,8 @@ import os
 import logging
 from pathlib import Path
 
-from ..core.config import get_db
-from ..core.auth import get_current_user
+from ..database import get_db
+from ..middleware.auth import get_current_user
 from ..services.modeling_service import (
     get_modeling_service, 
     ModelingEngine, 

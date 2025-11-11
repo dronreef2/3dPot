@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Background
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
 
-from ..core.config import get_db
+from ..database import get_db
 from ..middleware.auth import get_current_user
 from ..models import User, Project, IntelligentBudget as Budget
 from ..schemas.budgeting import (

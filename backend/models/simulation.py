@@ -11,7 +11,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from ..core.database import Base
+from ..models import Base
 
 # ========== MODELO PRINCIPAL DE SIMULAÇÃO ==========
 

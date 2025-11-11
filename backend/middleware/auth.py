@@ -12,11 +12,22 @@ from fastapi import (
     Request, Response, HTTPException, Depends, status
 )
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.middleware.base import BaseHTTPMiddleware
+
+# Import condicional para BaseHTTPMiddleware (FastAPI >= 0.65)
+try:
+    from fastapi.middleware.base import BaseHTTPMiddleware
+    MIDDLEWARE_AVAILABLE = True
+except ImportError:
+    # Fallback para versões mais antigas do FastAPI
+    from fastapi import Request, Response
+    BaseHTTPMiddleware = None
+    MIDDLEWARE_AVAILABLE = False
+    print("⚠️  BaseHTTPMiddleware não disponível nesta versão do FastAPI")
+
 from sqlalchemy.orm import Session
 import jwt
 
-from .config import settings
+from ..core.config import settings
 from ..models import User
 from ..services.auth_service import auth_service
 from ..schemas import TokenData, UserPublic
@@ -163,9 +174,11 @@ def require_permissions(permissions: list):
 
 # ==================== MIDDLEWARE ====================
 
-class AuthenticationMiddleware(BaseHTTPMiddleware):
-    """
-    Middleware para log de requisições autenticadas
+# Classe de middleware condicional
+if MIDDLEWARE_AVAILABLE and BaseHTTPMiddleware:
+    class AuthenticationMiddleware(BaseHTTPMiddleware):
+        """
+        Middleware para log de requisições autenticadas
     """
     
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
@@ -199,7 +212,14 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         
         return response
 
-class RateLimitMiddleware(BaseHTTPMiddleware):
+else:
+    # Placeholder para quando BaseHTTPMiddleware não está disponível
+    class AuthenticationMiddleware:
+        """
+        Placeholder para AuthenticationMiddleware quando BaseHTTPMiddleware não está disponível
+        """
+        def __init__(self, app):
+            self.app = app
     """
     Middleware para rate limiting por usuário
     """

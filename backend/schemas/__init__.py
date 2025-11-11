@@ -35,7 +35,7 @@ class User(UserBase):
 
 # Project Schemas
 class ComponenteEletronico(BaseModel):
-    tipo: str = Field(..., regex="^(sensor|atuador|microcontroller|display|comunicacao)$")
+    tipo: str = Field(..., pattern="^(sensor|atuador|microcontroller|display|comunicacao)$")
     especificacao: str
     quantidade: int = Field(..., gt=0)
     preco_unitario: Optional[float] = Field(None, ge=0)
@@ -43,10 +43,10 @@ class ComponenteEletronico(BaseModel):
 class Funcionalidade(BaseModel):
     nome: str
     descricao: str
-    prioridade: str = Field(..., regex="^(alta|media|baixa)$")
+    prioridade: str = Field(..., pattern="^(alta|media|baixa)$")
 
 class Restricao(BaseModel):
-    tipo: str = Field(..., regex="^(dimensional|mecanico|eletronico|custo)$")
+    tipo: str = Field(..., pattern="^(dimensional|mecanico|eletronico|custo)$")
     descricao: str
     valor: Optional[float] = Field(None, ge=0)
     unidade: Optional[str] = None
@@ -54,7 +54,7 @@ class Restricao(BaseModel):
 class ProjectBase(BaseModel):
     nome: str = Field(..., min_length=1, max_length=100)
     descricao_usuario: str = Field(..., min_length=10)
-    categoria: str = Field(..., regex="^(mecanico|eletronico|mixto|arquitetura)$")
+    categoria: str = Field(..., pattern="^(mecanico|eletronico|mixto|arquitetura)$")
     
     # Especificações físicas
     dimensoes_largura: Optional[float] = Field(None, gt=0)
@@ -79,7 +79,7 @@ class ProjectCreate(ProjectBase):
 class ProjectUpdate(BaseModel):
     nome: Optional[str] = Field(None, min_length=1, max_length=100)
     descricao_usuario: Optional[str] = Field(None, min_length=10)
-    categoria: Optional[str] = Field(None, regex="^(mecanico|eletronico|mixto|arquitetura)$")
+    categoria: Optional[str] = Field(None, pattern="^(mecanico|eletronico|mixto|arquitetura)$")
     
     # Especificações físicas
     dimensoes_largura: Optional[float] = Field(None, gt=0)
@@ -118,7 +118,7 @@ class Project(ProjectBase):
 
 # Conversation Schemas
 class ConversationMessageBase(BaseModel):
-    papel: str = Field(..., regex="^(user|assistant)$")
+    papel: str = Field(..., pattern="^(user|assistant)$")
     conteudo: str = Field(..., min_length=1)
 
 class ConversationMessageCreate(ConversationMessageBase):
@@ -134,7 +134,7 @@ class ConversationMessage(ConversationMessageBase):
         from_attributes = True
 
 class ConversationBase(BaseModel):
-    status: str = Field(default="especificando", regex="^(especificando|clarificando|validando|completo)$")
+    status: str = Field(default="especificando", pattern="^(especificando|clarificando|validando|completo)$")
     especificacoes_extraidas: Dict[str, Any] = Field(default_factory=dict)
     clarificacoes_pendentes: List[str] = Field(default_factory=list)
     contexto_conversacao: Dict[str, Any] = Field(default_factory=dict)
@@ -157,7 +157,7 @@ class Conversation(ConversationBase):
 # Model 3D Schemas
 class Model3DBase(BaseModel):
     nome: str = Field(..., min_length=1, max_length=100)
-    engine: str = Field(..., regex="^(cadquery|openscad|slant3d|manual)$")
+    engine: str = Field(..., pattern="^(cadquery|openscad|slant3d|manual)$")
     parametros_geracao: Dict[str, Any] = Field(default_factory=dict)
 
 class Model3DCreate(Model3DBase):
@@ -188,7 +188,7 @@ class Model3D(Model3DBase):
 # Simulation Schemas
 class SimulationBase(BaseModel):
     nome: str = Field(..., min_length=1, max_length=100)
-    tipo_simulacao: str = Field(..., regex="^(drop_test|stress_test|motion|fluid)$")
+    tipo_simulacao: str = Field(..., pattern="^(drop_test|stress_test|motion|fluid)$")
     parametros: Dict[str, Any] = Field(default_factory=dict)
     condicoes_iniciais: Dict[str, Any] = Field(default_factory=dict)
 
@@ -198,7 +198,7 @@ class SimulationCreate(SimulationBase):
 class Simulation(SimulationBase):
     id: UUID
     modelo_3d_id: UUID
-    status: str = Field(default="pending", regex="^(pending|running|completed|failed)$")
+    status: str = Field(default="pending", pattern="^(pending|running|completed|failed)$")
     resultado: Dict[str, Any] = Field(default_factory=dict)
     metricas_eficiencia: Dict[str, Any] = Field(default_factory=dict)
     video_simulacao_path: Optional[str] = None
@@ -262,7 +262,7 @@ class ProjectList(BaseModel):
 class TaskStatus(BaseModel):
     """Status de tarefa assíncrona"""
     task_id: str
-    status: str = Field(..., regex="^(PENDING|RUNNING|SUCCESS|FAILURE)$")
+    status: str = Field(..., pattern="^(PENDING|RUNNING|SUCCESS|FAILURE)$")
     result: Optional[Any] = None
     error: Optional[str] = None
 
@@ -313,7 +313,7 @@ class PasswordValidation(BaseModel):
 class UserRegister(BaseModel):
     """Registro de novo usuário"""
     email: EmailStr = Field(..., description="Email do usuário")
-    username: str = Field(..., min_length=3, max_length=50, regex=r'^[a-zA-Z0-9_-]+$',
+    username: str = Field(..., min_length=3, max_length=50, pattern=r'^[a-zA-Z0-9_-]+$',
                          description="Nome de usuário único")
     full_name: Optional[str] = Field(None, max_length=100, description="Nome completo")
     password: str = Field(..., min_length=8, description="Senha")
@@ -422,7 +422,7 @@ class UserProfileUpdate(BaseModel):
 class AuthMessage(BaseModel):
     """Mensagens de autenticação"""
     message: str
-    type: str = Field(default="info", regex="^(info|success|warning|error)$")
+    type: str = Field(default="info", pattern="^(info|success|warning|error)$")
     code: Optional[str] = None
 
 class AuthResponse(BaseModel):

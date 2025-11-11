@@ -11,21 +11,21 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from ..core.config import get_db
+from ..database import get_db
 from ..middleware.auth import get_current_user
 from ..models import User, Conversation, ConversationMessage
 from ..schemas import (
     ConversationCreate,
-    ConversationResponse,
-    MessageCreate,
-    MessageResponse,
-    SpecExtractionResponse
+    ConversationalResponse,
+    ConversationMessageCreate,
+    ConversationMessage,
+    APIResponse
 )
 from ..services.minimax_service import MinimaxService
 
 router = APIRouter(prefix="/conversational", tags=["conversational"])
 
-@router.post("/conversations", response_model=ConversationResponse)
+@router.post("/conversations", response_model=ConversationalResponse)
 async def create_conversation(
     conversation: ConversationCreate,
     current_user: User = Depends(get_current_user),
@@ -51,7 +51,7 @@ async def create_conversation(
         project_id=conversation.project_id
     )
     
-    return ConversationResponse(
+    return ConversationalResponse(
         id=db_conversation.id,
         user_id=current_user.id,
         project_id=conversation.project_id,
@@ -60,7 +60,7 @@ async def create_conversation(
         minimax_conversation_id=minimax_conversation["id"]
     )
 
-@router.get("/conversations", response_model=List[ConversationResponse])
+@router.get("/conversations", response_model=List[ConversationalResponse])
 async def list_conversations(
     skip: int = 0,
     limit: int = 20,
@@ -73,7 +73,7 @@ async def list_conversations(
     ).order_by(Conversation.created_at.desc()).offset(skip).limit(limit).all()
     
     return [
-        ConversationResponse(
+        ConversationalResponse(
             id=c.id,
             user_id=c.user_id,
             project_id=c.project_id,
@@ -85,7 +85,7 @@ async def list_conversations(
         for c in conversations
     ]
 
-@router.get("/conversations/{conversation_id}", response_model=ConversationResponse)
+@router.get("/conversations/{conversation_id}", response_model=ConversationalResponse)
 async def get_conversation(
     conversation_id: UUID,
     current_user: User = Depends(get_current_user),
@@ -103,7 +103,7 @@ async def get_conversation(
             detail="Conversa não encontrada"
         )
     
-    return ConversationResponse(
+    return ConversationalResponse(
         id=conversation.id,
         user_id=conversation.user_id,
         project_id=conversation.project_id,
@@ -113,7 +113,7 @@ async def get_conversation(
         completed_at=conversation.completed_at
     )
 
-@router.get("/conversations/{conversation_id}/messages", response_model=List[MessageResponse])
+@router.get("/conversations/{conversation_id}/messages", response_model=List[ConversationMessage])
 async def get_messages(
     conversation_id: UUID,
     skip: int = 0,
@@ -140,7 +140,7 @@ async def get_messages(
     ).order_by(ConversationMessage.timestamp).offset(skip).limit(limit).all()
     
     return [
-        MessageResponse(
+        ConversationMessage(
             id=m.id,
             role=m.role,
             content=m.content,
@@ -150,10 +150,10 @@ async def get_messages(
         for m in messages
     ]
 
-@router.post("/conversations/{conversation_id}/messages", response_model=MessageResponse)
+@router.post("/conversations/{conversation_id}/messages", response_model=ConversationMessage)
 async def send_message(
     conversation_id: UUID,
-    message: MessageCreate,
+    message: ConversationMessageCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -225,7 +225,7 @@ async def send_message(
     conversation.specs.update(extracted_specs)
     db.commit()
     
-    return MessageResponse(
+    return ConversationMessage(
         id=assistant_message.id,
         role="assistant",
         content=assistant_message.content,
@@ -234,7 +234,7 @@ async def send_message(
         extracted_specs=extracted_specs
     )
 
-@router.get("/conversations/{conversation_id}/extract-specs", response_model=SpecExtractionResponse)
+@router.get("/conversations/{conversation_id}/extract-specs", response_model=APIResponse)
 async def extract_specifications(
     conversation_id: UUID,
     current_user: User = Depends(get_current_user),
@@ -270,8 +270,12 @@ async def extract_specifications(
     conversation.specs = extracted_specs
     db.commit()
     
-    return SpecExtractionResponse(
-        conversation_id=conversation_id,
-        specifications=extracted_specs,
-        extracted_at=datetime.utcnow()
+    return APIResponse(
+        success=True,
+        message="Especificações extraídas com sucesso",
+        data={
+            "conversation_id": str(conversation_id),
+            "specifications": extracted_specs,
+            "extracted_at": datetime.utcnow()
+        }
     )

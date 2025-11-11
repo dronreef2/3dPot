@@ -250,7 +250,7 @@ class SimulationMetrics(BaseModel):
 class SimulationExportRequest(BaseModel):
     """Schema para exportação de simulação"""
     simulation_ids: List[UUID]
-    format: str = Field("json", regex="^(json|csv|pdf)$")
+    format: str = Field("json", pattern="^(json|csv|pdf)$")
     include_raw_data: bool = False
     include_visualizations: bool = True
 

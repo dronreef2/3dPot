@@ -7,7 +7,7 @@ Configurações completas para Sprint 1
 import os
 from pathlib import Path
 from typing import Optional, List
-from pydantic import BaseSettings, validator
+from pydantic_settings import BaseSettings
 
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent
@@ -90,3 +90,46 @@ CACHE_PATH = ROOT_DIR / "cache"
 # Ensure directories exist
 for path in [MODELS_STORAGE_PATH, TEMP_STORAGE_PATH, LOGS_PATH, CACHE_PATH]:
     path.mkdir(parents=True, exist_ok=True)
+
+
+class Settings(BaseSettings):
+    """Settings configuration using pydantic-settings"""
+    SECRET_KEY: str = "CHANGE_ME_IN_PRODUCTION"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    POSTGRES_SERVER: str = "localhost"
+    POSTGRES_USER: str = "postgres" 
+    POSTGRES_PASSWORD: str = "password"
+    POSTGRES_DB: str = "3dpot_v2"
+    POSTGRES_PORT: int = 5432
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+    S3_ENDPOINT_URL: str = "http://localhost:9000"
+    S3_ACCESS_KEY: str = "minioadmin"
+    S3_SECRET_KEY: str = "minioadmin"
+    S3_BUCKET_NAME: str = "3dpot-models"
+    S3_SECURE: bool = False
+    MINIMAX_API_KEY: str = ""
+    MINIMAX_BASE_URL: str = "https://api.minimax.chat/v1"
+    MINIMAX_MODEL: str = "abab6.5s-chat"
+    MINIMAX_MAX_TOKENS: int = 4000
+    MINIMAX_TEMPERATURE: float = 0.7
+    SLANT3D_API_KEY: str = "sl-cc497e90df04027eed2468af328a2d00fa99ca5e3b57893394f6cd6012aba3d4"
+    LOG_LEVEL: str = "INFO"
+    API_VERSION: str = "v1"
+    API_PREFIX: str = ""
+    
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": True,
+        "extra": "ignore"  # Allow extra environment variables
+    }
+
+
+# Create settings instance
+settings = Settings()
+
+# Update API_PREFIX after settings is created
+settings.API_PREFIX = f"/api/{settings.API_VERSION}"

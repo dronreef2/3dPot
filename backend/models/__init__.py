@@ -207,39 +207,6 @@ class Model3D(Base):
     project = relationship("Project", back_populates="model_3d")
     simulations = relationship("Simulation", back_populates="model_3d")
 
-class Simulation(Base):
-    """Simulações físicas"""
-    __tablename__ = "simulations"
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    modelo_3d_id = Column(UUID(as_uuid=True), ForeignKey("model_3d.id"), nullable=False)
-    
-    nome = Column(String(100), nullable=False)
-    tipo_simulacao = Column(Enum('drop_test', 'stress_test', 'motion', 'fluid', 
-                                name='simulation_type'), nullable=False)
-    
-    # Configurações
-    parametros = Column(JSON, default=dict)
-    condicoes_iniciais = Column(JSON, default=dict)
-    
-    # Resultados
-    status = Column(Enum('pending', 'running', 'completed', 'failed', name='simulation_status'), 
-                    default='pending')
-    resultado = Column(JSON, default=dict)
-    metricas_eficiencia = Column(JSON, default=dict)
-    
-    # Arquivos gerados
-    video_simulacao_path = Column(String(500), nullable=True)
-    dados_trajetoria = Column(JSON, nullable=True)
-    
-    created_at = Column(DateTime, default=datetime.utcnow)
-    started_at = Column(DateTime, nullable=True)
-    completed_at = Column(DateTime, nullable=True)
-    
-    # Relationships
-    model_3d = relationship("Model3D", back_populates="simulations")
-    project = relationship("Project", back_populates="simulation")
-
 class Budget(Base):
     """Orçamentos automatizados"""
     __tablename__ = "budget"

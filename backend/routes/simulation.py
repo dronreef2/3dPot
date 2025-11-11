@@ -11,8 +11,8 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from ..core.config import get_db
-from ..core.auth import get_current_user
+from ..database import get_db
+from ..middleware.auth import get_current_user
 from ..models import User, Simulation, Model3D
 from ..schemas.simulation import (
     SimulationCreate, SimulationResponse, SimulationResult,
