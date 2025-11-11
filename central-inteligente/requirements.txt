@@ -16,7 +16,7 @@ alembic==1.12.0
 
 # Data Processing
 pandas==2.1.1
-numpy==1.24.3
+numpy==1.26.0
 
 # Computer Vision (RPi QC)
 opencv-python==4.8.1.78
@@ -53,8 +53,15 @@ yagmail==0.15.293
 # Optional: SMS Notifications
 twilio==8.10.0
 
-# Optional: Database Migration
-alembic==1.12.0
+# Optional: Time Series Database
+influxdb-client==1.38.0
+
+# Optional: Redis Cache
+redis==5.0.0
+
+# Optional: Celery for Background Tasks
+celery==5.3.1
+kombu==5.3.1
 
 # Optional: Time Series Database
 influxdb-client==1.38.0
