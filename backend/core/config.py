@@ -60,6 +60,10 @@ S3_SECURE = os.environ.get("S3_SECURE", "false").lower() == "true"
 
 # External APIs
 MINIMAX_API_KEY = os.environ.get("MINIMAX_API_KEY", "")
+MINIMAX_BASE_URL = os.environ.get("MINIMAX_BASE_URL", "https://api.minimax.chat/v1")
+MINIMAX_MODEL = os.environ.get("MINIMAX_MODEL", "abab6.5s-chat")
+MINIMAX_MAX_TOKENS = int(os.environ.get("MINIMAX_MAX_TOKENS", "4000"))
+MINIMAX_TEMPERATURE = float(os.environ.get("MINIMAX_TEMPERATURE", "0.7"))
 REPLICATE_API_TOKEN = os.environ.get("REPLICATE_API_TOKEN", "")
 OCTOPART_API_KEY = os.environ.get("OCTOPART_API_KEY", "")
 DIGIKEY_API_KEY = os.environ.get("DIGIKEY_API_KEY", "")

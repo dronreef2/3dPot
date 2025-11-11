@@ -1,6 +1,16 @@
 """
-Serviço de Modelagem 3D Paramétrica
-Geração automatizada de modelos usando CadQuery e OpenSCAD
+3dPot v2.0 - Serviço de Modelagem 3D Avançado
+=============================================
+
+Este módulo implementa o serviço de modelagem 3D que converte especificações
+extraídas em modelos 3D usando diferentes engines de modelagem paramétrica.
+
+Suporta CadQuery e OpenSCAD para geração automatizada de modelos 3D
+com validação de imprimibilidade e pós-processamento.
+
+Autor: MiniMax Agent
+Data: 2025-11-11
+Versão: 2.0.0 - Sprint 3
 """
 
 import os
@@ -9,13 +19,17 @@ import logging
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any, Tuple, Union
 from uuid import UUID
+from dataclasses import dataclass
+from enum import Enum
+import time
 
 import cadquery as cq
 import trimesh
 from sqlalchemy.orm import Session
 from trimesh import Trimesh
+import numpy as np
 
 from ..core.config import MODELS_STORAGE_PATH, TEMP_STORAGE_PATH
 from ..models import Model3D, Project
@@ -23,8 +37,53 @@ from ..schemas import Model3DCreate
 
 logger = logging.getLogger(__name__)
 
+
+class ModelingEngine(Enum):
+    """Tipos de engines de modelagem suportados."""
+    CADQUERY = "cadquery"
+    OPENSCAD = "openscad"
+
+
+class ModelFormat(Enum):
+    """Formatos de arquivo suportados."""
+    STL = "stl"
+    OBJ = "obj"
+    STEP = "step"
+    DXF = "dxf"
+
+
+@dataclass
+class ModelingSpecs:
+    """Especificações para modelagem 3D."""
+    category: str  # mecânico, eletrônico, misto, arquitetura
+    material: str  # PLA, ABS, PETG, etc.
+    dimensions: Dict[str, float]  # largura, altura, profundidade
+    additional_specs: Dict[str, Any]  # especificações adicionais
+    components: List[Dict[str, Any]] = None  # componentes eletrônicos
+    features: List[Dict[str, Any]] = None   # funcionalidades específicas
+
+
+@dataclass
+class ModelingResult:
+    """Resultado da modelagem 3D."""
+    success: bool
+    model_path: Optional[str] = None
+    engine_used: Optional[ModelingEngine] = None
+    format_used: Optional[ModelFormat] = None
+    message: str = ""
+    specs: Optional[Dict[str, Any]] = None
+    validation_passed: bool = False
+    printability_report: Optional[Dict[str, Any]] = None
+    generation_time: float = 0.0
+
 class ModelingService:
-    """Serviço para geração de modelos 3D paramétricos"""
+    """
+    Serviço avançado para modelagem 3D paramétrica.
+    
+    Este serviço permite a geração de modelos 3D a partir de especificações
+    usando diferentes engines de modelagem paramétrica (CadQuery, OpenSCAD)
+    com validação de imprimibilidade e pós-processamento.
+    """
     
     def __init__(self):
         self.storage_path = MODELS_STORAGE_PATH
@@ -33,6 +92,209 @@ class ModelingService:
         # Garantir que os diretórios existam
         self.storage_path.mkdir(parents=True, exist_ok=True)
         self.temp_path.mkdir(parents=True, exist_ok=True)
+        
+        # Configurar engines disponíveis
+        self._available_engines = self._check_engines()
+        
+        # Configurações padrão
+        self.default_engine = ModelingEngine.CADQUERY
+        self.default_format = ModelFormat.STL
+        
+        logger.info(f"ModelingService inicializado com engines: {list(self._available_engines.keys())}")
+    
+    def _check_engines(self) -> Dict[ModelingEngine, bool]:
+        """Verifica quais engines estão disponíveis."""
+        engines = {}
+        
+        # Verificar CadQuery
+        try:
+            import cadquery
+            engines[ModelingEngine.CADQUERY] = True
+            logger.info("Engine CadQuery disponível")
+        except ImportError:
+            engines[ModelingEngine.CADQUERY] = False
+            logger.warning("Engine CadQuery não disponível")
+        
+        # Verificar OpenSCAD
+        try:
+            result = subprocess.run(['openscad', '--version'], 
+                                  capture_output=True, text=True, timeout=5)
+            engines[ModelingEngine.OPENSCAD] = result.returncode == 0
+            if engines[ModelingEngine.OPENSCAD]:
+                logger.info("Engine OpenSCAD disponível")
+            else:
+                logger.warning("Engine OpenSCAD não disponível")
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            engines[ModelingEngine.OPENSCAD] = False
+            logger.warning("Engine OpenSCAD não disponível")
+        
+        return engines
+    
+    def generate_model_from_specs(self, specifications: Dict[str, Any], 
+                                project_id: Optional[UUID] = None,
+                                engine: Optional[ModelingEngine] = None,
+                                format: Optional[ModelFormat] = None) -> ModelingResult:
+        """
+        Gera modelo 3D a partir das especificações extraídas.
+        
+        Args:
+            specifications: Especificações extraídas da conversa
+            project_id: ID do projeto para identificação do arquivo
+            engine: Engine de modelagem a usar (padrão: CadQuery)
+            format: Formato do arquivo de saída (padrão: STL)
+            
+        Returns:
+            ModelingResult com o resultado da modelagem
+        """
+        start_time = time.time()
+        
+        try:
+            # Configurar parâmetros
+            engine = engine or self.default_engine
+            format = format or self.default_format
+            
+            # Verificar disponibilidade
+            if not self._available_engines.get(engine, False):
+                return ModelingResult(
+                    success=False,
+                    message=f"Engine {engine.value} não disponível",
+                    engine_used=engine,
+                    format_used=format,
+                    generation_time=time.time() - start_time
+                )
+            
+            # Converter especificações
+            specs = self._convert_specifications(specifications)
+            
+            # Gerar modelo usando o engine selecionado
+            model_path = self._generate_model(specs, engine, format, project_id)
+            
+            # Validar modelo gerado
+            validation_result = self._validate_model(model_path)
+            
+            # Extrair especificações do modelo
+            model_specs = self._extract_model_specs(model_path)
+            
+            generation_time = time.time() - start_time
+            
+            return ModelingResult(
+                success=True,
+                model_path=model_path,
+                engine_used=engine,
+                format_used=format,
+                message="Modelo gerado com sucesso",
+                specs=model_specs,
+                validation_passed=validation_result["printable"],
+                printability_report=validation_result,
+                generation_time=generation_time
+            )
+            
+        except Exception as e:
+            logger.error(f"Erro na modelagem: {str(e)}")
+            return ModelingResult(
+                success=False,
+                message=f"Erro na modelagem: {str(e)}",
+                engine_used=engine,
+                format_used=format,
+                generation_time=time.time() - start_time
+            )
+    
+    def _convert_specifications(self, specifications: Dict[str, Any]) -> ModelingSpecs:
+        """Converte especificações do formato extraído para ModelingSpecs."""
+        dims = specifications.get("dimensoes", {})
+        
+        return ModelingSpecs(
+            category=specifications.get("categoria", "mecanico"),
+            material=specifications.get("material", "PLA"),
+            dimensions={
+                "largura": float(dims.get("largura", 50.0)),
+                "altura": float(dims.get("altura", 50.0)),
+                "profundidade": float(dims.get("profundidade", 50.0))
+            },
+            additional_specs=specifications.get("especificacoes_adicionais", {}),
+            components=specifications.get("componentes", []),
+            features=specifications.get("funcionalidades", [])
+        )
+    
+    def _generate_model(self, specs: ModelingSpecs, engine: ModelingEngine, 
+                      format: ModelFormat, project_id: Optional[UUID] = None) -> str:
+        """Gera modelo 3D usando o engine especificado."""
+        if engine == ModelingEngine.CADQUERY:
+            return self._generate_cadquery_model(specs, format, project_id)
+        elif engine == ModelingEngine.OPENSCAD:
+            return self._generate_openscad_model(specs, format, project_id)
+        else:
+            raise ValueError(f"Engine {engine.value} não suportado")
+    
+    def _generate_cadquery_model(self, specs: ModelingSpecs, format: ModelFormat, 
+                               project_id: Optional[UUID] = None) -> str:
+        """Gera modelo usando CadQuery."""
+        # Converter dimensões (considerando unidade padrão em mm)
+        width = specs.dimensions.get('largura', 50.0)
+        height = specs.dimensions.get('altura', 50.0)
+        depth = specs.dimensions.get('profundidade', 50.0)
+        
+        # Iniciar criação do modelo
+        model = cq.Workplane("XY").box(width, depth, height)
+        
+        # Aplicar especificações baseado na categoria
+        if specs.category == "mecanico":
+            model = self._apply_mechanical_specs_cadquery(model, specs)
+        elif specs.category == "eletronico":
+            model = self._apply_electronic_specs_cadquery(model, specs)
+        elif specs.category == "arquitetura":
+            model = self._apply_architectural_specs_cadquery(model, specs)
+        
+        # Aplicar funcionalidades específicas
+        if specs.features:
+            model = self._apply_features_cadquery(model, specs.features)
+        
+        # Gerar arquivo de saída
+        output_path = self._get_output_path(format, project_id)
+        
+        # Exportar no formato solicitado
+        if format == ModelFormat.STL:
+            cq.exporters.export(model, output_path, exportType='STL')
+        elif format == ModelFormat.STEP:
+            cq.exporters.export(model, output_path, exportType='STEP')
+        elif format == ModelFormat.OBJ:
+            cq.exporters.export(model, output_path, exportType='OBJ')
+        else:
+            raise ValueError(f"Formato {format.value} não suportado para CadQuery")
+        
+        logger.info(f"Modelo CadQuery gerado: {output_path}")
+        return output_path
+    
+    def _generate_openscad_model(self, specs: ModelingSpecs, format: ModelFormat,
+                               project_id: Optional[UUID] = None) -> str:
+        """Gera modelo usando OpenSCAD."""
+        # Converter especificações para código OpenSCAD
+        openscad_code = self._generate_openscad_code(specs)
+        
+        # Escrever código temporário
+        temp_scad = os.path.join(self.temp_path, f"temp_{project_id or 'model'}.scad")
+        with open(temp_scad, 'w', encoding='utf-8') as f:
+            f.write(openscad_code)
+        
+        # Executar OpenSCAD
+        output_path = self._get_output_path(format, project_id)
+        command = [
+            'openscad',
+            '-o', output_path,
+            temp_scad
+        ]
+        
+        result = subprocess.run(command, capture_output=True, text=True, timeout=30)
+        
+        # Limpar arquivo temporário
+        if os.path.exists(temp_scad):
+            os.remove(temp_scad)
+        
+        if result.returncode != 0:
+            raise RuntimeError(f"Erro do OpenSCAD: {result.stderr}")
+        
+        logger.info(f"Modelo OpenSCAD gerado: {output_path}")
+        return output_path
     
     async def generate_model_from_specs(self, db: Session, project_id: UUID, 
                                       specifications: Dict[str, Any]) -> Model3D:
@@ -444,3 +706,131 @@ color("gray") {
         db.refresh(model)
         
         return model
+    
+    # Métodos auxiliares para o serviço de modelagem avançado
+    def _apply_mechanical_specs_cadquery(self, model: cq.Workplane, specs: ModelingSpecs) -> cq.Workplane:
+        """Aplica especificações para projetos mecânicos."""
+        width = specs.dimensions.get('largura', 50.0)
+        depth = specs.dimensions.get('profundidade', 50.0)
+        height = specs.dimensions.get('altura', 50.0)
+        
+        # Furos nas bordas para fixação
+        hole_radius = min(width, depth) / 20
+        hole_positions = [
+            (width/2 - hole_radius*2, depth/2 - hole_radius*2),
+            (-width/2 + hole_radius*2, depth/2 - hole_radius*2),
+            (width/2 - hole_radius*2, -depth/2 + hole_radius*2),
+            (-width/2 + hole_radius*2, -depth/2 + hole_radius*2)
+        ]
+        
+        # Adicionar furos
+        for pos in hole_positions:
+            model = model.faces(">Z").workplane().center(pos[0], pos[1]).circle(hole_radius).cutThruAll()
+        
+        return model
+    
+    def _apply_electronic_specs_cadquery(self, model: cq.Workplane, specs: ModelingSpecs) -> cq.Workplane:
+        """Aplica especificações para projetos eletrônicos."""
+        width = specs.dimensions.get('largura', 50.0)
+        depth = specs.dimensions.get('profundidade', 50.0)
+        height = specs.dimensions.get('altura', 20.0)
+        
+        # Grid de furos para ventilação
+        grid_spacing = 10.0
+        hole_radius = 2.0
+        
+        for x in range(-int(width/2) + 10, int(width/2) - 10, int(grid_spacing)):
+            for z in range(-int(depth/2) + 10, int(depth/2) - 10, int(grid_spacing)):
+                model = model.faces(">Y").workplane().center(x, z).circle(hole_radius).cutThruAll()
+        
+        return model
+    
+    def _apply_architectural_specs_cadquery(self, model: cq.Workplane, specs: ModelingSpecs) -> cq.Workplane:
+        """Aplica especificações para projetos de arquitetura."""
+        width = specs.dimensions.get('largura', 100.0)
+        depth = specs.dimensions.get('profundidade', 100.0)
+        height = specs.dimensions.get('altura', 100.0)
+        
+        # Adicionar base reforçada
+        base_thickness = height / 10
+        model = model.faces("<Z").workplane().offset(base_thickness).rect(width, depth).extrude(base_thickness)
+        
+        return model
+    
+    def _apply_features_cadquery(self, model: cq.Workplane, features: List[Dict[str, Any]]) -> cq.Workplane:
+        """Aplica funcionalidades específicas."""
+        for feature in features:
+            feature_type = feature.get("tipo", "")
+            feature_name = feature.get("nome", "").lower()
+            
+            if "furo" in feature_name:
+                # Adicionar furo específico
+                radius = feature.get("diametro", 5.0) / 2
+                position = feature.get("posicao", {"x": 0, "y": 0})
+                model = model.faces(">Z").workplane().center(
+                    position.get("x", 0), position.get("y", 0)
+                ).circle(radius).cutThruAll()
+            
+            elif "suporte" in feature_name:
+                # Adicionar suporte
+                height = feature.get("altura", 10.0)
+                radius = feature.get("raio", 3.0)
+                position = feature.get("posicao", {"x": 0, "y": 0})
+                model = model.faces("<Z").workplane().center(
+                    position.get("x", 0), position.get("y", 0)
+                ).circle(radius).extrude(height)
+        
+        return model
+    
+    def _generate_feature_openscad(self, feature: Dict[str, Any]) -> str:
+        """Gera código para funcionalidades específicas."""
+        feature_type = feature.get("tipo", "")
+        feature_name = feature.get("nome", "").lower()
+        
+        if "furo" in feature_name:
+            radius = feature.get("diametro", 5.0) / 2
+            height = feature.get("altura", 50.0)
+            position = feature.get("posicao", {"x": 0, "y": 0})
+            return f"""
+// Furo específico
+translate([{position.get("x", 0)}, {position.get("y", 0)}, 0])
+    cylinder(h={height}, r={radius}, center=true);
+"""
+        
+        elif "suporte" in feature_name:
+            height = feature.get("altura", 10.0)
+            radius = feature.get("raio", 3.0)
+            position = feature.get("posicao", {"x": 0, "y": 0})
+            return f"""
+// Suporte específico
+translate([{position.get("x", 0)}, {position.get("y", 0)}, -{height/2}])
+    cylinder(h={height}, r={radius});
+"""
+        
+        return f"// Funcionalidade não implementada: {feature.get('nome', 'desconhecida')}\n"
+    
+    def get_available_engines(self) -> List[str]:
+        """Lista engines de modelagem disponíveis."""
+        return [engine.value for engine, available in self._available_engines.items() if available]
+    
+    def get_supported_formats(self, engine: str) -> List[str]:
+        """Lista formatos suportados por um engine."""
+        engine_enum = ModelingEngine(engine) if engine in [e.value for e in ModelingEngine] else None
+        if engine_enum == ModelingEngine.CADQUERY:
+            return [fmt.value for fmt in [ModelFormat.STL, ModelFormat.OBJ, ModelFormat.STEP]]
+        elif engine_enum == ModelingEngine.OPENSCAD:
+            return [ModelFormat.STL.value]
+        else:
+            return []
+
+
+# Instância global do serviço
+_modeling_service_instance = None
+
+
+def get_modeling_service() -> ModelingService:
+    """Obtém instância global do serviço de modelagem."""
+    global _modeling_service_instance
+    if _modeling_service_instance is None:
+        _modeling_service_instance = ModelingService()
+    return _modeling_service_instance

@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, MessageCircle, Sparkles, HelpCircle } from 'lucide-react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { Send, MessageCircle, Sparkles, HelpCircle, Info, RefreshCw } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-import { apiClient, ConversationalRequest, ConversationalResponse } from '../../services/api';
+import { useConversationalStore } from '../../store/conversationalStore';
 import { useAuthStore } from '../../store/authStore';
 
 interface Message {
@@ -17,7 +16,7 @@ interface Message {
 }
 
 interface ConversationalInterfaceProps {
-  projectId: string;
+  projectId?: string;
   conversationId?: string;
   onSpecificationsExtracted?: (specs: Record<string, any>) => void;
 }
@@ -27,128 +26,92 @@ export const ConversationalInterface: React.FC<ConversationalInterfaceProps> = (
   conversationId,
   onSpecificationsExtracted,
 }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [currentConversationId, setCurrentConversationId] = useState(conversationId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuthStore();
-
-  // Start conversation if needed
-  const startConversationMutation = useMutation({
-    mutationFn: () => apiClient.startConversation(projectId),
-    onSuccess: (data) => {
-      setCurrentConversationId(data.id);
-      // Add welcome message
-      setMessages([{
-        id: 'welcome',
-        role: 'assistant',
-        content: `Olá ${user?.fullName || user?.username}! Sou seu assistente de prototipagem. Por favor, descreva o projeto que você gostaria de criar em detalhes. ${projectId ? 'Vou ajudá-lo a extrair as especificações técnicas e gerar um modelo 3D automatizado.' : ''}`,
-        timestamp: new Date(),
-      }]);
-    },
-    onError: () => {
-      toast.error('Erro ao iniciar conversa');
-    },
-  });
-
-  // Send message mutation
-  const sendMessageMutation = useMutation({
-    mutationFn: async (message: string) => {
-      if (!currentConversationId) {
-        const newConv = await apiClient.startConversation(projectId);
-        setCurrentConversationId(newConv.id);
+  
+  const {
+    currentConversation,
+    messages,
+    isLoading,
+    error,
+    createConversation,
+    selectConversation,
+    sendMessage,
+    clearError,
+  } = useConversationalStore();
+  
+  // Inicializar conversa se necessário
+  useEffect(() => {
+    const initializeConversation = async () => {
+      if (!conversationId && !currentConversation) {
+        const newConversationId = await createConversation(projectId);
+        if (newConversationId) {
+          await selectConversation(newConversationId);
+        }
+      } else if (conversationId && conversationId !== currentConversation?.id) {
+        await selectConversation(conversationId);
       }
-
-      const request: ConversationalRequest = {
-        message,
-        conversationId: currentConversationId,
-        projectId,
-      };
-
-      return apiClient.sendMessage(request);
-    },
-    onMutate: () => {
-      setIsTyping(true);
-    },
-    onSuccess: (data: ConversationalResponse) => {
-      // Add user message
-      const userMessage: Message = {
-        id: `user-${Date.now()}`,
-        role: 'user',
-        content: inputMessage,
-        timestamp: new Date(),
-      };
-
-      // Add assistant response
-      const assistantMessage: Message = {
-        id: data.messageId,
-        role: 'assistant',
-        content: data.response,
-        timestamp: new Date(),
-        clarifications: data.clarificationsNeeded,
-        extractedSpecs: data.extractedSpecs,
-      };
-
-      setMessages(prev => [...prev, userMessage, assistantMessage]);
-      setInputMessage('');
-
-      // Notify parent component about extracted specifications
-      if (onSpecificationsExtracted && Object.keys(data.extractedSpecs).length > 0) {
-        onSpecificationsExtracted(data.extractedSpecs);
-      }
-
-      // Show helpful tips for clarifications
-      if (data.clarificationsNeeded.length > 0) {
-        setTimeout(() => {
-          toast.success('Especificações coletadas! Continue descriminando para mais detalhes.');
-        }, 2000);
-      }
-    },
-    onError: () => {
-      toast.error('Erro ao enviar mensagem');
-      setIsTyping(false);
-    },
-    onSettled: () => {
-      setIsTyping(false);
-    },
-  });
-
-  // Auto-scroll to bottom
+    };
+    
+    initializeConversation();
+  }, [conversationId, currentConversation, projectId]);
+  
+  // Auto-scroll para última mensagem
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
-
-  // Focus input on component mount
+  
+  // Focar input quando componente carregar
   useEffect(() => {
-    if (!currentConversationId) {
-      startConversationMutation.mutate();
-    }
     inputRef.current?.focus();
-  }, [currentConversationId]);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  }, []);
+  
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputMessage.trim() || sendMessageMutation.isPending) return;
-
-    sendMessageMutation.mutate(inputMessage.trim());
+    if (!inputMessage.trim() || !currentConversation || isLoading) return;
+    
+    // Limpar erro anterior
+    clearError();
+    
+    const message = inputMessage.trim();
+    setInputMessage('');
+    setIsTyping(true);
+    
+    try {
+      // Enviar mensagem
+      await sendMessage(currentConversation.id, message);
+      
+      // Verificar se foram extraídas especificações
+      const latestMessage = messages[messages.length - 1];
+      if (latestMessage?.extractedSpecs && onSpecificationsExtracted) {
+        onSpecificationsExtracted(latestMessage.extractedSpecs);
+        toast.success('Especificações extraídas com sucesso!');
+      }
+    } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
+      toast.error('Erro ao enviar mensagem');
+    } finally {
+      setIsTyping(false);
+    }
   };
-
+  
   const handleClarification = (clarification: string) => {
     setInputMessage(`Sobre ${clarification}: `);
     inputRef.current?.focus();
   };
-
+  
   const formatMessage = (content: string) => {
-    // Basic markdown-like formatting
+    // Formatação básica de markdown
     return content
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 rounded">$1</code>')
       .replace(/\n/g, '<br />');
   };
-
+  
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-lg">
       {/* Header */}
@@ -165,9 +128,76 @@ export const ConversationalInterface: React.FC<ConversationalInterfaceProps> = (
           </div>
         </div>
       </div>
-
-      {/* Messages */}
+      
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 text-red-700 mb-2">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm">{error}</p>
+            </div>
+            <div className="ml-auto pl-3">
+              <div className="-mx-1.5 -my-1.5">
+                <button 
+                  onClick={clearError}
+                  className="inline-flex bg-red-50 rounded-md p-1.5 text-red-500 hover:bg-red-100"
+                >
+                  <span className="sr-only">Dismiss</span>
+                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Mensagens */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ maxHeight: '400px' }}>
+        {currentConversation && (
+          <div className="text-xs text-gray-500 mb-4">
+            {new Date(currentConversation.created_at).toLocaleDateString()}
+          </div>
+        )}
+        
+        {currentConversation && messages.length === 0 && (
+          <div className="text-center text-gray-500 py-8">
+            <p>Inicie uma conversa sobre seu projeto de prototipagem. Seja detalhado sobre suas necessidades.</p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button 
+                onClick={() => setInputMessage('Quero criar um projeto para Arduino')}
+                className="text-xs p-2 bg-gray-100 rounded hover:bg-gray-200"
+              >
+                Projeto para Arduino
+              </button>
+              <button 
+                onClick={() => setInputMessage('Preciso de um gabinete para Raspberry Pi')}
+                className="text-xs p-2 bg-gray-100 rounded hover:bg-gray-200"
+              >
+                Gabinete Raspberry Pi
+              </button>
+              <button 
+                onClick={() => setInputMessage('Projeto mecânico com peças impressas')}
+                className="text-xs p-2 bg-gray-100 rounded hover:bg-gray-200"
+              >
+                Projeto Mecânico
+              </button>
+              <button 
+                onClick={() => setInputMessage('Preciso de componentes eletrônicos')}
+                className="text-xs p-2 bg-gray-100 rounded hover:bg-gray-200"
+              >
+                Componentes Eletrônicos
+              </button>
+            </div>
+          </div>
+        )}
+        
         <AnimatePresence>
           {messages.map((message) => (
             <motion.div
@@ -198,13 +228,14 @@ export const ConversationalInterface: React.FC<ConversationalInterfaceProps> = (
                 />
                 
                 <div className="text-xs opacity-70 mt-1">
-                  {message.timestamp.toLocaleTimeString()}
+                  {new Date(message.timestamp).toLocaleTimeString()}
                 </div>
-
-                {/* Extracted specifications */}
+                
+                {/* Especificações extraídas */}
                 {message.extractedSpecs && Object.keys(message.extractedSpecs).length > 0 && (
                   <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded">
-                    <p className="text-xs font-medium text-green-800 mb-1">
+                    <p className="text-xs font-medium text-green-800 mb-1 flex items-center">
+                      <Info className="w-3 h-3 mr-1" />
                       ✅ Especificações Extraídas:
                     </p>
                     <div className="text-xs text-green-700">
@@ -217,8 +248,8 @@ export const ConversationalInterface: React.FC<ConversationalInterfaceProps> = (
                     </div>
                   </div>
                 )}
-
-                {/* Clarifications needed */}
+                
+                {/* Clarificações necessárias */}
                 {message.clarifications && message.clarifications.length > 0 && (
                   <div className="mt-3 space-y-1">
                     <p className="text-xs font-medium text-yellow-800 mb-2">
@@ -240,8 +271,8 @@ export const ConversationalInterface: React.FC<ConversationalInterfaceProps> = (
             </motion.div>
           ))}
         </AnimatePresence>
-
-        {/* Typing indicator */}
+        
+        {/* Indicador de digitação */}
         {isTyping && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -264,7 +295,7 @@ export const ConversationalInterface: React.FC<ConversationalInterfaceProps> = (
         
         <div ref={messagesEndRef} />
       </div>
-
+      
       {/* Input */}
       <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200">
         <div className="flex gap-2">
@@ -275,19 +306,28 @@ export const ConversationalInterface: React.FC<ConversationalInterfaceProps> = (
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="Descreva seu projeto em detalhes..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={sendMessageMutation.isPending}
+            disabled={isLoading || !currentConversation}
           />
           <button
             type="submit"
-            disabled={!inputMessage.trim() || sendMessageMutation.isPending}
+            disabled={!inputMessage.trim() || isLoading || !currentConversation}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Send className="w-5 h-5" />
           </button>
         </div>
         
-        <div className="text-xs text-gray-500 mt-2">
-          💡 Dicas: Mencione dimensões, materiais, funcionalidades e restrições para melhor resultado
+        <div className="text-xs text-gray-500 mt-2 flex items-center justify-between">
+          <span>💡 Dicas: Mencione dimensões, materiais, funcionalidades e restrições para melhor resultado</span>
+          {currentConversation && (
+            <button 
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+              onClick={() => selectConversation(currentConversation.id)}
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span>Atualizar</span>
+            </button>
+          )}
         </div>
       </form>
     </div>

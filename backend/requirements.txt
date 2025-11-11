@@ -39,6 +39,9 @@ trimesh==4.0.5
 pybullet==3.2.6
 numpy==1.24.3
 scipy==1.11.4
+opencascade-python==7.6.2
+python-opencascade==0.19.0
+meshio==5.3.4
 
 # File Processing
 openpyxl==3.1.2
@@ -78,7 +81,5 @@ mkdocs-material==9.4.8
 mkdocs-mermaid2-plugin==1.1.1
 
 # External API Integrations
-# Minimax M2 API (placeholder)
-# NVIDIA NIM API (placeholder)  
-# Octopart API (already included via httpx)
-# DigiKey API (already included via httpx)
+# Minimax M2 API
+minimax-api==0.2.0

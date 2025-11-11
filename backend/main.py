@@ -38,6 +38,8 @@ from .services.budgeting_service import BudgetingService
 
 # Routes & Middleware
 from .routes.auth import auth_router
+from .routes.conversational import router as conversational_router
+from .routes.modeling import router as modeling_router
 from .middleware.auth import (
     get_current_user, get_current_active_user, get_current_superuser,
     setup_authentication_middleware, cors_allow_credentials
@@ -135,8 +137,14 @@ budgeting_service = BudgetingService()
 # ROTAS DE AUTENTICAÇÃO
 # =============================================================================
 
-# Incluir rotas de autenticação robustas
+# Include authentication routes
 app.include_router(auth_router)
+
+# Include conversational routes
+app.include_router(conversational_router)
+
+# Include modeling routes (Sprint 3)
+app.include_router(modeling_router)
     
     # Gerar token JWT
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

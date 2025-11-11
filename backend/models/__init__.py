@@ -133,12 +133,13 @@ class Conversation(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id"), nullable=True)
     
-    status = Column(Enum('especificando', 'clarificando', 'validando', 'completo', 
-                        name='conversation_status'), default='especificando')
+    status = Column(Enum('active', 'especificando', 'clarificando', 'validando', 'complete', 
+                        name='conversation_status'), default='active')
     
     especificacoes_extraidas = Column(JSON, default=dict)
     clarificacoes_pendentes = Column(JSON, default=list)
     contexto_conversacao = Column(JSON, default=dict)
+    specs = Column(JSON, default=dict)
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
