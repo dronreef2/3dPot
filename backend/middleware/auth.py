@@ -397,11 +397,11 @@ def setup_authentication_middleware(app):
     # Adiciona middleware de autenticação
     app.add_middleware(AuthenticationMiddleware)
     
-    # Adiciona middleware de rate limiting
-    app.add_middleware(
-        RateLimitMiddleware,
-        calls_per_minute=settings.RATE_LIMIT_PER_MINUTE
-    )
+    # TODO: Implementar RateLimitMiddleware se necessário
+    # app.add_middleware(
+    #     RateLimitMiddleware,
+    #     calls_per_minute=settings.RATE_LIMIT_PER_MINUTE
+    # )
 
 # Instância global do security scheme
 security = HTTPBearer(auto_error=False)

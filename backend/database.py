@@ -9,7 +9,7 @@ from sqlalchemy.pool import StaticPool
 import logging
 
 from .core.config import settings, DATABASE_URL
-from .models import Base
+from .models import Base, User
 
 logger = logging.getLogger(__name__)
 

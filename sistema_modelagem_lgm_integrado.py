@@ -333,7 +333,7 @@ class SistemaModelagemAvancado:
         # Estimativas de custo manual
         custo_manual_modelagem = 50.0  # R$50-200 por modelagem manual
         custo_manual_3d = 100.0  # R$100-300 por impressão de teste
-        custo_manual_total = custo_manual_modelagem + custo_manual_total
+        custo_manual_total = custo_manual_modelagem + custo_manual_3d
         
         if custo_total < custo_manual_total:
             economia = custo_manual_total - custo_total

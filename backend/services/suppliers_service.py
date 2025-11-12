@@ -389,7 +389,7 @@ class SuppliersService:
         
         # Frete
         shipping_cost = self._calculate_shipping_cost(
-            supplier_info, budget_data, request.include_shipping
+            supplier_info, budget_data, budget_data.get('include_shipping', True)
         )
         
         # Tempo de entrega
@@ -405,7 +405,7 @@ class SuppliersService:
             delivery_time=delivery_time,
             quality_rating=supplier_info["rating"],
             reliability_score=supplier_info["confiabilidade"],
-            shipping_cost=shipping_cost if request.include_shipping else 0
+            shipping_cost=shipping_cost if budget_data.get('include_shipping', True) else 0
         )
     
     async def _generate_materials_quote(
