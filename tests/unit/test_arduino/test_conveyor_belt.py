@@ -77,7 +77,9 @@ class TestConveyorBeltArduino:
         ]
         
         for scenario in test_scenarios:
-            emergency_triggered = scenario['emergency_button'] or scenario['safety_sensor']
+            emergency_button = scenario.get('emergency_button', False)
+            safety_sensor = scenario.get('safety_sensor', False)
+            emergency_triggered = emergency_button or safety_sensor
             should_stop = scenario['expected_stop']
             
             assert emergency_triggered == should_stop
