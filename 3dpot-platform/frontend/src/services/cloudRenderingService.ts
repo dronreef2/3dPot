@@ -1,9 +1,10 @@
 // Sprint 6+: Cloud Rendering Service
 // Serviço completo para renderização distribuída na nuvem
 
-import axios from 'axios';
 import { EventEmitter } from 'events';
 import toast from 'react-hot-toast';
+import { apiService } from './api';
+import { API_ENDPOINTS } from '@/utils/config';
 
 // Types
 import type {
@@ -229,20 +230,21 @@ export class CloudRenderingService extends EventEmitter {
     priority: 'low' | 'normal' | 'high' | 'urgent' = 'normal'
   ): Promise<string> {
     try {
-      const response = await axios.post(`${this.config.apiUrl}/cloud-rendering/jobs`, {
+      const jobData = {
         modelId,
         configuration,
         priority,
         userId: this.currentUser,
         timeout: this.config.defaultTimeout
-      });
+      };
 
-      const jobId = response.data.id;
+      const jobResponse = await apiService.submitRenderJob(jobData);
+      const jobId = jobResponse.id;
       
       // Create local job record
       const job: RenderJob = {
         id: jobId,
-        sessionId: response.data.sessionId,
+        sessionId: jobResponse.sessionId,
         modelId,
         userId: this.currentUser!,
         type: this.determineJobType(configuration),
@@ -556,8 +558,7 @@ export class CloudRenderingService extends EventEmitter {
   // Cluster Management
   async loadClusters(): Promise<RenderCluster[]> {
     try {
-      const response = await axios.get(`${this.config.apiUrl}/cloud-rendering/clusters`);
-      const clusters = response.data;
+      const clusters = await apiService.getRenderClusters();
 
       this.clusters.clear();
       clusters.forEach((cluster: RenderCluster) => {
@@ -1174,6 +1175,6 @@ export const RENDER_PRESETS = {
 
 // Service instance
 export const cloudRenderingService = new CloudRenderingService({
-  apiUrl: process.env.VITE_API_URL || 'http://localhost:8000',
-  wsUrl: process.env.VITE_WS_URL || 'ws://localhost:8000'
+  apiUrl: API_ENDPOINTS.CLOUD_RENDERING.BASE,
+  wsUrl: API_ENDPOINTS.CLOUD_RENDERING.BASE.replace('/api', '/ws')
 });

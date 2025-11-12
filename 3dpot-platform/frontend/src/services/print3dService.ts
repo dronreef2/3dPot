@@ -1,9 +1,10 @@
 // Sprint 6+: 3D Printing Service
 // Serviço completo para impressão 3D
 
-import axios from 'axios';
 import { EventEmitter } from 'events';
 import toast from 'react-hot-toast';
+import { apiService } from './api';
+import { API_ENDPOINTS } from '@/utils/config';
 
 // Types
 import type {
@@ -178,8 +179,8 @@ export class Print3DService extends EventEmitter {
   // Print Job Management
   async submitJob(jobConfig: Omit<PrintJob, 'id' | 'status' | 'progress' | 'createdAt'>): Promise<string> {
     try {
-      const response = await axios.post(`${this.config.apiUrl}/print/jobs`, jobConfig);
-      const jobId = response.data.id;
+      const response = await apiService.submitPrintJob(jobConfig);
+      const jobId = response.id;
 
       const newJob: PrintJob = {
         ...jobConfig,
@@ -205,7 +206,7 @@ export class Print3DService extends EventEmitter {
 
   async cancelJob(jobId: string): Promise<void> {
     try {
-      await axios.delete(`${this.config.apiUrl}/print/jobs/${jobId}`);
+      await apiService.cancelJob(jobId);
       
       const job = this.currentJobs.get(jobId);
       if (job) {
@@ -266,8 +267,7 @@ export class Print3DService extends EventEmitter {
   // Printer Management
   async loadPrinters(): Promise<PrinterConfig[]> {
     try {
-      const response = await axios.get(`${this.config.apiUrl}/print/printers`);
-      const printers = response.data;
+      const printers = await apiService.getPrinters();
 
       this.printers.clear();
       printers.forEach((printer: PrinterConfig) => {
@@ -283,8 +283,7 @@ export class Print3DService extends EventEmitter {
 
   async getPrinterStatus(printerId: string): Promise<PrinterConfig> {
     try {
-      const response = await axios.get(`${this.config.apiUrl}/print/printers/${printerId}/status`);
-      const printer = response.data;
+      const printer = await apiService.getPrinterStatus(printerId);
       
       this.printers.set(printerId, printer);
       return printer;
@@ -296,9 +295,7 @@ export class Print3DService extends EventEmitter {
 
   async calibratePrinter(printerId: string, calibrationType: string): Promise<void> {
     try {
-      await axios.post(`${this.config.apiUrl}/print/printers/${printerId}/calibrate`, {
-        type: calibrationType
-      });
+      await apiService.calibratePrinter(printerId, calibrationType);
       
       toast.success('Printer calibration started');
     } catch (error) {
@@ -311,8 +308,7 @@ export class Print3DService extends EventEmitter {
   // Material Management
   async loadMaterials(): Promise<MaterialLibrary[]> {
     try {
-      const response = await axios.get(`${this.config.apiUrl}/print/materials`);
-      this.materials = response.data;
+      this.materials = await apiService.getMaterials();
       return this.materials;
     } catch (error) {
       console.error('❌ Failed to load materials:', error);
@@ -330,11 +326,8 @@ export class Print3DService extends EventEmitter {
 
   async estimatePrintTime(settings: PrintSettings, modelData: any): Promise<number> {
     try {
-      const response = await axios.post(`${this.config.apiUrl}/print/estimate-time`, {
-        settings,
-        modelData
-      });
-      return response.data.estimatedTime;
+      const response = await apiService.estimatePrintTime(settings, modelData);
+      return response.estimatedTime;
     } catch (error) {
       console.error('❌ Failed to estimate print time:', error);
       throw error;
@@ -360,12 +353,9 @@ export class Print3DService extends EventEmitter {
     settings: PrintSettings
   ): Promise<SlicingResult> {
     try {
-      const response = await axios.post(`${this.config.apiUrl}/print/slice`, {
-        modelId,
-        settings
-      });
+      const response = await apiService.sliceModel(modelId, settings);
       
-      return response.data;
+      return response;
     } catch (error) {
       console.error('❌ Failed to slice model:', error);
       toast.error('Failed to slice model');
@@ -378,12 +368,9 @@ export class Print3DService extends EventEmitter {
     settings: PrintSettings
   ): Promise<string> {
     try {
-      const response = await axios.post(`${this.config.apiUrl}/print/generate-gcode`, {
-        modelId,
-        settings
-      });
+      const response = await apiService.generateGCode(modelId, settings);
       
-      return response.data.gcode;
+      return response.gcode;
     } catch (error) {
       console.error('❌ Failed to generate G-code:', error);
       toast.error('Failed to generate G-code');
@@ -464,8 +451,7 @@ export class Print3DService extends EventEmitter {
   // Print Queue Management
   async getQueue(): Promise<PrintJob[]> {
     try {
-      const response = await axios.get(`${this.config.apiUrl}/print/queue`);
-      this.queue = response.data;
+      this.queue = await apiService.getPrintQueue();
       return this.queue;
     } catch (error) {
       console.error('❌ Failed to get queue:', error);
@@ -761,6 +747,6 @@ export const MATERIAL_PRESETS = {
 
 // Service instance
 export const print3DService = new Print3DService({
-  apiUrl: process.env.VITE_API_URL || 'http://localhost:8000',
-  wsUrl: process.env.VITE_WS_URL || 'ws://localhost:8000'
+  apiUrl: API_ENDPOINTS.PRINTING.BASE,
+  wsUrl: `${API_ENDPOINTS.COLLABORATION.WS('printing')}`
 });

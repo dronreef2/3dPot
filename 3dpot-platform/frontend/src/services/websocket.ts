@@ -1,6 +1,13 @@
 import { io, Socket } from 'socket.io-client';
 import { Message, ConversationResponse } from '@/types';
-import { getWebSocketUrl } from '@/utils/config';
+import { getWebSocketUrl, API_ENDPOINTS } from '@/utils/config';
+
+export interface CollaborationWebSocketEvent {
+  type: 'participant_joined' | 'participant_left' | 'cursor_move' | 'model_selection' | 'model_edit' | 'annotation_added' | 'message_sent' | 'video_call_started' | 'screen_share_started';
+  data: any;
+  userId: string;
+  timestamp: Date;
+}
 
 export class ConversationWebSocket {
   private socket: Socket | null = null;
@@ -179,4 +186,229 @@ export class ConversationWebSocket {
     if (this.socket.connected) return 'connected';
     return 'connecting';
   }
+
+  // ===== SPRINT 6+ COLLABORATION METHODS =====
+
+  /**
+   * Conecta ao WebSocket de colaboração para uma sessão específica
+   */
+  async connectToCollaboration(sessionId: string, userId?: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        this.sessionId = sessionId;
+        this.userId = userId || 'anonymous';
+
+        const wsUrl = `${getWebSocketUrl()}${API_ENDPOINTS.COLLABORATION.WS(sessionId)}`;
+        
+        this.socket = io(wsUrl, {
+          transports: ['websocket'],
+          timeout: 15000,
+          forceNew: true,
+          query: {
+            sessionId,
+            userId: this.userId
+          }
+        });
+
+        this.setupCollaborationHandlers(resolve, reject);
+      } catch (error) {
+        console.error('❌ Erro ao criar WebSocket de colaboração:', error);
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * Conecta ao WebSocket de impressão 3D para monitoramento em tempo real
+   */
+  async connectToPrinting(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        const wsUrl = `${getWebSocketUrl()}${API_ENDPOINTS.PRINTING.BASE}/ws`;
+        
+        this.socket = io(wsUrl, {
+          transports: ['websocket'],
+          timeout: 10000,
+          forceNew: true
+        });
+
+        this.setupPrintingHandlers(resolve, reject);
+      } catch (error) {
+        console.error('❌ Erro ao criar WebSocket de impressão:', error);
+        reject(error);
+      }
+    });
+  }
+
+  private setupCollaborationHandlers(resolve: () => void, reject: (error: Error) => void) {
+    if (!this.socket) return;
+
+    this.socket.on('connect', () => {
+      console.log('✅ WebSocket de colaboração conectado');
+      this.reconnectAttempts = 0;
+      resolve();
+    });
+
+    this.socket.on('connect_error', (error) => {
+      console.error('❌ Erro na conexão WebSocket de colaboração:', error);
+      this.reconnectAttempts++;
+      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+        reject(new Error(`Falha ao conectar após ${this.maxReconnectAttempts} tentativas`));
+      }
+    });
+
+    // Collaboration-specific events
+    this.socket.on('participant_joined', (data) => {
+      console.log('👤 Participante entrou na sessão:', data);
+    });
+
+    this.socket.on('participant_left', (data) => {
+      console.log('👤 Participante saiu da sessão:', data);
+    });
+
+    this.socket.on('cursor_move', (data) => {
+      console.log('🖱️ Cursor movido:', data);
+    });
+
+    this.socket.on('model_selection', (data) => {
+      console.log('🎯 Modelo selecionado:', data);
+    });
+
+    this.socket.on('model_edit', (data) => {
+      console.log('✏️ Modelo editado:', data);
+    });
+
+    this.socket.on('annotation_added', (data) => {
+      console.log('💬 Anotação adicionada:', data);
+    });
+
+    this.socket.on('video_call_started', (data) => {
+      console.log('📹 Chamada de vídeo iniciada:', data);
+    });
+
+    this.socket.on('screen_share_started', (data) => {
+      console.log('🖥️ Compartilhamento de tela iniciado:', data);
+    });
+  }
+
+  private setupPrintingHandlers(resolve: () => void, reject: (error: Error) => void) {
+    if (!this.socket) return;
+
+    this.socket.on('connect', () => {
+      console.log('✅ WebSocket de impressão conectado');
+      this.reconnectAttempts = 0;
+      resolve();
+    });
+
+    this.socket.on('connect_error', (error) => {
+      console.error('❌ Erro na conexão WebSocket de impressão:', error);
+      this.reconnectAttempts++;
+      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+        reject(new Error(`Falha ao conectar após ${this.maxReconnectAttempts} tentativas`));
+      }
+    });
+
+    // Printing-specific events
+    this.socket.on('job_update', (data) => {
+      console.log('🖨️ Atualização do job:', data);
+    });
+
+    this.socket.on('printer_status', (data) => {
+      console.log('📊 Status da impressora:', data);
+    });
+
+    this.socket.on('queue_update', (data) => {
+      console.log('📋 Atualização da fila:', data);
+    });
+
+    this.socket.on('slice_progress', (data) => {
+      console.log('🔪 Progresso do slicing:', data);
+    });
+
+    this.socket.on('print_progress', (data) => {
+      console.log('🖨️ Progresso da impressão:', data);
+    });
+  }
+
+  /**
+   * Envia evento de colaboração
+   */
+  sendCollaborationEvent(event: Omit<CollaborationWebSocketEvent, 'userId' | 'timestamp'>): void {
+    if (!this.socket || !this.socket.connected) {
+      throw new Error('WebSocket não está conectado');
+    }
+
+    const eventData = {
+      ...event,
+      userId: this.userId,
+      timestamp: new Date().toISOString()
+    };
+
+    this.socket.emit(event.type, eventData);
+  }
+
+  /**
+   * Registra listener para eventos de colaboração
+   */
+  onCollaborationEvent(callback: (event: CollaborationWebSocketEvent) => void): () => void {
+    if (!this.socket) {
+      throw new Error('WebSocket não está conectado');
+    }
+
+    const events: Array<CollaborationWebSocketEvent['type']> = [
+      'participant_joined',
+      'participant_left', 
+      'cursor_move',
+      'model_selection',
+      'model_edit',
+      'annotation_added',
+      'message_sent',
+      'video_call_started',
+      'screen_share_started'
+    ];
+
+    const handlers = events.map(eventType => {
+      const handler = (data: any) => {
+        callback({
+          type: eventType,
+          data,
+          userId: data.userId || 'unknown',
+          timestamp: new Date()
+        });
+      };
+      this.socket!.on(eventType, handler);
+      return { eventType, handler };
+    });
+
+    // Retorna função para remover todos os listeners
+    return () => {
+      handlers.forEach(({ eventType, handler }) => {
+        this.socket?.off(eventType, handler);
+      });
+    };
+  }
+
+  /**
+   * Registra listener para eventos de impressão 3D
+   */
+  onPrintingEvent(callback: (event: any) => void): () => void {
+    if (!this.socket) {
+      throw new Error('WebSocket não está conectado');
+    }
+
+    const events = ['job_update', 'printer_status', 'queue_update', 'slice_progress', 'print_progress'];
+    
+    const handlers = events.map(eventType => {
+      const handler = (data: any) => callback({ type: eventType, data });
+      this.socket!.on(eventType, handler);
+      return { eventType, handler };
+    });
+
+    return () => {
+      handlers.forEach(({ eventType, handler }) => {
+        this.socket?.off(eventType, handler);
+      });
+    };
+  }
+}
 }

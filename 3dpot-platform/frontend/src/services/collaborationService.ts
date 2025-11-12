@@ -5,6 +5,8 @@ import { io, Socket } from 'socket.io-client';
 import SimplePeer from 'simple-peer';
 import toast from 'react-hot-toast';
 import { EventEmitter } from 'events';
+import { apiService } from './api';
+import { API_ENDPOINTS } from '@/utils/config';
 
 // Types
 import type {
@@ -465,25 +467,20 @@ export class CollaborationService extends EventEmitter {
   // Session Management
   async createSession(modelId: string, userProfile: UserProfile): Promise<string> {
     try {
-      const response = await fetch(`${this.config.apiUrl}/collaboration/sessions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          modelId,
-          user: userProfile,
-          settings: {
-            maxParticipants: this.config.maxParticipants,
-            voiceEnabled: this.config.enableVoiceChat,
-            videoEnabled: this.config.enableVideoChat,
-            screenShareEnabled: this.config.enableScreenShare,
-            fileSharingEnabled: this.config.enableFileSharing
-          }
-        })
-      });
+      const sessionData = {
+        modelId,
+        user: userProfile,
+        settings: {
+          maxParticipants: this.config.maxParticipants,
+          voiceEnabled: this.config.enableVoiceChat,
+          videoEnabled: this.config.enableVideoChat,
+          screenShareEnabled: this.config.enableScreenShare,
+          fileSharingEnabled: this.config.enableFileSharing
+        }
+      };
 
-      const session = await response.json();
+      const session = await apiService.createCollaborationSession(sessionData);
+      this.handleSessionJoined(session);
       return session.id;
     } catch (error) {
       console.error('Failed to create session:', error);
@@ -527,17 +524,19 @@ export class CollaborationService extends EventEmitter {
 
   private async loadSessionData(sessionId: string): Promise<void> {
     try {
-      const response = await fetch(`${this.config.apiUrl}/collaboration/sessions/${sessionId}/data`);
-      const data = await response.json();
+      const data = await apiService.getCollaborationSessions();
 
-      // Load comments
-      data.comments?.forEach((comment: Comment) => {
-        this.comments.set(comment.id, comment);
-      });
+      // Find current session
+      const currentSessionData = data.find((session: any) => session.id === sessionId);
+      
+      if (currentSessionData?.comments) {
+        currentSessionData.comments.forEach((comment: Comment) => {
+          this.comments.set(comment.id, comment);
+        });
+      }
 
-      // Load version history
-      if (data.versionHistory) {
-        this.versionHistory = data.versionHistory;
+      if (currentSessionData?.versionHistory) {
+        this.versionHistory = currentSessionData.versionHistory;
       }
 
     } catch (error) {
@@ -696,18 +695,10 @@ export class CollaborationService extends EventEmitter {
   // Comment Management
   async addComment(comment: Omit<Comment, 'id' | 'timestamp' | 'reactions'>): Promise<Comment> {
     try {
-      const response = await fetch(`${this.config.apiUrl}/collaboration/comments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          ...comment,
-          sessionId: this.currentSession?.id
-        })
+      const newComment = await apiService.sendMessage(this.currentSession?.id || '', {
+        ...comment,
+        sessionId: this.currentSession?.id
       });
-
-      const newComment = await response.json();
       return newComment;
     } catch (error) {
       console.error('Failed to add comment:', error);
@@ -945,6 +936,6 @@ export class CollaborationService extends EventEmitter {
 
 // Service instance
 export const collaborationService = new CollaborationService({
-  apiUrl: process.env.VITE_API_URL || 'http://localhost:8000',
-  wsUrl: process.env.VITE_WS_URL || 'ws://localhost:8000'
+  apiUrl: API_ENDPOINTS.COLLABORATION.BASE,
+  wsUrl: API_ENDPOINTS.COLLABORATION.BASE.replace('/api', '/ws')
 });
