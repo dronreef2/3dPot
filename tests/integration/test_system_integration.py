@@ -6,13 +6,21 @@ Testa a interação entre diferentes componentes: hardware, software e interface
 import json
 import os
 import subprocess
+import sys
 import threading
 import time
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-import requests
+
+# Mock requests para evitar dependência em ambiente CI
+try:
+    import requests
+except ImportError:
+    # Mock requests se não estiver disponível
+    sys.modules['requests'] = MagicMock()
+    import requests
 
 
 class TestHardwareIntegration:

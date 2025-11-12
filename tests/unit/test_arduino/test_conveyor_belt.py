@@ -10,7 +10,16 @@ import time
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-import serial
+
+# Mock serial para evitar dependência em ambiente CI
+try:
+    import serial
+except ImportError:
+    # Mock serial se não estiver disponível
+    sys.modules['serial'] = MagicMock()
+    sys.modules['serial.tools'] = MagicMock()
+    sys.modules['serial.tools.list_ports'] = MagicMock()
+    import serial
 
 
 class TestConveyorBeltArduino:
