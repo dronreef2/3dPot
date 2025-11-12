@@ -87,7 +87,7 @@ class SensorData(Base):
     pressure = Column(Float, nullable=True)     # Pressão ambiente (Pa)
     
     # === METADATA ===
-    metadata = Column(JSON, nullable=True)  # Metadados extras do sensor
+    sensor_metadata = Column(JSON, nullable=True)  # Metadados extras do sensor
     notes = Column(Text, nullable=True)     # Observações sobre a medição
     
     # === TIMESTAMPS ===

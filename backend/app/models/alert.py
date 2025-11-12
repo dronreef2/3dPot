@@ -92,7 +92,7 @@ class Alert(Base):
     # === CONTEXT ===
     location = Column(String(100), nullable=True)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=True, index=True)
-    metadata = Column(JSON, nullable=True)  # Metadados extras
+    alert_metadata = Column(JSON, nullable=True)  # Metadados extras
     
     # === RECURRENCE ===
     is_recurring = Column(Boolean, default=False, nullable=False)

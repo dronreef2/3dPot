@@ -222,15 +222,4 @@ async def metrics():
 start_time = time.time()
 
 
-# Middleware para adicionar tempo de início
-@router.middleware("http")
-async def add_startup_time(request, call_next):
-    """Middleware para adicionar informações de startup às respostas"""
-    start = time.time()
-    response = await call_next(request)
-    process_time = time.time() - start
-    
-    response.headers["X-Process-Time"] = str(process_time)
-    response.headers["X-Startup-Time"] = str(start_time)
-    
-    return response
+

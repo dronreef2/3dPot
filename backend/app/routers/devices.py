@@ -78,8 +78,16 @@ class DeviceResponse(BaseModel):
 
 class DeviceStatusUpdate(BaseModel):
     """Schema para atualização de status do dispositivo"""
-    status: str = Field(..., regex="^(online|offline|error|maintenance|updating)$")
+    status: str = Field(..., pattern="^(online|offline|error|maintenance|updating)$")
     additional_data: Optional[Dict[str, Any]] = None
+
+
+class ESP32MonitorCreate(BaseModel):
+    """Schema para criação de monitor ESP32"""
+    name: str = Field(..., description="Nome do monitor")
+    serial_number: str = Field(..., description="Número de série")
+    mac_address: Optional[str] = Field(None, description="Endereço MAC")
+    location: Optional[str] = Field(None, description="Localização")
 
 
 class DeviceStatsResponse(BaseModel):
@@ -480,10 +488,7 @@ async def get_devices_stats(
 
 @router.post("/esp32/monitor", response_model=DeviceResponse, status_code=status.HTTP_201_CREATED)
 async def create_esp32_monitor(
-    name: str = Field(..., description="Nome do monitor"),
-    serial_number: str = Field(..., description="Número de série"),
-    mac_address: Optional[str] = Field(None, description="Endereço MAC"),
-    location: Optional[str] = Field(None, description="Localização"),
+    device_data: ESP32MonitorCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(lambda: None)
 ):
@@ -495,7 +500,7 @@ async def create_esp32_monitor(
     try:
         # Verificar se serial_number já existe
         result = await db.execute(
-            select(Device).where(Device.serial_number == serial_number)
+            select(Device).where(Device.serial_number == device_data.serial_number)
         )
         if result.scalar_one_or_none():
             raise HTTPException(
@@ -505,7 +510,7 @@ async def create_esp32_monitor(
         
         # Configurações padrão para ESP32 monitor
         default_config = {
-            "mqtt_topic": f"sensors/{serial_number}/filament",
+            "mqtt_topic": f"sensors/{device_data.serial_number}/filament",
             "calibration": {"zero_point": 0, "scale_factor": 1.0},
             "alerts": {
                 "min_weight": 10,    # Alerta quando filamento < 10g
@@ -524,10 +529,10 @@ async def create_esp32_monitor(
         }
         
         db_device = Device.create_esp32_monitor(
-            name=name,
-            serial_number=serial_number,
-            mac_address=mac_address,
-            location=location,
+            name=device_data.name,
+            serial_number=device_data.serial_number,
+            mac_address=device_data.mac_address,
+            location=device_data.location,
             owner_id=current_user.id if current_user else None
         )
         

@@ -74,7 +74,7 @@ class Device(Base):
     # === CONFIGURATION ===
     config = Column(JSON, nullable=True)  # Configurações específicas do dispositivo
     settings = Column(JSON, nullable=True)  # Configurações personalizadas
-    metadata = Column(JSON, nullable=True)  # Metadados extras
+    device_metadata = Column(JSON, nullable=True)  # Metadados extras
     
     # === OWNERSHIP ===
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)

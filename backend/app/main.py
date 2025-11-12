@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
-from prometheus_fastapi_instrumentator import PrometheusInstrumentator
+# from prometheus_fastapi_instrumentator import PrometheusFastApiInstrumentator
 from contextlib import asynccontextmanager
 from loguru import logger
 import sys
@@ -118,9 +118,9 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Prometheus Metrics (se habilitado)
-if settings.PROMETHEUS_ENABLED:
-    instrumentator = PrometheusInstrumentator()
-    instrumentator.instrument(app).expose(app, endpoint="/metrics")
+# if settings.PROMETHEUS_ENABLED:
+#     instrumentator = PrometheusFastApiInstrumentator()
+#     instrumentator.instrument(app).expose(app, endpoint="/metrics")
 
 
 # === ROUTERS ===

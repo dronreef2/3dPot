@@ -117,9 +117,50 @@ class Settings(BaseSettings):
     MINIMAX_MAX_TOKENS: int = Field(default=4000, env="MINIMAX_MAX_TOKENS")
     MINIMAX_TEMPERATURE: float = Field(default=0.7, env="MINIMAX_TEMPERATURE")
     
+    # Additional API configurations
+    REPLICATE_API_TOKEN: str = Field(default="your-replicate-api-token-here", env="REPLICATE_API_TOKEN")
+    REPLICATE_BASE_URL: str = Field(default="https://api.replicate.com/v1", env="REPLICATE_BASE_URL")
+    
+    OCTOPART_API_KEY: str = Field(default="your-octopart-api-key-here", env="OCTOPART_API_KEY")
+    OCTOPART_BASE_URL: str = Field(default="https://octopart.com/api/v3", env="OCTOPART_BASE_URL")
+    
+    DIGIKEY_API_KEY: str = Field(default="your-digikey-api-key-here", env="DIGIKEY_API_KEY")
+    DIGIKEY_BASE_URL: str = Field(default="https://api.digikey.com", env="DIGIKEY_BASE_URL")
+    
+    # === STORAGE (MINIO) ===
+    MINIO_ENDPOINT: str = Field(default="localhost:9000", env="MINIO_ENDPOINT")
+    MINIO_ACCESS_KEY: str = Field(default="minioadmin", env="MINIO_ACCESS_KEY")
+    MINIO_SECRET_KEY: str = Field(default="minioadmin123", env="MINIO_SECRET_KEY")
+    MINIO_SECURE: bool = Field(default=False, env="MINIO_SECURE")
+    MINIO_BUCKET_MODELS: str = Field(default="models", env="MINIO_BUCKET_MODELS")
+    MINIO_BUCKET_RENDERINGS: str = Field(default="renderings", env="MINIO_BUCKET_RENDERINGS")
+    MINIO_BUCKET_DOCUMENTS: str = Field(default="documents", env="MINIO_BUCKET_DOCUMENTS")
+    
+    # === EMAIL ===
+    SMTP_HOST: str = Field(default="your-smtp-server.com", env="SMTP_HOST")
+    SMTP_PORT: int = Field(default=587, env="SMTP_PORT")
+    SMTP_USER: str = Field(default="your-email@domain.com", env="SMTP_USER")
+    SMTP_PASSWORD: str = Field(default="your-email-password", env="SMTP_PASSWORD")
+    SMTP_TLS: bool = Field(default=True, env="SMTP_TLS")
+    EMAIL_FROM: str = Field(default="noreply@3dpot.com", env="EMAIL_FROM")
+    EMAIL_FROM_NAME: str = Field(default="3dPot System", env="EMAIL_FROM_NAME")
+    
+    # === CAD & 3D PROCESSING ===
+    OPENCAD_PATH: str = Field(default="/usr/bin/openscad", env="OPENCAD_PATH")
+    CADQUERY_WORKERS: int = Field(default=4, env="CADQUERY_WORKERS")
+    MODEL_OUTPUT_FORMATS: str = Field(default="stl,obj,gltf,3mf", env="MODEL_OUTPUT_FORMATS")
+    PYBULLET_GUI: bool = Field(default=False, env="PYBULLET_GUI")
+    SIMULATION_TIMEOUT: int = Field(default=300, env="SIMULATION_TIMEOUT")
+    SIMULATION_WORKERS: int = Field(default=2, env="SIMULATION_WORKERS")
+    
+    # === COSTING ===
+    DEFAULT_PRINTER_COST_PER_HOUR: float = Field(default=25.0, env="DEFAULT_PRINTER_COST_PER_HOUR")
+    DEFAULT_MATERIAL_COST_PER_GRAM: float = Field(default=0.15, env="DEFAULT_MATERIAL_COST_PER_GRAM")
+    
     # === MONITORING ===
     PROMETHEUS_ENABLED: bool = Field(default=True, env="PROMETHEUS_ENABLED")
     GRAFANA_ENABLED: bool = Field(default=True, env="GRAFANA_ENABLED")
+    GRAFANA_ADMIN_PASSWORD: str = Field(default="admin123", env="GRAFANA_ADMIN_PASSWORD")
     HEALTH_CHECK_INTERVAL: int = Field(default=30, env="HEALTH_CHECK_INTERVAL")
     
     # === CORS ===
