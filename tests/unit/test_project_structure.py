@@ -233,7 +233,7 @@ class TestFileContents:
         readme_content = readme_path.read_text()
         
         # Verifica se contém badges do GitHub Actions
-        assert "github.com/actions" in readme_content, "README should have GitHub Actions badges"
+        assert "img.shields.io/github/actions" in readme_content, "README should have GitHub Actions badges"
         assert "img.shields.io" in readme_content, "README should have shield badges"
     
     def test_contributing_md_exists(self, project_root):
