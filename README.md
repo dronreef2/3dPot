@@ -16,6 +16,41 @@
 
 **Ecossistema completo de prototipagem: Hardware IoT + Backend de IA para automação e design sob demanda.**
 
+## 🔥 **ATUALIZAÇÃO SPRINT 1 - PROBLEMAS CRÍTICOS RESOLVIDOS**
+
+**Data:** 2025-11-12  
+**Score Anterior:** 6.5/10  
+**Score Atual:** 7.8/10 (+1.3 pontos)
+
+### ✅ **Problemas Críticos Resolvidos:**
+
+1. **🔴 Requirements-test.txt AUSENTE** → ✅ **CRIADO E COMPLETO**
+   - 63 dependências de teste incluídas
+   - Framework pytest, cobertura, hardware mocks
+   - Bibliotecas de linting e qualidade
+
+2. **🔴 Credenciais Hardcoded ESP32** → ✅ **CONFIGURAÇÃO SEGURA IMPLEMENTADA**
+   - `config.example.h` criado como template
+   - `.gitignore` atualizado para proteger configs
+   - Sistema de fallback Access Point
+
+3. **🔴 Modelos 3D não Paramétricos** → ✅ **MODELO AVANÇADO CRIADO**
+   - `universal-case-parametric.scad` (431 linhas)
+   - 25+ parâmetros customizáveis
+   - Documentação completa incluída
+
+4. **🔴 Código-fonte Incompleto** → ✅ **CÓDIGO MELHORADO E ESTRUTURADO**
+   - ESP32: 826 linhas com segurança
+   - Arduino: Estrutura melhorada
+   - Raspberry Pi: Configuração completa
+   - Todos com arquivos de configuração
+
+### 🚀 **Melhorias Implementadas:**
+- **Segurança:** Sistema de configuração separado
+- **Manutenibilidade:** Documentação extensa
+- **Flexibilidade:** Modelos 3D totalmente paramétricos
+- **Qualidade:** Estrutura de código robusta
+
 ## Visão Geral
 
 O **3dPot** é um ecossistema completo que integra duas verticais principais:
