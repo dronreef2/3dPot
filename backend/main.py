@@ -52,6 +52,9 @@ from .routes.modeling import router as modeling_router
 from .routes.simulation import router as simulation_router
 from .routes.budgeting import router as budgeting_router
 
+# Sprint 8-9: Simulation Reports
+from .routes.simulation_reports import router as simulation_reports_router
+
 # Sprint 6+ Routers
 from .routers.printing3d import router as printing3d_router
 from .routers.collaboration import router as collaboration_router
@@ -160,6 +163,9 @@ app.include_router(modeling_router)
 
 # Include simulation routes (Sprint 4)
 app.include_router(simulation_router, prefix="/api", tags=["simulation"])
+
+# Include simulation reports routes (Sprint 8-9)
+app.include_router(simulation_reports_router, prefix="/api/v1/simulation-reports", tags=["simulation-reports"])
 
 # Include intelligent budgeting routes (Sprint 5)
 app.include_router(budgeting_router, prefix="/api", tags=["budgeting"])

@@ -619,6 +619,356 @@ class SimulationService:
             curr = np.array(trajectory[i])
             distance += np.linalg.norm(curr - prev)
         return distance
+
+    # ========== MÉTODOS AUXILIARES PARA SIMULAÇÕES MOTION E FLUID ==========
+
+    def _generate_circular_trajectory_sync(self, radius: float, velocity: float, duration: float) -> List[List[float]]:
+        """Gerar trajetória circular sincronizada"""
+        trajectory = []
+        time_points = np.arange(0, duration, 0.1)
+        angular_velocity = velocity / radius  # ω = v/r
+        
+        for t in time_points:
+            x = radius * np.cos(angular_velocity * t)
+            y = radius * np.sin(angular_velocity * t)
+            z = 1.0  # altura constante
+            trajectory.append([x, y, z])
+        
+        return trajectory
+
+    def _generate_figure_8_trajectory_sync(self, radius: float, velocity: float, duration: float) -> List[List[float]]:
+        """Gerar trajetória em forma de 8"""
+        trajectory = []
+        time_points = np.arange(0, duration, 0.1)
+        
+        for t in time_points:
+            # Lemniscata de Bernoulli simplificada
+            x = radius * np.sin(2 * np.pi * t / duration)
+            y = radius * np.sin(2 * np.pi * t / duration) * np.cos(2 * np.pi * t / duration)
+            z = 1.0  # altura constante
+            trajectory.append([x, y, z])
+        
+        return trajectory
+
+    def _generate_linear_trajectory_sync(self, velocity: float, duration: float, acceleration: float) -> List[List[float]]:
+        """Gerar trajetória linear com aceleração"""
+        trajectory = []
+        time_points = np.arange(0, duration, 0.1)
+        
+        for t in time_points:
+            # Movimento com aceleração constante
+            x = velocity * t + 0.5 * acceleration * t**2
+            y = 0
+            z = 1.0  # altura constante
+            trajectory.append([x, y, z])
+        
+        return trajectory
+
+    def _generate_spiral_trajectory_sync(self, radius: float, velocity: float, duration: float) -> List[List[float]]:
+        """Gerar trajetória espiral"""
+        trajectory = []
+        time_points = np.arange(0, duration, 0.1)
+        max_radius = radius * 2
+        angular_velocity = 2 * np.pi / duration
+        
+        for t in time_points:
+            # Espiral logarítmica
+            current_radius = radius + (max_radius - radius) * (t / duration)
+            x = current_radius * np.cos(angular_velocity * t)
+            y = current_radius * np.sin(angular_velocity * t)
+            z = 1.0 + 0.5 * t / duration  # Subida suave
+            trajectory.append([x, y, z])
+        
+        return trajectory
+
+    def _analyze_motion_stability(self, trajectory: List[List[float]], 
+                                velocity_profile: List[float], duration: float) -> Dict[str, Any]:
+        """Analisar estabilidade do movimento"""
+        try:
+            if not trajectory or not velocity_profile:
+                return {"status": "insufficient_data"}
+            
+            # Calcular variação de velocidade
+            velocity_mean = np.mean(velocity_profile)
+            velocity_std = np.std(velocity_profile)
+            coefficient_of_variation = velocity_std / velocity_mean if velocity_mean > 0 else 0
+            
+            # Verificar suavidade da trajetória
+            trajectory_smoothness = self._calculate_trajectory_smoothness(trajectory)
+            
+            # Verificar consistência direcional
+            directional_consistency = self._calculate_directional_consistency(trajectory)
+            
+            return {
+                "velocidade_media": velocity_mean,
+                "velocidade_std": velocity_std,
+                "coeficiente_variacao": coefficient_of_variation,
+                "suavidade_trajetoria": trajectory_smoothness,
+                "consistencia_direcional": directional_consistency,
+                "estabilidade_geral": "estável" if coefficient_of_variation < 0.2 else "moderado" if coefficient_of_variation < 0.4 else "instável",
+                "recomendacao": self._generate_motion_recommendation(coefficient_of_variation, trajectory_smoothness)
+            }
+            
+        except Exception as e:
+            logger.error(f"Erro na análise de estabilidade: {e}")
+            return {"status": "error", "message": str(e)}
+
+    def _calculate_trajectory_smoothness(self, trajectory: List[List[float]]) -> float:
+        """Calcular suavidade da trajetória (0-1, onde 1 é muito suave)"""
+        try:
+            if len(trajectory) < 3:
+                return 0.0
+            
+            # Calcular segunda derivada (curvatura)
+            curvatures = []
+            for i in range(1, len(trajectory) - 1):
+                p0 = np.array(trajectory[i-1])
+                p1 = np.array(trajectory[i])
+                p2 = np.array(trajectory[i+1])
+                
+                # Vetores tangentes
+                v1 = p1 - p0
+                v2 = p2 - p1
+                
+                # Curvatura aproximada
+                cross_product = np.linalg.norm(np.cross(v1, v2))
+                dot_product = np.dot(v1, v2)
+                
+                if np.linalg.norm(v1) > 0 and np.linalg.norm(v2) > 0:
+                    curvature = cross_product / (np.linalg.norm(v1) * np.linalg.norm(v2) * 
+                                                (np.linalg.norm(v1) + np.linalg.norm(v2)))
+                    curvatures.append(abs(curvature))
+            
+            if not curvatures:
+                return 1.0
+            
+            # Converter para score de suavidade (inverso da curvatura média)
+            avg_curvature = np.mean(curvatures)
+            smoothness = 1.0 / (1.0 + avg_curvature * 10)  # Fator de escala
+            
+            return min(1.0, max(0.0, smoothness))
+            
+        except Exception as e:
+            logger.error(f"Erro no cálculo de suavidade: {e}")
+            return 0.5
+
+    def _calculate_directional_consistency(self, trajectory: List[List[float]]) -> float:
+        """Calcular consistência direcional da trajetória"""
+        try:
+            if len(trajectory) < 2:
+                return 1.0
+            
+            # Calcular direções entre pontos consecutivos
+            directions = []
+            for i in range(1, len(trajectory)):
+                prev = np.array(trajectory[i-1])
+                curr = np.array(trajectory[i])
+                
+                direction = curr - prev
+                norm = np.linalg.norm(direction)
+                
+                if norm > 0:
+                    directions.append(direction / norm)
+            
+            if len(directions) < 2:
+                return 1.0
+            
+            # Calcular variância direcional
+            # Usar produto escalar médio para medir consistência
+            consistency_scores = []
+            for i in range(len(directions) - 1):
+                dot_prod = np.dot(directions[i], directions[i + 1])
+                # Produto escalar normalizado
+                consistency = max(0, dot_prod)  # Apenas direções similares
+                consistency_scores.append(consistency)
+            
+            return np.mean(consistency_scores) if consistency_scores else 1.0
+            
+        except Exception as e:
+            logger.error(f"Erro no cálculo de consistência direcional: {e}")
+            return 0.5
+
+    def _generate_motion_recommendation(self, cv: float, smoothness: float) -> str:
+        """Gerar recomendação baseada na análise de movimento"""
+        if cv < 0.1 and smoothness > 0.8:
+            return "Movimento muito estável e suave. Excelente para aplicações críticas."
+        elif cv < 0.2 and smoothness > 0.6:
+            return "Movimento estável com boa suavidade. Adequado para aplicações padrão."
+        elif cv < 0.4:
+            return "Movimento com alguma variabilidade. Considere otimizar a trajetória."
+        else:
+            return "Movimento instável. Recomendado revisar os parâmetros de controle."
+
+    def _calculate_cross_sectional_area(self, body_id: int) -> float:
+        """Calcular área da seção transversal aproximada"""
+        try:
+            # Obter informações de dinâmica do corpo
+            dynamics_info = p.getDynamicsInfo(body_id, -1)
+            mass = dynamics_info[0]
+            
+            # Aproximação simplificada baseada na massa
+            # Para objetos reais, seria melhor usar geometria real
+            density_approximation = 1000  # kg/m³ (densidade típica de objetos)
+            volume_approximation = mass / density_approximation
+            
+            # Assumir forma aproximada e calcular área da seção transversal
+            # Para uma esfera: A = πr², onde r³ = 3V/4π
+            if volume_approximation > 0:
+                radius_approx = (3 * volume_approximation / (4 * np.pi)) ** (1/3)
+                cross_sectional_area = np.pi * radius_approx ** 2
+            else:
+                cross_sectional_area = 0.01  # 10 cm² como fallback
+            
+            return cross_sectional_area
+            
+        except Exception as e:
+            logger.warning(f"Erro ao calcular área da seção transversal: {e}")
+            return 0.01  # Valor padrão de 10 cm²
+
+    def _process_resistance_data(self, resistance_forces: List[float], 
+                               velocities: List[List[float]], positions: List[List[float]]) -> List[Dict[str, Any]]:
+        """Processar dados de resistência do fluido"""
+        processed_data = []
+        
+        for i in range(len(resistance_forces)):
+            velocity = velocities[i] if i < len(velocities) else [0, 0, 0]
+            position = positions[i] if i < len(positions) else [0, 0, 0]
+            speed = np.linalg.norm(velocity)
+            
+            processed_data.append({
+                "tempo": i * (1/240),  # Assumindo 240 Hz
+                "velocidade": speed,
+                "velocidade_x": velocity[0],
+                "velocidade_y": velocity[1],
+                "velocidade_z": velocity[2],
+                "posicao_x": position[0],
+                "posicao_y": position[1],
+                "posicao_z": position[2],
+                "força_arrasto": resistance_forces[i]
+            })
+        
+        return processed_data
+
+    def _calculate_time_to_terminal(self, velocities: List[List[float]], dt: float) -> float:
+        """Calcular tempo até atingir velocidade terminal"""
+        try:
+            if len(velocities) < 120:  # Precisa de pelo menos 0.5 segundos
+                return 0.0
+            
+            # Verificar últimos 0.5 segundos
+            terminal_candidates = []
+            for i in range(len(velocities) - 120, len(velocities)):
+                speed = np.linalg.norm(velocities[i])
+                terminal_candidates.append(speed)
+            
+            if not terminal_candidates:
+                return 0.0
+            
+            # Calcular variância das velocidades
+            speed_variance = np.var(terminal_candidates)
+            
+            # Se a variância for baixa, считаем que atingiu velocidade terminal
+            if speed_variance < 0.1:
+                return (len(velocities) - 120) * dt
+            
+            return 0.0
+            
+        except Exception as e:
+            logger.error(f"Erro no cálculo do tempo até terminal: {e}")
+            return 0.0
+
+    def _classify_aerodynamics(self, terminal_velocity: float, drag_coefficient: float, 
+                             area: float, fluid_density: float) -> str:
+        """Classificar performance aerodinâmica"""
+        try:
+            # Número de Reynolds aproximado (simplificado)
+            kinematic_viscosity = 1.5e-5  # m²/s para ar
+            reynolds = terminal_velocity * (area ** 0.5) / kinematic_viscosity
+            
+            # Eficiência aerodinâmica baseada no coeficiente de arrasto
+            if drag_coefficient < 0.2:
+                efficiency = "excelente"
+            elif drag_coefficient < 0.4:
+                efficiency = "boa"
+            elif drag_coefficient < 0.7:
+                efficiency = "moderada"
+            else:
+                efficiency = "ruim"
+            
+            # Velocidade terminal relativa
+            if terminal_velocity < 5.0:
+                vt_class = "baixa"
+            elif terminal_velocity < 15.0:
+                vt_class = "moderada"
+            else:
+                vt_class = "alta"
+            
+            return f"{efficiency}_{vt_class}"
+            
+        except Exception as e:
+            logger.error(f"Erro na classificação aerodinâmica: {e}")
+            return "indefinido"
+
+    def _analyze_aerodynamics(self, velocities: List[List[float]], resistance_forces: List[float],
+                            fluid_density: float, drag_coefficient: float) -> Dict[str, Any]:
+        """Análise aerodinâmica detalhada"""
+        try:
+            if not velocities or not resistance_forces:
+                return {"status": "insufficient_data"}
+            
+            speeds = [np.linalg.norm(v) for v in velocities]
+            drag_coeffs = []
+            
+            # Calcular coeficiente de arrasto em diferentes pontos
+            for i in range(len(speeds)):
+                if speeds[i] > 0:
+                    F_d = resistance_forces[i]
+                    A = self._calculate_cross_sectional_area(-1)  # Simplificado
+                    Cd = (2 * F_d) / (fluid_density * A * speeds[i]**2)
+                    drag_coeffs.append(Cd)
+            
+            if not drag_coeffs:
+                return {"status": "error", "message": "Não foi possível calcular coeficientes"}
+            
+            return {
+                "Cd_medio": np.mean(drag_coeffs),
+                "Cd_std": np.std(drag_coeffs),
+                "Cd_min": np.min(drag_coeffs),
+                "Cd_max": np.max(drag_coeffs),
+                "velocidade_media": np.mean(speeds),
+                "velocidade_max": np.max(speeds),
+                "arrasto_medio": np.mean(resistance_forces),
+                "arrasto_max": np.max(resistance_forces),
+                "qualidade_aerodinamica": "alta" if np.mean(drag_coeffs) < 0.3 else 
+                                        "moderada" if np.mean(drag_coeffs) < 0.6 else "baixa",
+                "recomendacoes": self._generate_aerodynamic_recommendations(np.mean(drag_coeffs))
+            }
+            
+        except Exception as e:
+            logger.error(f"Erro na análise aerodinâmica: {e}")
+            return {"status": "error", "message": str(e)}
+
+    def _generate_aerodynamic_recommendations(self, avg_drag_coeff: float) -> List[str]:
+        """Gerar recomendações aerodinâmicas"""
+        recommendations = []
+        
+        if avg_drag_coeff < 0.2:
+            recommendations.append("Excelente performance aerodinâmica. O design atual é otimizado.")
+            recommendations.append("Mantenha a forma atual para aplicações onde a eficiência é crítica.")
+        elif avg_drag_coeff < 0.4:
+            recommendations.append("Boa performance aerodinâmica. Pequenas otimizações podem melhorar ainda mais.")
+            recommendations.append("Considere arredondar bordas afiadas e reduzir saliências.")
+        elif avg_drag_coeff < 0.7:
+            recommendations.append("Performance aerodinâmica moderada. Oportunidades significativas de otimização.")
+            recommendations.append("Revise o design para reduzir a área frontal exposta.")
+            recommendations.append("Considere superfícies mais suaves e contornos mais aerodinâmicos.")
+        else:
+            recommendations.append("Performance aerodinâmica baixa. Otimização urgente recomendada.")
+            recommendations.append("Redesenhe com foco na redução do arrasto.")
+            recommendations.append("Considere formas mais hidrodinâmicas ou aerodinâmicas.")
+            recommendations.append("Teste diferentes configurações de superfície.")
+        
+        return recommendations
     
     def _calculate_drag_force(self, velocity: List[float], density: float, 
                             drag_coefficient: float, body_id: int) -> float:
@@ -856,14 +1206,245 @@ class SimulationService:
     def _run_motion_test_sync(self, simulation_id: UUID, model_3d: Any, 
                             simulation_data: Any) -> Dict[str, Any]:
         """Versão síncrona do teste de movimento"""
-        # Implementação similar para movimento e fluido
-        return {"status": "not_implemented", "message": "Motion test sync not implemented yet"}
+        try:
+            physics_client = self._initialize_pybullet()
+            
+            model_path = Path(model_3d.arquivo_path)
+            body_id = self._load_3d_model_to_pybullet(model_path, physics_client)
+            
+            params = simulation_data.parametros if hasattr(simulation_data, 'parametros') else simulation_data.get("parametros", {})
+            
+            # Configurações do teste de movimento
+            trajectory_type = params.get("trajectory_type", "circular")
+            duration = params.get("duration", 10.0)
+            velocity = params.get("velocity", 1.0)
+            radius = params.get("radius", 1.0)
+            acceleration = params.get("acceleration", 0.5)
+            
+            results = {
+                "tipo": "motion",
+                "trajetoria": [],
+                "metricas": {},
+                "trajectory_type": trajectory_type,
+                "duration": duration,
+                "status": "completed",
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            start_time = time.time()
+            
+            # Gerar trajetória e executar movimento
+            if trajectory_type == "circular":
+                trajectory_points = self._generate_circular_trajectory_sync(
+                    radius, velocity, duration
+                )
+            elif trajectory_type == "figure_8":
+                trajectory_points = self._generate_figure_8_trajectory_sync(
+                    radius, velocity, duration
+                )
+            elif trajectory_type == "linear":
+                trajectory_points = self._generate_linear_trajectory_sync(
+                    velocity, duration, acceleration
+                )
+            else:
+                trajectory_points = self._generate_spiral_trajectory_sync(
+                    radius, velocity, duration
+                )
+            
+            # Executar movimento e coletar dados
+            total_distance = 0
+            total_energy = 0
+            velocity_profile = []
+            
+            for i, target_pos in enumerate(trajectory_points):
+                # Resetar posição e orientação
+                p.resetBasePositionAndOrientation(body_id, target_pos, [0, 0, 0, 1])
+                p.resetBaseVelocity(body_id, [0, 0, 0], [0, 0, 0])
+                
+                # Calcular energia potencial
+                mass = p.getDynamicsInfo(body_id, -1)[0]
+                height = target_pos[2]
+                potential_energy = mass * 9.8 * height
+                
+                # Calcular energia cinética (se applicable)
+                if i > 0:
+                    prev_pos = trajectory_points[i-1]
+                    distance = np.linalg.norm(np.array(target_pos) - np.array(prev_pos))
+                    total_distance += distance
+                    
+                    # Aproximação da velocidade instantânea
+                    time_step = duration / len(trajectory_points)
+                    instantaneous_velocity = distance / time_step
+                    kinetic_energy = 0.5 * mass * instantaneous_velocity**2
+                    
+                    total_energy += potential_energy + kinetic_energy
+                    velocity_profile.append(instantaneous_velocity)
+                
+                # Coletar dados do ponto
+                results["trajetoria"].append({
+                    "tempo": i * (duration / len(trajectory_points)),
+                    "posicao": target_pos,
+                    "energia_potencial": potential_energy,
+                    "distancia_acumulada": total_distance
+                })
+                
+                # Simular física por um pequeno intervalo para estabilidade
+                for _ in range(24):  # 0.1 segundos a 240 Hz
+                    p.stepSimulation()
+            
+            # Calcular métricas finais
+            results["metricas"] = {
+                "distancia_total": total_distance,
+                "energia_total": total_energy,
+                "velocidade_media": total_distance / duration if duration > 0 else 0,
+                "velocidade_maxima": max(velocity_profile) if velocity_profile else 0,
+                "velocidade_minima": min(velocity_profile) if velocity_profile else 0,
+                "eficiência_energética": total_distance / total_energy if total_energy > 0 else 0,
+                "tipo_trajetoria": trajectory_type,
+                "tempo_execução": time.time() - start_time,
+                "pontos_trajetoria": len(trajectory_points)
+            }
+            
+            # Análise de estabilidade
+            stability_analysis = self._analyze_motion_stability(
+                trajectory_points, velocity_profile, duration
+            )
+            results["metricas"]["análise_estabilidade"] = stability_analysis
+            
+            p.disconnect(physics_client)
+            
+            return results
+            
+        except Exception as e:
+            logger.error(f"Erro no teste de movimento síncrono: {e}")
+            return {
+                "status": "failed",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
     
     def _run_fluid_test_sync(self, simulation_id: UUID, model_3d: Any, 
                            simulation_data: Any) -> Dict[str, Any]:
         """Versão síncrona do teste de fluido"""
-        # Implementação similar para fluido
-        return {"status": "not_implemented", "message": "Fluid test sync not implemented yet"}
+        try:
+            physics_client = self._initialize_pybullet()
+            
+            model_path = Path(model_3d.arquivo_path)
+            body_id = self._load_3d_model_to_pybullet(model_path, physics_client)
+            
+            params = simulation_data.parametros if hasattr(simulation_data, 'parametros') else simulation_data.get("parametros", {})
+            
+            # Configurações do teste de fluido
+            fluid_density = params.get("fluid_density", 1.2)  # kg/m³ (ar)
+            drag_coefficient = params.get("drag_coefficient", 0.47)
+            test_duration = params.get("test_duration", 10.0)
+            initial_velocity = params.get("initial_velocity", 10.0)
+            gravity = params.get("gravity", -9.8)
+            
+            results = {
+                "tipo": "fluid",
+                "resistencia": [],
+                "metricas": {},
+                "fluid_properties": {
+                    "density": fluid_density,
+                    "drag_coefficient": drag_coefficient
+                },
+                "status": "completed",
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            start_time = time.time()
+            
+            # Inicializar objeto em movimento
+            p.resetBasePositionAndOrientation(body_id, [0, 0, 10], [0, 0, 0, 1])
+            p.resetBaseVelocity(body_id, [0, 0, -initial_velocity], [0, 0, 0])
+            p.setGravity(0, 0, gravity)
+            
+            # Coletar dados durante a queda
+            velocities = []
+            positions = []
+            resistance_forces = []
+            terminal_velocity_reached = False
+            terminal_velocity = 0
+            max_velocity = 0
+            
+            simulation_time = 0
+            dt = 1/240  # 240 Hz
+            max_iterations = int(test_duration / dt)
+            
+            for iteration in range(max_iterations):
+                p.stepSimulation()
+                simulation_time += dt
+                
+                # Coletar dados atuais
+                pos, orn = p.getBasePositionAndOrientation(body_id)
+                vel, ang_vel = p.getBaseVelocity(body_id)
+                
+                velocities.append(vel)
+                positions.append(pos)
+                
+                # Calcular força de arrasto
+                speed = np.linalg.norm(vel)
+                cross_sectional_area = self._calculate_cross_sectional_area(body_id)
+                
+                # Força de arrasto: F = 0.5 * ρ * Cd * A * v²
+                drag_force = 0.5 * fluid_density * drag_coefficient * cross_sectional_area * speed**2
+                resistance_forces.append(drag_force)
+                
+                # Verificar velocidade terminal (quando a velocidade se estabiliza)
+                if len(velocities) > 120:  # 0.5 segundos a 240 Hz
+                    recent_velocities = [np.linalg.norm(v) for v in velocities[-120:]]
+                    velocity_variance = np.var(recent_velocities)
+                    
+                    if velocity_variance < 0.1 and not terminal_velocity_reached:
+                        terminal_velocity = speed
+                        terminal_velocity_reached = True
+                
+                # Registrar velocidade máxima
+                if speed > max_velocity:
+                    max_velocity = speed
+                
+                # Parar se chegou ao chão
+                if pos[2] <= 0:
+                    break
+            
+            # Calcular métricas finais
+            results["resistencia"] = self._process_resistance_data(
+                resistance_forces, velocities, positions
+            )
+            
+            results["metricas"] = {
+                "velocidade_terminal": terminal_velocity,
+                "velocidade_maxima": max_velocity,
+                "coeficiente_arrasto": drag_coefficient,
+                "densidade_fluido": fluid_density,
+                "tempo_ate_terminal": self._calculate_time_to_terminal(velocities, dt),
+                "distancia_percorrida": positions[-1][2] - positions[0][2] if positions else 0,
+                "força_arrasto_media": np.mean(resistance_forces) if resistance_forces else 0,
+                "força_arrasto_maxima": max(resistance_forces) if resistance_forces else 0,
+                "tempo_execução": time.time() - start_time,
+                "aerodinamic_classification": self._classify_aerodynamics(
+                    terminal_velocity, drag_coefficient, cross_sectional_area, fluid_density
+                )
+            }
+            
+            # Análise detalhada
+            aerodynamic_analysis = self._analyze_aerodynamics(
+                velocities, resistance_forces, fluid_density, drag_coefficient
+            )
+            results["metricas"]["análise_aerodinâmica"] = aerodynamic_analysis
+            
+            p.disconnect(physics_client)
+            
+            return results
+            
+        except Exception as e:
+            logger.error(f"Erro no teste de fluido síncrono: {e}")
+            return {
+                "status": "failed",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
     
     # ========== UTILITÁRIOS E VALIDAÇÃO ==========
     
