@@ -42,10 +42,24 @@ except ImportError:
     # Mock array direto
     def mock_array_func(data):
         mock_result = MagicMock()
-        if hasattr(data, 'shape'):
+        
+        # Se for um objeto PIL.Image (imagem RGB), retornar shape padrão de imagem
+        if hasattr(data, 'mode') and hasattr(data, 'size'):
+            # PIL Image RGB típica: height, width, 3 (RGB channels)
+            width, height = data.size
+            mock_result.shape = (height, width, 3)
+        elif hasattr(data, 'shape'):
             mock_result.shape = data.shape
         else:
-            mock_result.shape = (len(data),) if data else (0,)
+            # Para outros tipos de dados, tentar inferir do tamanho
+            try:
+                if hasattr(data, '__len__'):
+                    mock_result.shape = (len(data),)
+                else:
+                    mock_result.shape = (1,)
+            except:
+                mock_result.shape = (1,)
+        
         return mock_result
     
     mock_numpy.array = mock_array_func
