@@ -12,7 +12,7 @@ from uuid import UUID, uuid4
 import httpx
 from sqlalchemy.orm import Session
 
-from ..core.config import MINIMAX_API_KEY, MINIMAX_BASE_URL, MINIMAX_MODEL
+from core.config import MINIMAX_API_KEY, MINIMAX_BASE_URL, MINIMAX_MODEL
 
 logger = logging.getLogger(__name__)
 

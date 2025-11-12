@@ -11,16 +11,16 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from ..database import get_db
-from ..middleware.auth import get_current_user
-from ..models import User, Simulation, Model3D
-from ..schemas.simulation import (
+from database import get_db
+from middleware.auth import get_current_user
+from models import User, Simulation, Model3D
+from schemas.simulation import (
     SimulationCreate, SimulationResponse, SimulationResult,
     SimulationStatusResponse, SimulationTemplate,
     DropTestConfig, StressTestConfig, MotionTestConfig, FluidTestConfig,
     ValidationResult
 )
-from ..services.simulation_service import SimulationService
+from services.simulation_service import SimulationService
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -89,7 +89,7 @@ async def create_simulation(
         db.refresh(simulation)
         
         # Iniciar simulação em background via Celery
-        from ..celery_app import run_simulation_task
+        from celery_app import run_simulation_task
         run_simulation_task.delay(
             simulation.id,
             str(model_3d.arquivo_path),
@@ -254,7 +254,7 @@ async def delete_simulation(
         
         # Cancelar tarefa Celery se estiver pendente
         if simulation.status == "pending":
-            from ..celery_app import cancel_simulation_task
+            from celery_app import cancel_simulation_task
             cancel_simulation_task.delay(simulation_id)
         
         # Remover do banco

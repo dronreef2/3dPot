@@ -31,9 +31,9 @@ from sqlalchemy.orm import Session
 from trimesh import Trimesh
 import numpy as np
 
-from ..core.config import MODELS_STORAGE_PATH, TEMP_STORAGE_PATH
-from ..models import Model3D, Project
-from ..schemas import Model3DCreate
+from core.config import MODELS_STORAGE_PATH, TEMP_STORAGE_PATH
+from models import Model3D, Project
+from schemas import Model3DCreate
 
 logger = logging.getLogger(__name__)
 

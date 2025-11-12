@@ -28,8 +28,8 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 
-from ..core.config import REPORTS_STORAGE_PATH
-from ..models import Simulation, Model3D, User, SimulationResult
+from core.config import REPORTS_STORAGE_PATH
+from models import Simulation, Model3D, User, SimulationResult
 
 logger = logging.getLogger(__name__)
 

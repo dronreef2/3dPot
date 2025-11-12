@@ -17,12 +17,12 @@ import pandas as pd
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
 
-from ..core.config import SLANT3D_API_KEY, OCTOPART_API_KEY, DIGIKEY_API_KEY
-from ..models import (
+from core.config import SLANT3D_API_KEY, OCTOPART_API_KEY, DIGIKEY_API_KEY
+from models import (
     Model3D, User, Project, Simulation, SimulationResult,
     IntelligentBudget as Budget, BudgetMaterial, BudgetSupplier
 )
-from ..schemas.budgeting import (
+from schemas.budgeting import (
     IntelligentBudgetCreate, IntelligentBudgetResponse, QualityBasedPricing,
     MaterialRecommendation, SupplierComparison, BudgetTimeline,
     Slant3DQuote, SimulationIntegration

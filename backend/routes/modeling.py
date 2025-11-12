@@ -19,16 +19,16 @@ import os
 import logging
 from pathlib import Path
 
-from ..database import get_db
-from ..middleware.auth import get_current_user
-from ..services.modeling_service import (
+from database import get_db
+from middleware.auth import get_current_user
+from services.modeling_service import (
     get_modeling_service, 
     ModelingEngine, 
     ModelFormat, 
     ModelingSpecs,
     ModelingResult
 )
-from ..schemas.modeling import (
+from schemas.modeling import (
     ModelingRequest,
     ModelingResponse,
     ModelSpecs,

@@ -15,13 +15,13 @@ import numpy as np
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc, func
 
-from ..models.production_models import (
+from models.production_models import (
     ProductionOrder, ProductionStatus, Priority, ProductionType, QualityStatus,
     ProductionEvent, QualityCheck, ProductionCapacity, ProductionSchedule,
     ProductionMetrics, ProductionOptimization
 )
-from ..models import IntelligentBudget as Budget, Project, User
-from ..schemas.budgeting import IntelligentBudgetResponse
+from models import IntelligentBudget as Budget, Project, User
+from schemas.budgeting import IntelligentBudgetResponse
 
 logger = logging.getLogger(__name__)
 

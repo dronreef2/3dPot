@@ -21,9 +21,9 @@ from sqlalchemy.orm import Session
 import redis
 import pickle
 
-from ..core.config import MODELS_STORAGE_PATH, TEMP_STORAGE_PATH, REDIS_URL
-from ..models import Simulation, Model3D
-from ..schemas import SimulationCreate
+from core.config import MODELS_STORAGE_PATH, TEMP_STORAGE_PATH, REDIS_URL
+from models import Simulation, Model3D
+from schemas import SimulationCreate
 
 logger = logging.getLogger(__name__)
 

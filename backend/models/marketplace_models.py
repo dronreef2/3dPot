@@ -246,7 +246,7 @@ class Transaction(Base):
     codigo_erro = Column(String(50), nullable=True)
     
     # Metadados
-    metadata = Column(JSON, default=dict)
+    metadata_info = Column(JSON, default=dict)
     notas_internas = Column(Text, nullable=True)
     
     # Timestamps
@@ -487,8 +487,6 @@ class Promotion(Base):
 # Adicionar relacionamentos ao modelo User
 def add_user_marketplace_relationships():
     """Adicionar relacionamentos ao modelo User"""
-    from ..models import User
-    
     if not hasattr(User, 'marketplace_listings'):
         User.marketplace_listings = relationship(
             "MarketplaceListing", 

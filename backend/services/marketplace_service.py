@@ -31,8 +31,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc, func, text
 from sqlalchemy.orm import joinedload
 
-from ..core.config import settings
-from ..models import (
+from core.config import settings
+from models import (
     Category, Tag, MarketplaceListing, ListingTag, Transaction, Review,
     License, PaymentMethod, Wishlist, Promotion,
     User

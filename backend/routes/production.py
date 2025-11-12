@@ -11,15 +11,15 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Background
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
 
-from ..database import get_db
-from ..middleware.auth import get_current_user
-from ..models import User, Project, IntelligentBudget as Budget
-from ..models.production_models import (
+from database import get_db
+from middleware.auth import get_current_user
+from models import User, Project, IntelligentBudget as Budget
+from models.production_models import (
     ProductionOrder, ProductionStatus, Priority, ProductionType, QualityStatus,
     ProductionEvent, QualityCheck, ProductionSchedule, ProductionCapacity,
     ProductionMetrics, ProductionOptimization
 )
-from ..schemas.production_schemas import (
+from schemas.production_schemas import (
     ProductionOrderCreate, ProductionOrderResponse, ProductionOrderUpdate,
     ProductionScheduleResponse, QualityCheckResponse, QualityCheckUpdate,
     ProductionEventResponse, ProductionCapacityResponse, ProductionMetricsResponse,
@@ -28,7 +28,7 @@ from ..schemas.production_schemas import (
     CapacityPlanningRequest, CapacityPlanningResponse, ProductionUpdate,
     QualityGateCheck, QualityGateResult, SupplyChainStatus, SupplyChainAlert
 )
-from ..services.production_service import ProductionService
+from services.production_service import ProductionService
 
 router = APIRouter(prefix="/api/v1/production", tags=["production"])
 
@@ -884,8 +884,8 @@ async def analyze_cost_optimization(
     """Analisar oportunidades de otimização de custos"""
     
     try:
-        from ..services.cost_optimization_service import CostOptimizationService
-        from ..schemas.production_schemas import OptimizationRequest
+        from services.cost_optimization_service import CostOptimizationService
+        from schemas.production_schemas import OptimizationRequest
         
         # Configurar request de otimização
         optimization_request = OptimizationRequest(

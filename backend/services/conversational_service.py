@@ -12,9 +12,9 @@ from uuid import UUID
 import httpx
 from sqlalchemy.orm import Session
 
-from ..core.config import MINIMAX_API_KEY
-from ..models import Conversation, ConversationMessage, User, Project
-from ..schemas import ConversationalResponse, ConversationalRequest
+from core.config import MINIMAX_API_KEY
+from models import Conversation, ConversationMessage, User, Project
+from schemas import ConversationalResponse, ConversationalRequest
 
 logger = logging.getLogger(__name__)
 

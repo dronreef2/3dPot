@@ -433,7 +433,7 @@ class CollaborationSetting(Base):
 # User relationships (adicionar às models existentes)
 def add_user_collaboration_relationships():
     """Adicionar relacionamentos ao modelo User"""
-    from ..models import User
+    from models import User
     
     if not hasattr(User, 'created_collaboration_sessions'):
         User.created_collaboration_sessions = relationship(
@@ -459,7 +459,7 @@ def add_user_collaboration_relationships():
 # Project relationships (adicionar às models existentes)
 def add_project_collaboration_relationships():
     """Adicionar relacionamentos ao modelo Project"""
-    from ..models import Project
+    from models import Project
     
     if not hasattr(Project, 'collaboration_sessions'):
         Project.collaboration_sessions = relationship(

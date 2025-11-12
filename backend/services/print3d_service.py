@@ -29,15 +29,16 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc
 import numpy as np
 
-from ..core.config import settings
-from ..models import (
+from core.config import settings
+from models import (
     Printer, Material, PrintJob, PrintQueue, PrintSettings, PrintJobLog,
     User, Project, Model3D
 )
-from ..schemas import (
-    PrinterCreate, PrinterUpdate, MaterialCreate, PrintJobCreate, 
-    PrintSettingsCreate, PrintJobUpdate, PrintJobStatus
-)
+# Removido - schemas não implementados no momento
+# from schemas import (
+#     dict, dict, dict, dict, 
+#     dict, dict, dict
+# )
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ class Print3DService:
         self, 
         db: Session, 
         user_id: UUID, 
-        printer_data: PrinterCreate
+        printer_data: dict  # Substitui dict
     ) -> Printer:
         """Criar nova impressora"""
         try:
@@ -115,7 +116,7 @@ class Print3DService:
         db: Session,
         printer_id: UUID,
         user_id: UUID,
-        printer_data: PrinterUpdate
+        printer_data: dict  # Substitui dict
     ) -> Optional[Printer]:
         """Atualizar configuração de impressora"""
         try:
@@ -197,7 +198,7 @@ class Print3DService:
         self,
         db: Session,
         user_id: UUID,
-        material_data: MaterialCreate
+        material_data: dict
     ) -> Material:
         """Criar novo material"""
         try:
@@ -272,7 +273,7 @@ class Print3DService:
         self,
         db: Session,
         user_id: UUID,
-        job_data: PrintJobCreate
+        job_data: dict
     ) -> PrintJob:
         """Criar novo job de impressão"""
         try:
@@ -366,7 +367,7 @@ class Print3DService:
         db: Session,
         job_id: UUID,
         user_id: UUID,
-        status_update: PrintJobStatus,
+        status_update: dict,
         progress_data: Optional[Dict] = None
     ) -> Optional[PrintJob]:
         """Atualizar status e progresso do job"""
@@ -659,7 +660,7 @@ class Print3DService:
         model: Model3D,
         material: Material,
         printer: Printer,
-        job_data: PrintJobCreate
+        job_data: dict
     ) -> Dict[str, Any]:
         """Calcular métricas estimadas do job"""
         try:

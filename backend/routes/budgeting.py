@@ -11,18 +11,18 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Background
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
 
-from ..database import get_db
-from ..middleware.auth import get_current_user
-from ..models import User, Project, IntelligentBudget as Budget
-from ..schemas.budgeting import (
+from database import get_db
+from middleware.auth import get_current_user
+from models import User, Project, IntelligentBudget as Budget
+from schemas.budgeting import (
     IntelligentBudgetCreate, IntelligentBudgetResponse, 
     BudgetRecalculateRequest, SupplierComparisonRequest,
     Slant3DQuoteRequest, BudgetReport, BudgetExport,
     MaterialRecommendation, SupplierComparison, BudgetUpdate
 )
-from ..services.intelligent_budgeting_service import IntelligentBudgetingService
-from ..services.slant3d_service import Slant3DService
-from ..services.suppliers_service import SuppliersService
+from services.intelligent_budgeting_service import IntelligentBudgetingService
+from services.slant3d_service import Slant3DService
+from services.suppliers_service import SuppliersService
 
 router = APIRouter(prefix="/api/v1/budgeting", tags=["budgeting"])
 

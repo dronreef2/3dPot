@@ -7,7 +7,7 @@ from .budgeting_service import BudgetingService
 # Sprint 6+ Services
 from .print3d_service import Print3DService
 from .collaboration_service import CollaborationService
-from .marketplace_service import MarketplaceService
+# from .marketplace_service import MarketplaceService  # Temporariamente comentado
 from .cloud_rendering_service import CloudRenderingService
 
 # Importações condicionais para services com dependências opcionais
@@ -35,7 +35,7 @@ __all__ = [
     # Sprint 6+ Services
     "Print3DService",
     "CollaborationService",
-    "MarketplaceService",
+    # "MarketplaceService",  # Temporariamente comentado
     "CloudRenderingService"
 ]
 

@@ -15,9 +15,9 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 
-from ..core.config import settings
-from ..models import User, RefreshToken
-from ..schemas import (
+from core.config import settings
+from models import User, RefreshToken
+from schemas import (
     UserRegister, UserLogin, UserLoginResponse, UserPublic, 
     PasswordValidation, SessionInfo, AuthResponse
 )

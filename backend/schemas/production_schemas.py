@@ -9,7 +9,7 @@ from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel, Field
 
-from ..schemas.budgeting import IntelligentBudgetResponse
+from schemas.budgeting import IntelligentBudgetResponse
 
 # Enums
 class ProductionStatusEnum(str, Enum):
@@ -403,7 +403,7 @@ class ProductionReportRequest(BaseModel):
     end_date: Optional[datetime] = None
     include_trends: bool = True
     include_recommendations: bool = True
-    format: str = Field(default="json", regex="^(json|pdf|csv)$")
+    format: str = Field(default="json", pattern="^(json|pdf|csv)$")
 
 class ProductionReportResponse(BaseModel):
     """Schema para resposta de relatório"""

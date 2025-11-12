@@ -17,10 +17,10 @@ import pandas as pd
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
 
-from ..models.budgeting import (
+from models.budgeting import (
     BudgetSupplier, SupplierQuote, IntelligentBudget
 )
-from ..schemas.budgeting import (
+from schemas.budgeting import (
     SupplierComparisonRequest, SupplierQuote as SupplierQuoteSchema, 
     SupplierComparison as SupplierComparisonSchema
 )

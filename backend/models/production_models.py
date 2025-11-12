@@ -354,5 +354,4 @@ class ProductionOptimization(Base):
     approved_at = Column(DateTime, nullable=True)
     implemented_at = Column(DateTime, nullable=True)
 
-# Update relationships for IntelligentBudget
-IntelligentBudget.production_orders = relationship("ProductionOrder", back_populates="budget")
+# Relationships are defined inline in the IntelligentBudget class in budgeting.py
