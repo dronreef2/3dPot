@@ -21,6 +21,12 @@
     --toast-bg: #ffffff;
     --toast-color: #1f2937;
     --toast-border: #e5e7eb;
+    --toast-success-bg: #f0fdf4;
+    --toast-success-border: #bbf7d0;
+    --toast-error-bg: #fef2f2;
+    --toast-error-border: #fecaca;
+    --toast-warning-bg: #fffbeb;
+    --toast-warning-border: #fef3c7;
   }
   
   .dark {

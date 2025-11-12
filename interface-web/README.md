@@ -27,6 +27,38 @@ Sistema de controle centralizado e responsivo para o projeto 3dPot, integrando o
 - Controle remoto de todos os dispositivos
 - Sincronização automática de dados
 
+## 🔧 Correções e Problemas Conhecidos
+
+### ❗ Problemas Identificados e Corrigidos:
+- **Tailwind CSS Plugins**: Removidos plugins não utilizados (@tailwindcss/forms, @tailwindcss/typography)
+- **CSS Variables**: Completadas variáveis CSS para toast notifications
+- **Service Worker**: Criado arquivo `/public/sw.js` para PWA functionality
+- **Node.js Compatibility**: Confirmada compatibilidade com Node.js 18.19.0
+
+### 🛠️ Script de Correção:
+```bash
+# Aplicar todas as correções automaticamente
+bash fix-project.sh
+```
+
+### ⚠️ Problemas Conhecidos:
+- **npm install**: Pode falhar devido a permissões do ambiente sandbox
+- **tsc permission**: TypeScript compiler pode ter problemas de permissão
+- **Solução**: Usar `npx tsc` ou executar através do script de correção
+
+### 🚀 Execução Rápida:
+```bash
+# Método 1: Usar script de correção
+bash fix-project.sh && npm run dev
+
+# Método 2: Manual
+npm install --no-fund --no-audit --legacy-peer-deps
+npm run dev
+
+# Método 3: Usar setup.sh
+bash setup.sh
+```
+
 ## 🛠️ Tecnologias Utilizadas
 
 ### Frontend
