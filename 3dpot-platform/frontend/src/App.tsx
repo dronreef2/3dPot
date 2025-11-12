@@ -6,6 +6,7 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { ChatPage } from '@/pages/ChatPage';
 import { HistoryPage } from '@/pages/HistoryPage';
 import Model3DPage from '@/pages/Model3DPage';
+import Sprint6PlusPage from '@/pages/Sprint6PlusPage';
 
 // Estilos CSS globais do TailwindCSS
 import '@/index.css';
@@ -34,6 +35,10 @@ function App() {
             {/* 3D Model Viewer */}
             <Route path="/3d" element={<Model3DPage />} />
             <Route path="/3d/:modelId" element={<Model3DPage />} />
+            
+            {/* Sprint 6+ Advanced Features */}
+            <Route path="/sprint6" element={<Sprint6PlusPage />} />
+            <Route path="/sprint6-plus" element={<Sprint6PlusPage />} />
             
             {/* Rota fallback - redireciona para dashboard */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

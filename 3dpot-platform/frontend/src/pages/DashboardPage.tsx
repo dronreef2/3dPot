@@ -13,7 +13,11 @@ import {
   CheckCircle,
   Box,
   Sparkles,
-  Layers3
+  Layers3,
+  Zap,
+  Users,
+  Cloud,
+  ShoppingCart
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { apiService } from '@/services/api';
@@ -160,7 +164,7 @@ export function DashboardPage() {
         )}
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -253,6 +257,27 @@ export function DashboardPage() {
               </div>
             </div>
           </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate('/sprint6')}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Sprint 6+</p>
+                <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Advanced
+                </p>
+                <p className="text-xs text-gray-500">3D Printing • Collaboration • Cloud • Marketplace</p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center">
+                <Zap className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+          </motion.div>
         </div>
 
         {/* System Status */}
@@ -297,7 +322,7 @@ export function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -345,6 +370,22 @@ export function DashboardPage() {
               <div>
                 <h3 className="text-lg font-semibold">Gerar Modelo 3D</h3>
                 <p className="text-orange-100">Crie modelos com IA NVIDIA</p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 text-white cursor-pointer hover:from-blue-600 hover:to-purple-700 transition-all"
+            onClick={() => navigate('/sprint6')}
+          >
+            <div className="flex items-center space-x-4">
+              <Zap className="w-8 h-8" />
+              <div>
+                <h3 className="text-lg font-semibold">Sprint 6+ Features</h3>
+                <p className="text-blue-100">3D Printing • Collaboration • Cloud • Marketplace</p>
               </div>
             </div>
           </motion.div>
