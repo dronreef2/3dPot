@@ -282,18 +282,19 @@ class TestSerialCommunication:
     
     def test_serial_port_detection(self):
         """Testa detecção de porta serial."""
-        # Mock direto para garantir funcionamento no CI
+        # Mock direto para garantir funcionamento no CI - robusta para Python 3.11
         mock_port = MagicMock()
         mock_port.device = '/dev/ttyUSB0'
         mock_port.description = 'Arduino Uno'
         
-        # Aplica o patch corretamente - usando o caminho do módulo importado
-        with patch('serial.tools.list_ports.comports', return_value=[mock_port]):
-            ports = list(serial.tools.list_ports.comports())
-            
-            # Verifica se encontramos a porta simulada
-            assert len(ports) == 1, f"Expected 1 port, got {len(ports)}"
-            assert ports[0].device == '/dev/ttyUSB0', f"Expected /dev/ttyUSB0, got {ports[0].device}"
+        # Configurar mock de forma mais explícita para Python 3.11
+        serial.tools.list_ports.comports = MagicMock(return_value=[mock_port])
+        
+        ports = list(serial.tools.list_ports.comports())
+        
+        # Verifica se encontramos a porta simulada
+        assert len(ports) == 1, f"Expected 1 port, got {len(ports)}"
+        assert ports[0].device == '/dev/ttyUSB0', f"Expected /dev/ttyUSB0, got {ports[0].device}"
     
     def test_command_parsing(self):
         """Testa parsing de comandos serial."""
