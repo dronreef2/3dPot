@@ -356,3 +356,53 @@ from .budgeting import (
     BudgetCache,
     Budget  # Backwards compatibility alias
 )
+
+# Import Sprint 6+ models
+from .printing3d_models import (
+    Printer,
+    Material,
+    PrintJob,
+    PrintQueue,
+    PrintSettings,
+    PrintJobLog
+)
+
+from .collaboration_models import (
+    CollaborationSession,
+    Participant,
+    Message,
+    VideoCall,
+    VideoCallParticipant,
+    ScreenShare,
+    FileVersion,
+    CollaborationSetting,
+    add_user_collaboration_relationships,
+    add_project_collaboration_relationships
+)
+
+from .marketplace_models import (
+    Category,
+    Tag,
+    MarketplaceListing,
+    ListingTag,
+    Transaction,
+    Review,
+    License,
+    PaymentMethod,
+    Wishlist,
+    Promotion,
+    add_user_marketplace_relationships
+)
+
+from .cloud_rendering_models import (
+    GPUCluster,
+    RenderJob,
+    RenderSettings,
+    QualityPreset,
+    BatchRenderConfig,
+    CostEstimate,
+    RenderNode,
+    RenderJobLog,
+    add_user_cloud_rendering_relationships,
+    add_project_cloud_rendering_relationships
+)

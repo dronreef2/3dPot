@@ -39,12 +39,25 @@ from .services.modeling_service import ModelingService
 from .services.simulation_service import SimulationService
 from .services.budgeting_service import BudgetingService
 
+# Sprint 6+ Services
+from .services.print3d_service import Print3DService
+from .services.collaboration_service import CollaborationService
+from .services.marketplace_service import MarketplaceService
+from .services.cloud_rendering_service import CloudRenderingService
+
 # Routes & Middleware
 from .routes.auth import auth_router
 from .routes.conversational import router as conversational_router
 from .routes.modeling import router as modeling_router
 from .routes.simulation import router as simulation_router
 from .routes.budgeting import router as budgeting_router
+
+# Sprint 6+ Routers
+from .routers.printing3d import router as printing3d_router
+from .routers.collaboration import router as collaboration_router
+from .routers.marketplace import router as marketplace_router
+from .routers.cloud_rendering import router as cloud_rendering_router
+
 from .middleware.auth import (
     get_current_user, get_current_active_user, get_current_superuser,
     setup_authentication_middleware, cors_allow_credentials
@@ -126,6 +139,12 @@ modeling_service = ModelingService()
 simulation_service = SimulationService()
 budgeting_service = BudgetingService()
 
+# Initialize Sprint 6+ services
+print3d_service = Print3DService()
+collaboration_service = CollaborationService()
+marketplace_service = MarketplaceService()
+cloud_rendering_service = CloudRenderingService()
+
 # =============================================================================
 # ROTAS DE AUTENTICAÇÃO
 # =============================================================================
@@ -144,6 +163,12 @@ app.include_router(simulation_router, prefix="/api", tags=["simulation"])
 
 # Include intelligent budgeting routes (Sprint 5)
 app.include_router(budgeting_router, prefix="/api", tags=["budgeting"])
+
+# Include Sprint 6+ routes
+app.include_router(printing3d_router, prefix="/api/v1/printing3d", tags=["printing3d"])
+app.include_router(collaboration_router, prefix="/api/v1/collaboration", tags=["collaboration"])
+app.include_router(marketplace_router, prefix="/api/v1/marketplace", tags=["marketplace"])
+app.include_router(cloud_rendering_router, prefix="/api/v1/cloud-rendering", tags=["cloud-rendering"])
 
 # =============================================================================
 # ENDPOINTS DE AUTENTICAÇÃO

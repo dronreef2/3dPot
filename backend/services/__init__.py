@@ -4,6 +4,12 @@ from .conversational_service import ConversationalService
 from .minimax_service import MinimaxService
 from .budgeting_service import BudgetingService
 
+# Sprint 6+ Services
+from .print3d_service import Print3DService
+from .collaboration_service import CollaborationService
+from .marketplace_service import MarketplaceService
+from .cloud_rendering_service import CloudRenderingService
+
 # Importações condicionais para services com dependências opcionais
 MODELING_AVAILABLE = False
 SIMULATION_AVAILABLE = False
@@ -25,7 +31,12 @@ __all__ = [
     "AuthenticationService",
     "ConversationalService", 
     "MinimaxService",
-    "BudgetingService"
+    "BudgetingService",
+    # Sprint 6+ Services
+    "Print3DService",
+    "CollaborationService",
+    "MarketplaceService",
+    "CloudRenderingService"
 ]
 
 if MODELING_AVAILABLE:
