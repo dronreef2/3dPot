@@ -22,23 +22,17 @@ except ImportError:
     def mock_ones(shape, dtype=None):
         """Mock numpy.ones que retorna array com shape e atributos corretos."""
         mock_array = MagicMock()
-        mock_array.shape = shape
+        mock_array.shape = tuple(shape)  # Converter para tupla real
         mock_array.dtype = dtype
-        # Permitir acesso aos elementos do shape
-        if hasattr(shape, '__getitem__'):
-            for i in range(len(shape)):
-                mock_array.shape.__getitem__ = lambda idx: shape[idx] if idx < len(shape) else 1
+        # O shape pode ser acessado normalmente como uma tupla
         return mock_array
     
     def mock_zeros(shape, dtype=None):
         """Mock numpy.zeros que retorna array com shape e atributos corretos."""
         mock_array = MagicMock()
-        mock_array.shape = shape
+        mock_array.shape = tuple(shape)  # Converter para tupla real
         mock_array.dtype = dtype
-        # Permitir acesso aos elementos do shape
-        if hasattr(shape, '__getitem__'):
-            for i in range(len(shape)):
-                mock_array.shape.__getitem__ = lambda idx: shape[idx] if idx < len(shape) else 1
+        # O shape pode ser acessado normalmente como uma tupla
         return mock_array
     
     mock_numpy.ones = mock_ones
