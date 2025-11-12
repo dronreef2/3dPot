@@ -287,8 +287,8 @@ class TestSerialCommunication:
         mock_port.device = '/dev/ttyUSB0'
         mock_port.description = 'Arduino Uno'
         
-        # Aplica o patch corretamente
-        with patch('tests.unit.test_arduino.test_conveyor_belt.serial.tools.list_ports.comports', return_value=[mock_port]):
+        # Aplica o patch corretamente - usando o caminho do módulo importado
+        with patch('serial.tools.list_ports.comports', return_value=[mock_port]):
             ports = list(serial.tools.list_ports.comports())
             
             # Verifica se encontramos a porta simulada
