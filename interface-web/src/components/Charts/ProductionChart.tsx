@@ -1,5 +1,4 @@
 import { useRef, useEffect } from 'react'
-import { Line } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,6 +10,7 @@ import {
   Legend,
   Filler
 } from 'chart.js'
+import { Line } from 'react-chartjs-2'
 import type { ChartData } from '@types'
 
 // Register Chart.js components

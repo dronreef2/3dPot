@@ -7,7 +7,7 @@ import type {
   DeviceStatus,
   AlertMessage 
 } from '@types'
-import { deviceService } from '@services/deviceService'
+import { mockDevices, mockAlerts, generateRandomUpdate, generateRandomAlert } from '@data/mockData'
 
 interface DeviceState {
   devices: {
@@ -41,9 +41,13 @@ interface DeviceContextType {
 const DeviceContext = createContext<DeviceContextType | undefined>(undefined)
 
 const initialState: DeviceState = {
-  devices: {},
-  alerts: [],
-  isLoading: true,
+  devices: {
+    filament: mockDevices.filament,
+    conveyor: mockDevices.conveyor,
+    qc: mockDevices.qc
+  },
+  alerts: mockAlerts,
+  isLoading: false,
   error: null,
 }
 
@@ -95,8 +99,25 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
   const refreshDevices = async () => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true })
-      const devices = await deviceService.getAllDevices()
-      dispatch({ type: 'SET_DEVICES', payload: devices })
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Generate updated mock data with random variations
+      const updatedDevices = {
+        filament: generateRandomUpdate(mockDevices.filament),
+        conveyor: generateRandomUpdate(mockDevices.conveyor),
+        qc: generateRandomUpdate(mockDevices.qc)
+      }
+      
+      dispatch({ type: 'SET_DEVICES', payload: updatedDevices })
+      
+      // Randomly generate new alerts
+      const newAlert = generateRandomAlert()
+      if (newAlert) {
+        dispatch({ type: 'ADD_ALERT', payload: newAlert })
+      }
+      
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Unknown error' })
     }
