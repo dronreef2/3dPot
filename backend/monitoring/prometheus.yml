@@ -1,0 +1,64 @@
+# 3dPot Prometheus Configuration
+# Sistema de Prototipagem Sob Demanda
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # === 3DPOT BACKEND ===
+  - job_name: '3dpot-backend'
+    static_configs:
+      - targets: ['backend:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # === POSTGRESQL ===
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # === REDIS ===
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # === RABBITMQ ===
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15672']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # === MQTT ===
+  - job_name: 'mqtt-broker'
+    static_configs:
+      - targets: ['mqtt-broker:1883']
+    metrics_path: '/metrics'
+    scrape_interval: 60s
+
+  # === PROMETHEUS ITSELF ===
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
