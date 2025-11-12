@@ -15,13 +15,49 @@ import pytest
 try:
     import numpy as np
 except ImportError:
-    # Criar mock mais específico do numpy
+    # Criar mock mais realista do numpy
     mock_numpy = MagicMock()
-    mock_numpy.ones.return_value = MagicMock()
-    mock_numpy.ones.return_value.shape = MagicMock()
-    mock_numpy.ones.return_value.shape.__getitem__ = MagicMock(return_value=100)
-    mock_numpy.random.randint.return_value = MagicMock()
-    mock_numpy.array.return_value = MagicMock()
+    
+    # Mock array com comportamento realista
+    def mock_ones(shape, dtype=None):
+        """Mock numpy.ones que retorna array com shape e atributos corretos."""
+        mock_array = MagicMock()
+        mock_array.shape = shape
+        mock_array.dtype = dtype
+        # Permitir acesso aos elementos do shape
+        if hasattr(shape, '__getitem__'):
+            for i in range(len(shape)):
+                mock_array.shape.__getitem__ = lambda idx: shape[idx] if idx < len(shape) else 1
+        return mock_array
+    
+    def mock_zeros(shape, dtype=None):
+        """Mock numpy.zeros que retorna array com shape e atributos corretos."""
+        mock_array = MagicMock()
+        mock_array.shape = shape
+        mock_array.dtype = dtype
+        # Permitir acesso aos elementos do shape
+        if hasattr(shape, '__getitem__'):
+            for i in range(len(shape)):
+                mock_array.shape.__getitem__ = lambda idx: shape[idx] if idx < len(shape) else 1
+        return mock_array
+    
+    mock_numpy.ones = mock_ones
+    mock_numpy.zeros = mock_zeros
+    mock_numpy.uint8 = 'uint8'
+    
+    # Mock array direto
+    def mock_array_func(data):
+        mock_result = MagicMock()
+        if hasattr(data, 'shape'):
+            mock_result.shape = data.shape
+        else:
+            mock_result.shape = (len(data),) if data else (0,)
+        return mock_result
+    
+    mock_numpy.array = mock_array_func
+    mock_numpy.random = MagicMock()
+    mock_numpy.random.randint = MagicMock()
+    
     sys.modules['numpy'] = mock_numpy
     import numpy as np
 
@@ -39,7 +75,7 @@ except ImportError:
 try:
     import cv2  # OpenCV para processamento de imagem
 except ImportError:
-    # Criar mock mais específico do cv2
+    # Criar mock mais realista do cv2
     mock_cv2 = MagicMock()
     
     # Mock VideoCapture
@@ -47,12 +83,26 @@ except ImportError:
     mock_video_cap.isOpened.return_value = True
     mock_video_cap.read.return_value = (True, MagicMock())
     
-    # Mock de métodos principais do cv2
-    mock_resize_result = MagicMock()
-    mock_resize_result.shape = MagicMock()
-    mock_resize_result.shape.__getitem__.side_effect = lambda i: [600, 800, 3][i]  # shape[0]=600, shape[1]=800
+    # Mock de métodos principais do cv2 com shape realista
+    def mock_resize(image, size):
+        """Mock cv2.resize que retorna imagem com shape correto."""
+        mock_img = MagicMock()
+        mock_img.shape = (size[1], size[0], 3)  # (height, width, channels)
+        return mock_img
     
-    mock_cv2.resize.return_value = mock_resize_result
+    def mock_imread(path):
+        """Mock cv2.imread que retorna imagem com shape padrão."""
+        mock_img = MagicMock()
+        mock_img.shape = (480, 640, 3)  # shape padrão
+        return mock_img
+    
+    def mock_imwrite(path, img):
+        """Mock cv2.imwrite sempre retorna True."""
+        return True
+    
+    mock_cv2.resize = mock_resize
+    mock_cv2.imread = mock_imread
+    mock_cv2.imwrite = mock_imwrite
     mock_cv2.VideoCapture.return_value = mock_video_cap
     mock_cv2.cvtColor.return_value = MagicMock()
     
@@ -343,28 +393,23 @@ def mock_hardware():
 @pytest.mark.parametrize("image_size", [(640, 480), (1280, 720), (1920, 1080)])
 def test_image_sizes(image_size):
     """Testa processamento de diferentes tamanhos de imagem."""
-    # Criar imagem com as dimensões corretas
-    try:
-        # Tenta usar numpy real se disponível
-        image = np.ones((image_size[1], image_size[0], 3), dtype=np.uint8)
-        # Criar imagem redimensionada esperada (800x600)
-        resized_image = np.ones((600, 800, 3), dtype=np.uint8)
-    except (AttributeError, TypeError):
-        # Se numpy não funcionar, usar valores simulados
-        image_size_w, image_size_h = image_size
-        resized_size_w, resized_size_h = 800, 600
-        image = MagicMock()
-        resized_image = MagicMock()
+    # Criar imagem com as dimensões corretas usando o mock
+    image = np.ones((image_size[1], image_size[0], 3), dtype=np.uint8)
+    
+    # O shape da imagem deve corresponder às dimensões
+    assert image.shape == (image_size[1], image_size[0], 3)
     
     with patch('cv2.resize') as mock_resize:
         # Configurar o mock para retornar valor com shape correto
         mock_resized = MagicMock()
-        mock_resized.shape = [600, 800, 3]  # Lista simples para evitar problemas com MagicMock
+        mock_resized.shape = (600, 800, 3)
         mock_resize.return_value = mock_resized
         
         resized = cv2.resize(image, (800, 600))
         # Verificar se o método foi chamado corretamente
         mock_resize.assert_called_once_with(image, (800, 600))
+        # Verificar se a imagem redimensionada tem o shape esperado
+        assert resized.shape == (600, 800, 3)
 
 
 if __name__ == '__main__':
