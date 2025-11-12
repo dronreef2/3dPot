@@ -75,7 +75,15 @@ except ImportError:
     # Criar mock mais específico do PIL.Image
     mock_pil = MagicMock()
     mock_pil.Image = MagicMock()
-    mock_pil.Image.new.return_value = MagicMock()
+    
+    def mock_image_new(mode, size, color=None):
+        """Mock PIL.Image.new que retorna objeto com atributos corretos."""
+        mock_img = MagicMock()
+        mock_img.mode = mode
+        mock_img.size = size  # size é uma tupla (width, height)
+        return mock_img
+    
+    mock_pil.Image.new = mock_image_new
     sys.modules['PIL'] = mock_pil
     sys.modules['PIL.Image'] = mock_pil.Image
     from PIL import Image
