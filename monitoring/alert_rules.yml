@@ -1,0 +1,276 @@
+# Alert Rules for 3D Pot Platform
+groups:
+  - name: 3dpot.rules
+    rules:
+      # High-level application alerts
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High latency detected"
+          description: "95th percentile latency is {{ $value }}s"
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% on {{ $labels.instance }}"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85% on {{ $labels.instance }}"
+
+      - alert: DiskSpaceLow
+        expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 85
+        for: 5m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "Disk space is running low"
+          description: "Disk usage is above 85% on {{ $labels.instance }}"
+
+  - name: database.rules
+    rules:
+      - alert: DatabaseDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: database
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL instance {{ $labels.instance }} is down"
+
+      - alert: DatabaseConnectionsHigh
+        expr: pg_stat_database_numbackends / pg_settings_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          team: database
+        annotations:
+          summary: "Database connections high"
+          description: "Database has {{ $value }}% of max connections used"
+
+      - alert: DatabaseSlowQueries
+        expr: rate(pg_stat_database_blk_read_time[5m]) + rate(pg_stat_database_blk_write_time[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          team: database
+        annotations:
+          summary: "Database slow queries detected"
+          description: "Database has high I/O wait times"
+
+  - name: redis.rules
+    rules:
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "Redis is down"
+          description: "Redis instance {{ $labels.instance }} is down"
+
+      - alert: RedisMemoryUsageHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage is {{ $value }}%"
+
+      - alert: RedisHighLatency
+        expr: redis_average_latency_milliseconds > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "Redis high latency"
+          description: "Redis latency is {{ $value }}ms"
+
+  - name: application.rules
+    rules:
+      - alert: APIDown
+        expr: up{job="api-gateway"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "API Gateway is down"
+          description: "API Gateway is not responding"
+
+      - alert: WebSocketDown
+        expr: up{job="websocket"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "WebSocket server is down"
+          description: "WebSocket server is not responding"
+
+      - alert: CeleryWorkerDown
+        expr: up{job="celery-worker"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Celery worker is down"
+          description: "Celery worker {{ $labels.instance }} is not responding"
+
+      - alert: HighQueueLength
+        expr: celery_tasks_active > 100
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High number of active tasks"
+          description: "Celery has {{ $value }} active tasks"
+
+  - name: business.rules
+    rules:
+      - alert: NoNewConversations
+        expr: rate(conversation_messages_total[1h]) == 0
+        for: 2h
+        labels:
+          severity: warning
+          team: product
+        annotations:
+          summary: "No new conversations in the last hour"
+          description: "No conversations have been initiated in the last hour"
+
+      - alert: ModelGenerationFailuresHigh
+        expr: rate(model_generation_failures_total[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          team: product
+        annotations:
+          summary: "High model generation failure rate"
+          description: "Model generation failure rate is {{ $value }}"
+
+      - alert: PrintingJobsFailing
+        expr: rate(print_job_failures_total[10m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          team: product
+        annotations:
+          summary: "High printing job failure rate"
+          description: "Printing job failure rate is {{ $value }}"
+
+      - alert: CloudRenderingQueueFull
+        expr: cloud_rendering_queue_size > 100
+        for: 10m
+        labels:
+          severity: warning
+          team: product
+        annotations:
+          summary: "Cloud rendering queue is full"
+          description: "Cloud rendering queue has {{ $value }} pending jobs"
+
+  - name: security.rules
+    rules:
+      - alert: HighFailedLogins
+        expr: rate(auth_login_failures_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "High number of failed logins"
+          description: "Failed login rate is {{ $value }} per second"
+
+      - alert: SuspiciousAPIUsage
+        expr: rate(api_requests_per_user[5m]) > 100
+        for: 10m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "Suspicious API usage detected"
+          description: "User {{ $labels.user_id }} is making {{ $value }} requests per second"
+
+      - alert: MultipleFailedAttempts
+        expr: increase(auth_login_failures_total[1h]) > 50
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Multiple failed login attempts"
+          description: "{{ $value }} failed login attempts in the last hour"
+
+  - name: infrastructure.rules
+    rules:
+      - alert: NginxDown
+        expr: up{job="nginx"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "Nginx is down"
+          description: "Nginx is not responding"
+
+      - alert: MinIODown
+        expr: up{job="minio"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "MinIO is down"
+          description: "MinIO storage service is not responding"
+
+      - alert: HighLoadAverage
+        expr: node_load1 > 4
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "High system load"
+          description: "System load average is {{ $value }} on {{ $labels.instance }}"
+
+      - alert: NetworkErrors
+        expr: rate(node_network_receive_errs_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "Network errors detected"
+          description: "Network interface {{ $labels.device }} has {{ $value }} errors per second"

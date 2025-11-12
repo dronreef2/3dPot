@@ -1,0 +1,150 @@
+# Prometheus Configuration for 3D Pot Platform
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: '3dpot-production'
+    environment: 'production'
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # API Gateway metrics
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:8000']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    scrape_timeout: 10s
+    honor_labels: true
+
+  # WebSocket server metrics
+  - job_name: 'websocket'
+    static_configs:
+      - targets: ['websocket:8080']
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # PostgreSQL metrics (requires postgres_exporter)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Redis metrics (requires redis_exporter)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Nginx metrics (requires nginx-prometheus-exporter)
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # MinIO metrics (built-in)
+  - job_name: 'minio'
+    static_configs:
+      - targets: ['minio:9000']
+    scrape_interval: 30s
+    metrics_path: /minio/v2/metrics/cluster
+    basic_auth:
+      username: 'admin'
+      password: 'minio123'
+
+  # Celery Worker metrics
+  - job_name: 'celery-worker'
+    static_configs:
+      - targets: ['celery-worker:8080']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Celery Beat metrics
+  - job_name: 'celery-beat'
+    static_configs:
+      - targets: ['celery-beat:8080']
+    scrape_interval: 60s
+    metrics_path: /metrics
+
+  # MQTT Broker metrics
+  - job_name: 'mqtt'
+    static_configs:
+      - targets: ['mqtt-exporter:9234']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Node metrics (system level)
+  - job_name: 'node'
+    static_configs:
+      - targets:
+          - 'node-exporter:9100'
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # Blackbox exporter for endpoint monitoring
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - http://api-gateway:8000/health
+          - http://frontend:80
+          - http://minio:9000/minio/health/live
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Custom application metrics
+  - job_name: '3dpot-metrics'
+    static_configs:
+      - targets: ['api-gateway:8000']
+    scrape_interval: 15s
+    metrics_path: /metrics/custom
+    scrape_timeout: 10s
+    params:
+      format: ['prometheus']
+
+# Remote write configuration (for long-term storage)
+remote_write:
+  - url: "http://victoriametrics:8428/api/v1/write"
+    queue_config:
+      max_samples_per_send: 1000
+      max_shards: 200
+      capacity: 2500
+    write_relabel_configs:
+      - source_labels: [__name__]
+        regex: '.*'
+        target_label: cluster
+        replacement: '3dpot-production'
+      - source_labels: [__name__]
+        regex: '.*'
+        target_label: environment
+        replacement: 'production'
+
+# Remote read configuration (optional)
+remote_read:
+  - url: "http://victoriametrics:8428/api/v1/read"
+    read_recent: true

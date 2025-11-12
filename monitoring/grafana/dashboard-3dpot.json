@@ -1,0 +1,431 @@
+# Grafana Dashboard Configuration for 3D Pot Platform
+# This JSON can be imported into Grafana to create a comprehensive monitoring dashboard
+
+{
+  "dashboard": {
+    "id": null,
+    "title": "3D Pot Platform - Production Monitoring",
+    "tags": ["3dpot", "production", "monitoring"],
+    "style": "dark",
+    "timezone": "browser",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "API Performance Overview",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "avg(api_response_time_seconds)",
+            "legendFormat": "Avg Response Time"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(api_response_time_seconds[5m]))",
+            "legendFormat": "95th Percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(api_response_time_seconds[5m]))",
+            "legendFormat": "99th Percentile"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 0.5},
+                {"color": "red", "value": 1.0}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "API Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(api_requests_total[5m])",
+            "legendFormat": "{{endpoint}} - {{method}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "yAxes": [
+          {
+            "label": "Requests/sec",
+            "min": 0
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "API Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(api_requests_total{status_code=~\"4..|5..\"}[5m])",
+            "legendFormat": "{{endpoint}} - {{status_code}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "yAxes": [
+          {
+            "label": "Errors/sec",
+            "min": 0
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "System Resources",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 16}
+      },
+      {
+        "id": 5,
+        "title": "CPU Usage",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "cpu_usage_percent",
+            "legendFormat": "CPU Usage"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 17},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 70},
+                {"color": "red", "value": 85}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Memory Usage",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "memory_usage_bytes",
+            "legendFormat": "Memory Usage",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ]
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 17},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "bytes",
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 6442450944},
+                {"color": "red", "value": 8589934592}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Disk Usage",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "disk_usage_percent",
+            "legendFormat": "Disk Usage"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 17},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 70},
+                {"color": "red", "value": 85}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Active Connections",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "active_sessions_total",
+            "legendFormat": "Active Sessions"
+          },
+          {
+            "expr": "websocket_connections_total",
+            "legendFormat": "WebSocket Connections"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 17},
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 100},
+                {"color": "red", "value": 500}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Database Performance",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 21}
+      },
+      {
+        "id": 10,
+        "title": "Database Connections",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "db_connections_in_use",
+            "legendFormat": "Connections in Use"
+          },
+          {
+            "expr": "db_connections_max",
+            "legendFormat": "Max Connections"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 22},
+        "yAxes": [
+          {
+            "label": "Connections",
+            "min": 0
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Database Query Performance",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(db_query_duration_seconds_bucket[5m]))",
+            "legendFormat": "50th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(db_query_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(db_query_duration_seconds_bucket[5m]))",
+            "legendFormat": "99th percentile"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 22},
+        "yAxes": [
+          {
+            "label": "Query Duration (s)",
+            "min": 0
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Business Metrics",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 30}
+      },
+      {
+        "id": 13,
+        "title": "Active Conversations",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "conversations_active",
+            "legendFormat": "Active Conversations"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 31},
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 50},
+                {"color": "red", "value": 100}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 14,
+        "title": "Models Generating",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "models_generating",
+            "legendFormat": "Models in Generation"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 31},
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 10},
+                {"color": "red", "value": 25}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 15,
+        "title": "Active Print Jobs",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "print_jobs_active",
+            "legendFormat": "Active Print Jobs"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 31},
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 5},
+                {"color": "red", "value": 15}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 16,
+        "title": "Rendering Queue",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "renders_queue_size",
+            "legendFormat": "Pending Renders"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 31},
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 20},
+                {"color": "red", "value": 50}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 17,
+        "title": "Business Activity Timeline",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(conversation_messages_total[5m])",
+            "legendFormat": "Messages/min"
+          },
+          {
+            "expr": "rate(model_generation_requests_total[5m])",
+            "legendFormat": "Model Gen Requests/min"
+          },
+          {
+            "expr": "rate(print_jobs_submitted_total[5m])",
+            "legendFormat": "Print Jobs/min"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 35},
+        "yAxes": [
+          {
+            "label": "Events/min",
+            "min": 0
+          }
+        ]
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "name": "Deployments",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "increase(deployment_events_total[1m]) > 0",
+          "iconColor": "blue",
+          "titleFormat": "Deployment",
+          "textFormat": "New deployment detected",
+          "tags": ["deployment"]
+        },
+        {
+          "name": "Errors",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "increase(api_errors_total[1m]) > 5",
+          "iconColor": "red",
+          "titleFormat": "High Error Rate",
+          "textFormat": "API error rate spike detected",
+          "tags": ["errors", "critical"]
+        }
+      ]
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "Environment",
+          "type": "custom",
+          "options": [
+            {
+              "text": "Production",
+              "value": "production",
+              "selected": true
+            },
+            {
+              "text": "Staging",
+              "value": "staging",
+              "selected": false
+            },
+            {
+              "text": "Development",
+              "value": "development",
+              "selected": false
+            }
+          ],
+          "query": "production,staging,development",
+          "current": {
+            "text": "Production",
+            "value": "production"
+          }
+        }
+      ]
+    }
+  }
+}
