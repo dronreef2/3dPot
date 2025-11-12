@@ -1,0 +1,47 @@
+# Requisitos específicos para testes
+# Sistema de Prototipagem Sob Demanda
+
+# Testes e Coverage
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-xdist>=3.3.0  # Para execução paralela
+pytest-mock>=3.11.0   # Para mocks avançados
+pytest-html>=3.2.0    # Para relatórios HTML
+
+# Quality Assurance
+black>=23.11.0
+isort>=5.12.0
+flake8>=6.1.0
+mypy>=1.7.0
+bandit>=1.7.5         # Para análise de segurança
+
+# Performance Testing
+pytest-benchmark>=4.0.0
+locust>=2.15.0        # Para testes de carga
+
+# Database Testing
+pytest-postgresql>=5.0.0
+sqlalchemy-utils>=0.41.0  # Para utilitários de teste de banco
+
+# WebSocket Testing
+pytest-websocket>=1.0.0
+websocket-client>=1.6.0
+
+# Mock Services
+responses>=0.23.0      # Para mock de APIs HTTP
+aioresponses>=0.7.4    # Para mock de aiohttp/httpx
+freezegun>=1.2.0       # Para mock de tempo
+
+# Configuração de Testes
+python-dotenv>=1.0.0
+factory-boy>=3.3.0     # Para factories de teste
+faker>=19.12.0         # Para dados de teste aleatórios
+
+# Notifications e Relatórios
+allure-pytest>=2.13.0  # Para relatórios detalhados
+pytest-slack>=2.1.0    # Para notificações no Slack
+
+# CI/CD
+coverage[toml]>=7.3.0  # Coverage com suporte a TOML
+tox>=4.11.0            # Para ambientes de teste isolados

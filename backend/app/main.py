@@ -22,7 +22,8 @@ from .routers import (
     monitoring_router,
     projects_router,
     alerts_router,
-    health_router
+    health_router,
+    websocket_router
 )
 
 
@@ -165,6 +166,13 @@ app.include_router(
     alerts_router,
     prefix=f"{settings.API_V1_STR}/alerts",
     tags=["alerts"]
+)
+
+# WebSocket (tempo real)
+app.include_router(
+    websocket_router,
+    prefix="/ws",
+    tags=["websocket"]
 )
 
 
