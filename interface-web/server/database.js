@@ -19,6 +19,9 @@ export function initializeDatabase() {
     // Create tables
     createTables()
     
+    // Initialize queries
+    initializeQueries()
+    
     console.log('✅ Database initialized successfully')
     return db
   } catch (error) {
@@ -127,17 +130,17 @@ function createTables() {
 
   // Create indexes for better performance
   db.exec(`
-    CREATE INDEX IF NOT EXISTS idx_devices_type ON devices(device_type)
-    CREATE INDEX IF NOT EXISTS idx_devices_status ON devices(status)
-    CREATE INDEX IF NOT EXISTS idx_filament_readings_device ON filament_readings(device_id)
-    CREATE INDEX IF NOT EXISTS idx_filament_readings_created ON filament_readings(created_at)
-    CREATE INDEX IF NOT EXISTS idx_conveyor_data_device ON conveyor_data(device_id)
-    CREATE INDEX IF NOT EXISTS idx_conveyor_data_created ON conveyor_data(created_at)
-    CREATE INDEX IF NOT EXISTS idx_qc_inspections_device ON qc_inspections(device_id)
-    CREATE INDEX IF NOT EXISTS idx_qc_inspections_created ON qc_inspections(created_at)
-    CREATE INDEX IF NOT EXISTS idx_alerts_device ON alerts(device_id)
-    CREATE INDEX IF NOT EXISTS idx_alerts_severity ON alerts(severity)
-    CREATE INDEX IF NOT EXISTS idx_alerts_acknowledged ON alerts(acknowledged)
+    CREATE INDEX IF NOT EXISTS idx_devices_type ON devices(device_type);
+    CREATE INDEX IF NOT EXISTS idx_devices_status ON devices(status);
+    CREATE INDEX IF NOT EXISTS idx_filament_readings_device ON filament_readings(device_id);
+    CREATE INDEX IF NOT EXISTS idx_filament_readings_created ON filament_readings(created_at);
+    CREATE INDEX IF NOT EXISTS idx_conveyor_data_device ON conveyor_data(device_id);
+    CREATE INDEX IF NOT EXISTS idx_conveyor_data_created ON conveyor_data(created_at);
+    CREATE INDEX IF NOT EXISTS idx_qc_inspections_device ON qc_inspections(device_id);
+    CREATE INDEX IF NOT EXISTS idx_qc_inspections_created ON qc_inspections(created_at);
+    CREATE INDEX IF NOT EXISTS idx_alerts_device ON alerts(device_id);
+    CREATE INDEX IF NOT EXISTS idx_alerts_severity ON alerts(severity);
+    CREATE INDEX IF NOT EXISTS idx_alerts_acknowledged ON alerts(acknowledged);
   `)
 }
 
@@ -149,152 +152,172 @@ export function getDatabase() {
 }
 
 // Utility functions for database operations
-export const deviceQueries = {
-  // Insert or update device
-  upsertDevice: db.prepare(`
-    INSERT INTO devices (device_id, device_name, device_type, status, ip_address, version, data, last_update)
-    VALUES (@device_id, @device_name, @device_type, @status, @ip_address, @version, @data, CURRENT_TIMESTAMP)
-    ON CONFLICT(device_id) DO UPDATE SET
-      device_name = excluded.device_name,
-      status = excluded.status,
-      ip_address = excluded.ip_address,
-      version = excluded.version,
-      data = excluded.data,
-      last_update = CURRENT_TIMESTAMP
-  `),
+let deviceQueries = {}
+let filamentQueries = {}
+let conveyorQueries = {}
+let qcQueries = {}
+let alertQueries = {}
+let analyticsQueries = {}
 
-  // Get all devices
-  getAllDevices: db.prepare(`
-    SELECT * FROM devices ORDER BY device_type, device_name
-  `),
+// Initialize queries after database is ready
+export function initializeQueries() {
+  if (!db) {
+    throw new Error('Database not initialized. Call initializeDatabase() first.')
+  }
+  
+  deviceQueries = {
+    // Insert or update device
+    upsertDevice: db.prepare(`
+      INSERT INTO devices (device_id, device_name, device_type, status, ip_address, version, data, last_update)
+      VALUES (@device_id, @device_name, @device_type, @status, @ip_address, @version, @data, CURRENT_TIMESTAMP)
+      ON CONFLICT(device_id) DO UPDATE SET
+        device_name = excluded.device_name,
+        status = excluded.status,
+        ip_address = excluded.ip_address,
+        version = excluded.version,
+        data = excluded.data,
+        last_update = CURRENT_TIMESTAMP
+    `),
 
-  // Get device by ID
-  getDevice: db.prepare(`
-    SELECT * FROM devices WHERE device_id = ?
-  `),
+    // Get all devices
+    getAllDevices: db.prepare(`
+      SELECT * FROM devices ORDER BY device_type, device_name
+    `),
 
-  // Get device by type
-  getDeviceByType: db.prepare(`
-    SELECT * FROM devices WHERE device_type = ? ORDER BY created_at DESC LIMIT 1
-  `)
+    // Get device by ID
+    getDevice: db.prepare(`
+      SELECT * FROM devices WHERE device_id = ?
+    `),
+
+    // Get device by type
+    getDeviceByType: db.prepare(`
+      SELECT * FROM devices WHERE device_type = ? ORDER BY created_at DESC LIMIT 1
+    `)
+  }
+
+  filamentQueries = {
+    // Insert filament reading
+    insertReading: db.prepare(`
+      INSERT INTO filament_readings (
+        device_id, weight, temperature, humidity, battery_level, estimated_time,
+        is_sleeping, calibration_mode, alert_threshold_min, alert_threshold_max
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `),
+
+    // Get recent readings
+    getRecentReadings: db.prepare(`
+      SELECT * FROM filament_readings 
+      WHERE device_id = ? AND created_at > datetime('now', '-24 hours')
+      ORDER BY created_at DESC LIMIT 100
+    `),
+
+    // Get historical data
+    getHistoricalData: db.prepare(`
+      SELECT 
+        DATE(created_at) as date,
+        AVG(weight) as avg_weight,
+        AVG(temperature) as avg_temperature,
+        MIN(battery_level) as min_battery,
+        COUNT(*) as reading_count
+      FROM filament_readings
+      WHERE device_id = ? AND created_at >= date('now', '-30 days')
+      GROUP BY DATE(created_at)
+      ORDER BY date DESC
+    `)
+  }
+
+  conveyorQueries = {
+    // Insert conveyor data
+    insertData: db.prepare(`
+      INSERT INTO conveyor_data (
+        device_id, speed, direction, mode, is_running, emergency_stop,
+        position, load, motor_temperature, status_led
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `),
+
+    // Get recent data
+    getRecentData: db.prepare(`
+      SELECT * FROM conveyor_data
+      WHERE device_id = ? AND created_at > datetime('now', '-24 hours')
+      ORDER BY created_at DESC LIMIT 100
+    `)
+  }
+
+  qcQueries = {
+    // Insert inspection
+    insertInspection: db.prepare(`
+      INSERT INTO qc_inspections (
+        device_id, inspection_id, classification, confidence, defect_type,
+        image_path, camera_status, led_status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `),
+
+    // Get recent inspections
+    getRecentInspections: db.prepare(`
+      SELECT * FROM qc_inspections
+      WHERE device_id = ? AND created_at > datetime('now', '-24 hours')
+      ORDER BY created_at DESC LIMIT 50
+    `),
+
+    // Get quality statistics
+    getQualityStats: db.prepare(`
+      SELECT 
+        classification,
+        COUNT(*) as count,
+        AVG(confidence) as avg_confidence,
+        COUNT(*) * 100.0 / (SELECT COUNT(*) FROM qc_inspections WHERE device_id = ?) as percentage
+      FROM qc_inspections
+      WHERE device_id = ? AND created_at >= date('now', '-7 days')
+      GROUP BY classification
+      ORDER BY count DESC
+    `)
+  }
+
+  alertQueries = {
+    // Insert alert
+    insertAlert: db.prepare(`
+      INSERT INTO alerts (device_id, device_name, severity, title, message)
+      VALUES (?, ?, ?, ?, ?)
+    `),
+
+    // Get recent alerts
+    getRecentAlerts: db.prepare(`
+      SELECT * FROM alerts
+      ORDER BY created_at DESC
+      LIMIT 100
+    `),
+
+    // Get alerts by device
+    getAlertsByDevice: db.prepare(`
+      SELECT * FROM alerts
+      WHERE device_id = ?
+      ORDER BY created_at DESC
+      LIMIT 50
+    `),
+
+    // Mark alert as acknowledged
+    acknowledgeAlert: db.prepare(`
+      UPDATE alerts SET acknowledged = TRUE WHERE id = ?
+    `)
+  }
+
+  analyticsQueries = {
+    // Insert metric
+    insertMetric: db.prepare(`
+      INSERT INTO analytics (metric_name, metric_value, metric_unit, period)
+      VALUES (?, ?, ?, ?)
+    `),
+
+    // Get metrics by period
+    getMetrics: db.prepare(`
+      SELECT * FROM analytics
+      WHERE period = ? AND created_at >= date('now', '-30 days')
+      ORDER BY created_at DESC
+    `)
+  }
+  
+  console.log('✅ Database queries initialized')
 }
 
-export const filamentQueries = {
-  // Insert filament reading
-  insertReading: db.prepare(`
-    INSERT INTO filament_readings (
-      device_id, weight, temperature, humidity, battery_level, estimated_time,
-      is_sleeping, calibration_mode, alert_threshold_min, alert_threshold_max
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `),
-
-  // Get recent readings
-  getRecentReadings: db.prepare(`
-    SELECT * FROM filament_readings 
-    WHERE device_id = ? AND created_at > datetime('now', '-24 hours')
-    ORDER BY created_at DESC LIMIT 100
-  `),
-
-  // Get historical data
-  getHistoricalData: db.prepare(`
-    SELECT 
-      DATE(created_at) as date,
-      AVG(weight) as avg_weight,
-      AVG(temperature) as avg_temperature,
-      MIN(battery_level) as min_battery,
-      COUNT(*) as reading_count
-    FROM filament_readings
-    WHERE device_id = ? AND created_at >= date('now', '-30 days')
-    GROUP BY DATE(created_at)
-    ORDER BY date DESC
-  `)
-}
-
-export const conveyorQueries = {
-  // Insert conveyor data
-  insertData: db.prepare(`
-    INSERT INTO conveyor_data (
-      device_id, speed, direction, mode, is_running, emergency_stop,
-      position, load, motor_temperature, status_led
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `),
-
-  // Get recent data
-  getRecentData: db.prepare(`
-    SELECT * FROM conveyor_data
-    WHERE device_id = ? AND created_at > datetime('now', '-24 hours')
-    ORDER BY created_at DESC LIMIT 100
-  `)
-}
-
-export const qcQueries = {
-  // Insert inspection
-  insertInspection: db.prepare(`
-    INSERT INTO qc_inspections (
-      device_id, inspection_id, classification, confidence, defect_type,
-      image_path, camera_status, led_status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `),
-
-  // Get recent inspections
-  getRecentInspections: db.prepare(`
-    SELECT * FROM qc_inspections
-    WHERE device_id = ? AND created_at > datetime('now', '-24 hours')
-    ORDER BY created_at DESC LIMIT 50
-  `),
-
-  // Get quality statistics
-  getQualityStats: db.prepare(`
-    SELECT 
-      classification,
-      COUNT(*) as count,
-      AVG(confidence) as avg_confidence,
-      COUNT(*) * 100.0 / SUM(COUNT(*)) OVER() as percentage
-    FROM qc_inspections
-    WHERE device_id = ? AND created_at >= date('now', '-7 days')
-    GROUP BY classification
-    ORDER BY count DESC
-  `)
-}
-
-export const alertQueries = {
-  // Insert alert
-  insertAlert: db.prepare(`
-    INSERT INTO alerts (device_id, device_name, severity, title, message, acknowledged)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `),
-
-  // Get recent alerts
-  getRecentAlerts: db.prepare(`
-    SELECT * FROM alerts
-    WHERE created_at > datetime('now', '-7 days')
-    ORDER BY created_at DESC LIMIT 50
-  `),
-
-  // Get unacknowledged alerts
-  getUnacknowledgedAlerts: db.prepare(`
-    SELECT * FROM alerts
-    WHERE acknowledged = FALSE
-    ORDER BY created_at DESC
-  `),
-
-  // Acknowledge alert
-  acknowledgeAlert: db.prepare(`
-    UPDATE alerts SET acknowledged = TRUE WHERE id = ?
-  `)
-}
-
-export const analyticsQueries = {
-  // Insert metric
-  insertMetric: db.prepare(`
-    INSERT INTO analytics (metric_name, metric_value, metric_unit, period)
-    VALUES (?, ?, ?, ?)
-  `),
-
-  // Get metrics by period
-  getMetrics: db.prepare(`
-    SELECT * FROM analytics
-    WHERE period = ? AND created_at >= date('now', '-30 days')
-    ORDER BY created_at DESC
-  `)
-}
+// Export query objects for use in other modules
+export { deviceQueries, filamentQueries, conveyorQueries, qcQueries, alertQueries, analyticsQueries }

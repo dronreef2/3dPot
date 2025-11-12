@@ -8,8 +8,8 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
-import { useDevice } from '@contexts/DeviceContext'
-import type { Device, FilamentDevice, ConveyorDevice, QCDevice } from '@types'
+import { useDevice } from '../contexts/DeviceContext'
+import type { Device, FilamentDevice, ConveyorDevice, QCDevice } from '../types'
 
 interface DeviceCardProps {
   id: 'filament' | 'conveyor' | 'qc'

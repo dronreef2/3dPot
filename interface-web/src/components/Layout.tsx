@@ -17,9 +17,9 @@ import {
   ChevronDownIcon
 } from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useDevice } from '@contexts/DeviceContext'
-import { useAuth } from '@contexts/AuthContext'
-import type { AppSettings } from '@types'
+import { useDevice } from '../contexts/DeviceContext'
+import { useAuth } from '../contexts/AuthContext'
+import type { AppSettings } from '../types'
 
 interface LayoutProps {
   children: ReactNode

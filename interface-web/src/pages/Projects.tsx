@@ -16,7 +16,7 @@ import {
   TagIcon,
   CubeIcon
 } from '@heroicons/react/24/outline'
-import { useAuth } from '@contexts/AuthContext'
+import { useAuth } from '../contexts/AuthContext'
 import { ProjectViewer } from '@components/ProjectViewer'
 import toast from 'react-hot-toast'
 

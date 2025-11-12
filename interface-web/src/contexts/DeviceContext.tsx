@@ -6,8 +6,8 @@ import type {
   QCDevice, 
   DeviceStatus,
   AlertMessage 
-} from '@types'
-import { mockDevices, mockAlerts, generateRandomUpdate, generateRandomAlert } from '@data/mockData'
+} from '../types'
+import { mockDevices, mockAlerts, generateRandomUpdate, generateRandomAlert } from '../data/mockData'
 
 interface DeviceState {
   devices: {

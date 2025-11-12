@@ -9,7 +9,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
-import { useDevice } from '@contexts/DeviceContext'
+import { useDevice } from '../contexts/DeviceContext'
 
 // Register Chart.js components
 ChartJS.register(

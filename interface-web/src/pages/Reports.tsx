@@ -8,8 +8,8 @@ import {
   PrinterIcon,
   ShareIcon
 } from '@heroicons/react/24/outline'
-import { useDevice } from '@contexts/DeviceContext'
-import { deviceService } from '@services/deviceService'
+import { useDevice } from '../contexts/DeviceContext'
+import { deviceService } from '../services/deviceService'
 import { ReportsChart } from '@components/Charts/ReportsChart'
 import toast from 'react-hot-toast'
 

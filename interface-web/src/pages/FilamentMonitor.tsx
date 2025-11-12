@@ -10,11 +10,11 @@ import {
   ArrowPathIcon,
   CpuChipIcon
 } from '@heroicons/react/24/outline'
-import { useDevice } from '@contexts/DeviceContext'
-import { deviceService } from '@services/deviceService'
+import { useDevice } from '../contexts/DeviceContext'
+import { deviceService } from '../services/deviceService'
 import { FilamentChart } from '@components/Charts/FilamentChart'
 import toast from 'react-hot-toast'
-import type { FilamentData } from '@types'
+import type { FilamentData } from '../types'
 
 export function FilamentMonitor() {
   const { state: deviceState } = useDevice()

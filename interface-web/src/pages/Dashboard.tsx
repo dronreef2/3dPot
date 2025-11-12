@@ -9,11 +9,11 @@ import {
   CheckCircleIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
-import { useDevice } from '@contexts/DeviceContext'
+import { useDevice } from '../contexts/DeviceContext'
 import { DeviceCard } from '@components/DeviceCard'
 import { ProductionChart } from '@components/Charts/ProductionChart'
 import { QuickActions } from '@components/QuickActions'
-import type { AnalyticsData, ChartData } from '@types'
+import type { AnalyticsData, ChartData } from '../types'
 
 export function Dashboard() {
   const { state: deviceState, refreshDevices } = useDevice()

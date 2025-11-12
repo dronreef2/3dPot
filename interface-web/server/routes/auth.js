@@ -181,7 +181,12 @@ router.post('/logout', async (req, res) => {
 })
 
 // GET /api/auth/me
-router.get('/me', req.authService.authenticate(), async (req, res) => {
+router.get('/me', async (req, res) => {
+  const authService = req.app.get('authService')
+  
+  // Apply authentication middleware manually
+  const authMiddleware = authService.authenticate()
+  authMiddleware(req, res, async () => {
   try {
     const userProfile = await req.authService.getUserProfile(req.user.userId)
     
@@ -196,11 +201,15 @@ router.get('/me', req.authService.authenticate(), async (req, res) => {
       error: 'Usuário não encontrado'
     })
   }
+  })
 })
 
 // POST /api/auth/change-password
 router.post('/change-password', 
-  req.authService.authenticate(),
+  (req, res, next) => {
+    const authService = req.app.get('authService')
+    authService.authenticate()(req, res, next)
+  },
   changePasswordValidation,
   handleValidationErrors,
   async (req, res) => {
@@ -234,8 +243,12 @@ router.post('/change-password',
 
 // GET /api/auth/users (apenas admin)
 router.get('/users', 
-  req.authService.authenticate(),
-  req.authService.authorize('users:manage'),
+  (req, res, next) => {
+    const authService = req.app.get('authService')
+    authService.authenticate()(req, res, () => {
+      authService.authorize('users:manage')(req, res, next)
+    })
+  },
   async (req, res) => {
     try {
       const users = req.authService.getActiveUsers()
@@ -259,8 +272,12 @@ router.get('/users',
 
 // POST /api/auth/users (criar usuário - apenas admin)
 router.post('/users',
-  req.authService.authenticate(),
-  req.authService.authorize('users:manage'),
+  (req, res, next) => {
+    const authService = req.app.get('authService')
+    authService.authenticate()(req, res, () => {
+      authService.authorize('users:manage')(req, res, next)
+    })
+  },
   createUserValidation,
   handleValidationErrors,
   async (req, res) => {
@@ -292,8 +309,12 @@ router.post('/users',
 
 // PUT /api/auth/users/:userId
 router.put('/users/:userId',
-  req.authService.authenticate(),
-  req.authService.authorize('users:manage'),
+  (req, res, next) => {
+    const authService = req.app.get('authService')
+    authService.authenticate()(req, res, () => {
+      authService.authorize('users:manage')(req, res, next)
+    })
+  },
   async (req, res) => {
     try {
       const { userId } = req.params

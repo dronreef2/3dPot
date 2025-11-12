@@ -9,11 +9,11 @@ import {
   XCircleIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
-import { useDevice } from '@contexts/DeviceContext'
-import { deviceService } from '@services/deviceService'
+import { useDevice } from '../contexts/DeviceContext'
+import { deviceService } from '../services/deviceService'
 import { QCChart } from '@components/Charts/QCChart'
 import toast from 'react-hot-toast'
-import type { QCData } from '@types'
+import type { QCData } from '../types'
 
 export function QCStation() {
   const { state: deviceState } = useDevice()

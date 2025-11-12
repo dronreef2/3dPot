@@ -11,8 +11,8 @@ import {
   BoltIcon,
   Cog6ToothIcon
 } from '@heroicons/react/24/outline'
-import { useDevice } from '@contexts/DeviceContext'
-import { deviceService } from '@services/deviceService'
+import { useDevice } from '../contexts/DeviceContext'
+import { deviceService } from '../services/deviceService'
 import toast from 'react-hot-toast'
 
 export function QuickActions() {

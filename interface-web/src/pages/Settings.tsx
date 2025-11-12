@@ -10,7 +10,7 @@ import {
   GlobeAltIcon,
   LanguageIcon
 } from '@heroicons/react/24/outline'
-import type { AppSettings } from '@types'
+import type { AppSettings } from '../types'
 
 interface SettingsProps {
   settings: AppSettings

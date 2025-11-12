@@ -11,7 +11,7 @@ import {
   Filler
 } from 'chart.js'
 import { Line } from 'react-chartjs-2'
-import type { ChartData } from '@types'
+import type { ChartData } from '../types'
 
 // Register Chart.js components
 ChartJS.register(

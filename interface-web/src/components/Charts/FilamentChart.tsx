@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react'
 import { Line } from 'react-chartjs-2'
-import { useDevice } from '@contexts/DeviceContext'
+import { useDevice } from '../contexts/DeviceContext'
 
 export function FilamentChart() {
   const chartRef = useRef<any>(null)

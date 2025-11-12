@@ -10,10 +10,10 @@ import {
   Cog6ToothIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
-import { useDevice } from '@contexts/DeviceContext'
-import { deviceService } from '@services/deviceService'
+import { useDevice } from '../contexts/DeviceContext'
+import { deviceService } from '../services/deviceService'
 import toast from 'react-hot-toast'
-import type { ConveyorData } from '@types'
+import type { ConveyorData } from '../types'
 
 export function ConveyorControl() {
   const { state: deviceState } = useDevice()

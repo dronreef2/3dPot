@@ -12,10 +12,10 @@ import { Projects } from '@pages/Projects'
 import { Settings } from '@pages/Settings'
 import { Reports } from '@pages/Reports'
 import { useWebSocket } from '@hooks/useWebSocket'
-import { DeviceProvider } from '@contexts/DeviceContext'
-import { AuthProvider, useAuth } from '@contexts/AuthContext'
+import { DeviceProvider } from '../contexts/DeviceContext'
+import { AuthProvider, useAuth } from '../contexts/AuthContext'
 import { useTheme } from '@hooks/useTheme'
-import type { AppSettings } from '@types'
+import type { AppSettings } from '../types'
 
 const defaultSettings: AppSettings = {
   theme: 'auto',
