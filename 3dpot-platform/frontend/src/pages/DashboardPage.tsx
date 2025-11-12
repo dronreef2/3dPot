@@ -10,7 +10,10 @@ import {
   Plus,
   Loader2,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Box,
+  Sparkles,
+  Layers3
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { apiService } from '@/services/api';
@@ -218,6 +221,24 @@ export function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
+            className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate('/3d')}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Modelos 3D</p>
+                <p className="text-2xl font-bold text-orange-600">NVIDIA NIM</p>
+              </div>
+              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                <Box className="w-6 h-6 text-orange-600" />
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
             className="bg-white rounded-lg p-6 shadow-sm border border-gray-200"
           >
             <div className="flex items-center justify-between">
@@ -315,14 +336,15 @@ export function DashboardPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white cursor-pointer hover:from-purple-600 hover:to-purple-700 transition-all"
+            transition={{ delay: 0.8 }}
+            className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-6 text-white cursor-pointer hover:from-orange-600 hover:to-orange-700 transition-all"
+            onClick={() => navigate('/3d')}
           >
             <div className="flex items-center space-x-4">
-              <DollarSign className="w-8 h-8" />
+              <Box className="w-8 h-8" />
               <div>
-                <h3 className="text-lg font-semibold">Gerar Orçamento</h3>
-                <p className="text-purple-100">Crie orçamentos para seus projetos</p>
+                <h3 className="text-lg font-semibold">Gerar Modelo 3D</h3>
+                <p className="text-orange-100">Crie modelos com IA NVIDIA</p>
               </div>
             </div>
           </motion.div>

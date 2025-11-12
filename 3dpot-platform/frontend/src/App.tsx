@@ -5,6 +5,7 @@ import { ConversationProvider } from '@/contexts/ConversationContext';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ChatPage } from '@/pages/ChatPage';
 import { HistoryPage } from '@/pages/HistoryPage';
+import Model3DPage from '@/pages/Model3DPage';
 
 // Estilos CSS globais do TailwindCSS
 import '@/index.css';
@@ -29,6 +30,10 @@ function App() {
             
             {/* Histórico de conversas */}
             <Route path="/history" element={<HistoryPage />} />
+            
+            {/* 3D Model Viewer */}
+            <Route path="/3d" element={<Model3DPage />} />
+            <Route path="/3d/:modelId" element={<Model3DPage />} />
             
             {/* Rota fallback - redireciona para dashboard */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

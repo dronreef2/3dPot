@@ -40,11 +40,15 @@ from rich.logging import RichHandler
 
 # Local modules
 from database.database import get_database, engine, SessionLocal
-from database.models import Base
+from database.models import (
+    User, ConversationSession, Message, 
+    Model3D, ModelGenerationJob, ModelExport, ModelTemplate
+)
 from services.auth import AuthService
 from services.mqtt_bridge import MQTTBridgeService
 from services.conversation import ConversationService
 from services.model_generation import ModelGenerationService
+from services.model3d_service import router as model3d_router
 from services.budget import BudgetService
 from services.websocket import WebSocketManager
 from utils.logger import setup_logging
@@ -258,7 +262,8 @@ async def websocket_conversation(websocket: WebSocket, session_id: str):
 # API Routes
 app.include_router(AuthService.router, prefix="/auth", tags=["Authentication"])
 app.include_router(ConversationService.router, prefix="/conversations", tags=["Conversation"])
-app.include_router(ModelGenerationService.router, prefix="/models", tags=["Model Generation"])
+app.include_router(model3d_router, prefix="/models", tags=["3D Models"])
+app.include_router(ModelGenerationService.router, prefix="/legacy-models", tags=["Model Generation"])
 app.include_router(BudgetService.router, prefix="/budgets", tags=["Budget"])
 app.include_router(MQTTBridgeService.router, prefix="/hardware", tags=["Hardware"])
 
