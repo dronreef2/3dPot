@@ -14,11 +14,17 @@ import pytest
 # Mock serial para evitar dependência em ambiente CI
 try:
     import serial
+    import serial.tools
+    import serial.tools.list_ports
 except ImportError:
     # Mock serial se não estiver disponível
     sys.modules['serial'] = MagicMock()
     sys.modules['serial.tools'] = MagicMock()
     sys.modules['serial.tools.list_ports'] = MagicMock()
+    
+    # Mock específico para comports no ambiente CI
+    mock_comports = MagicMock()
+    sys.modules['serial.tools.list_ports'].comports = mock_comports
     import serial
 
 
@@ -276,16 +282,18 @@ class TestSerialCommunication:
     
     def test_serial_port_detection(self):
         """Testa detecção de porta serial."""
-        with patch('serial.tools.list_ports.comports') as mock_ports:
-            mock_port = MagicMock()
-            mock_port.device = '/dev/ttyUSB0'
-            mock_port.description = 'Arduino Uno'
-            mock_ports.return_value = [mock_port]
-            
+        # Mock direto para garantir funcionamento no CI
+        mock_port = MagicMock()
+        mock_port.device = '/dev/ttyUSB0'
+        mock_port.description = 'Arduino Uno'
+        
+        # Aplica o patch corretamente
+        with patch('tests.unit.test_arduino.test_conveyor_belt.serial.tools.list_ports.comports', return_value=[mock_port]):
             ports = list(serial.tools.list_ports.comports())
             
-            assert len(ports) == 1
-            assert ports[0].device == '/dev/ttyUSB0'
+            # Verifica se encontramos a porta simulada
+            assert len(ports) == 1, f"Expected 1 port, got {len(ports)}"
+            assert ports[0].device == '/dev/ttyUSB0', f"Expected /dev/ttyUSB0, got {ports[0].device}"
     
     def test_command_parsing(self):
         """Testa parsing de comandos serial."""
