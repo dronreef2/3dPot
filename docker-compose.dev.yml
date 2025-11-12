@@ -1,0 +1,246 @@
+version: '3.8'
+
+services:
+  # Backend FastAPI
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: 3dpot-backend-dev
+    restart: unless-stopped
+    environment:
+      # Environment
+      - ENVIRONMENT=development
+      - DEBUG=true
+      
+      # Database
+      - DATABASE_URL=postgresql://3dpot:3dpot123@postgres:5432/3dpot_dev
+      
+      # JWT Settings
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-super-secret-key-change-in-production}
+      - JWT_ALGORITHM=HS256
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
+      
+      # Minimax M2 API
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-your-minimax-api-key}
+      - MINIMAX_BASE_URL=https://api.minimax.chat/v1
+      
+      # External APIs
+      - SLANT3D_API_KEY=${SLANT3D_API_KEY:-your-slant3d-key}
+      - REPLICATE_API_TOKEN=${REPLICATE_API_TOKEN:-your-replicate-token}
+      
+      # Storage
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin123
+      - MINIO_BUCKET_MODELS=models
+      - MINIO_BUCKET_RENDERINGS=renderings
+      
+      # Monitoring
+      - PROMETHEUS_ENABLED=true
+      - GRAFANA_ENABLED=true
+      
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+      - backend_uploads:/app/uploads
+      - backend_logs:/app/logs
+    networks:
+      - 3dpot-network
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: 3dpot-frontend-dev
+    restart: unless-stopped
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_WS_URL=ws://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - frontend_builds:/app/dist
+    networks:
+      - 3dpot-network
+    ports:
+      - "3000:3000"
+    command: npm run dev -- --host 0.0.0.0 --port 3000
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: 3dpot-postgres-dev
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=3dpot
+      - POSTGRES_PASSWORD=3dpot123
+      - POSTGRES_DB=3dpot_dev
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+      - ./database/migrations:/app/migrations
+    networks:
+      - 3dpot-network
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U 3dpot -d 3dpot_dev"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: 3dpot-redis-dev
+    restart: unless-stopped
+    environment:
+      - REDIS_PASSWORD=redis123
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - 3dpot-network
+    ports:
+      - "6379:6379"
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MinIO for object storage
+  minio:
+    image: minio/minio:latest
+    container_name: 3dpot-minio-dev
+    restart: unless-stopped
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin123
+    volumes:
+      - minio_data:/data
+    networks:
+      - 3dpot-network
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # RabbitMQ for message queue
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 3dpot-rabbitmq-dev
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=3dpot
+      - RABBITMQ_DEFAULT_PASS=3dpot123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    networks:
+      - 3dpot-network
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: 3dpot-prometheus-dev
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - 3dpot-network
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention.time=30d'
+
+  # Grafana for dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: 3dpot-grafana-dev
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - 3dpot-network
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+
+  # MailHog for development email testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: 3dpot-mailhog-dev
+    restart: unless-stopped
+    networks:
+      - 3dpot-network
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  backend_uploads:
+    driver: local
+  backend_logs:
+    driver: local
+  frontend_builds:
+    driver: local
+
+networks:
+  3dpot-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

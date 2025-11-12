@@ -1,0 +1,374 @@
+# 3dPot v2.0 - Sistema de Prototipagem Sob Demanda
+# Docker Compose para desenvolvimento e produção
+
+version: '3.8'
+
+services:
+  # =============================================================================
+  # BACKEND API (FastAPI)
+  # =============================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: 3dpot-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Database
+      - DATABASE_URL=postgresql+psycopg2://postgres:password@postgres:5432/3dpot_v2
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=3dpot_v2
+      
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      
+      # Storage
+      - S3_ENDPOINT_URL=http://minio:9000
+      - S3_ACCESS_KEY=minioadmin
+      - S3_SECRET_KEY=minioadmin
+      - S3_BUCKET_NAME=3dpot-models
+      - S3_SECURE=false
+      
+      # Security
+      - SECRET_KEY=${SECRET_KEY:-your_super_secret_key_change_in_production}
+      - JWT_SECRET=${JWT_SECRET:-your_jwt_secret_change_in_production}
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      
+      # External APIs
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-}
+      - OCTOPART_API_KEY=${OCTOPART_API_KEY:-}
+      - DIGIKEY_API_KEY=${DIGIKEY_API_KEY:-}
+      - REPLICATE_API_TOKEN=${REPLICATE_API_TOKEN:-}
+      
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      
+    volumes:
+      - ./backend:/app
+      - backend-storage:/app/storage
+      - ./logs:/app/logs
+    networks:
+      - 3dpot-network
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # =============================================================================
+  # FRONTEND (React + Vite)
+  # =============================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: 3dpot-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000/api/v1
+      - VITE_WS_URL=ws://localhost:8000
+      - VITE_STORAGE_URL=http://localhost:9000
+      - NODE_ENV=development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - 3dpot-network
+    depends_on:
+      - backend
+    command: npm run dev -- --host 0.0.0.0
+
+  # =============================================================================
+  # POSTGRESQL DATABASE
+  # =============================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: 3dpot-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=3dpot_v2
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - 3dpot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d 3dpot_v2"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # =============================================================================
+  # REDIS (Cache & Message Broker)
+  # =============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: 3dpot-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - 3dpot-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # MINIO (S3-compatible Storage)
+  # =============================================================================
+  minio:
+    image: minio/minio:latest
+    container_name: 3dpot-minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin123
+    volumes:
+      - minio-data:/data
+      - ./minio/config:/root/.minio
+    command: server /data --console-address ":9001"
+    networks:
+      - 3dpot-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # =============================================================================
+  # CELERY WORKER (Background Tasks)
+  # =============================================================================
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: 3dpot-celery-worker
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://postgres:password@postgres:5432/3dpot_v2
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - S3_ENDPOINT_URL=http://minio:9000
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+      - backend-storage:/app/storage
+      - ./logs:/app/logs
+    networks:
+      - 3dpot-network
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    command: celery -A main.celery worker --loglevel=info --concurrency=2
+
+  # =============================================================================
+  # CELERY BEAT (Scheduled Tasks)
+  # =============================================================================
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: 3dpot-celery-beat
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://postgres:password@postgres:5432/3dpot_v2
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+      - backend-storage:/app/storage
+    networks:
+      - 3dpot-network
+    depends_on:
+      - postgres
+      - redis
+    command: celery -A main.celery beat --loglevel=info
+
+  # =============================================================================
+  # NGINX (Reverse Proxy & Load Balancer)
+  # =============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: 3dpot-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
+    networks:
+      - 3dpot-network
+    depends_on:
+      - backend
+      - frontend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # PROMETHEUS (Metrics Collection)
+  # =============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: 3dpot-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - 3dpot-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # GRAFANA (Dashboards)
+  # =============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: 3dpot-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=redis-datasource,postgres-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - 3dpot-network
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # LEGACY SERVICES (Preserved from v1.0)
+  # =============================================================================
+  
+  # Legacy Flask Server
+  legacy-server:
+    build:
+      context: ./legacy
+      dockerfile: Dockerfile.legacy
+    container_name: 3dpot-legacy-server
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - SECRET_KEY=legacy_secret_key
+    volumes:
+      - ./legacy:/app
+      - legacy-storage:/app/storage
+    networks:
+      - 3dpot-network
+    command: python servidor_integracao.py
+
+  # Legacy MQTT Broker
+  mqtt-broker:
+    image: eclipse-mosquitto:2.0
+    container_name: 3dpot-mqtt-legacy
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./legacy/mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mqtt-data:/mosquitto/data
+      - mqtt-logs:/mosquitto/log
+    networks:
+      - 3dpot-network
+    healthcheck:
+      test: ["CMD", "mosquitto", "-c", "/mosquitto/config/mosquitto.conf"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  minio-data:
+    driver: local
+  backend-storage:
+    driver: local
+  legacy-storage:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  mqtt-data:
+    driver: local
+  mqtt-logs:
+    driver: local
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  3dpot-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

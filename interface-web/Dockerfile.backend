@@ -1,0 +1,46 @@
+# Multi-stage Dockerfile para Backend Node.js + Express
+# Estágio 1: Dependências de build
+FROM node:18-alpine AS deps
+
+WORKDIR /app/server
+
+# Instalar dependências de produção apenas
+COPY server/package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Estágio 2: Aplicação principal
+FROM node:18-alpine AS app
+
+# Instalar dependências do sistema
+RUN apk add --no-cache \
+    sqlite \
+    openssl \
+    bash \
+    curl \
+    && rm -rf /var/cache/apk/*
+
+# Criar usuário não-root para segurança
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001 -G nodejs
+
+WORKDIR /app
+
+# Copiar arquivos do servidor
+COPY --from=deps /app/server/node_modules ./server/node_modules
+COPY server/ ./server/
+
+# Copiar logs directory
+RUN mkdir -p /app/logs && chown -R nodejs:nodejs /app
+
+# Mudar para usuário não-root
+USER nodejs
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Expor porta
+EXPOSE 3000
+
+# Iniciar servidor
+CMD ["node", "server/index.js"]
