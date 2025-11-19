@@ -16,6 +16,8 @@
 
 **Ecossistema completo de prototipagem: Hardware IoT + Backend de IA para automação e design sob demanda.**
 
+> 📚 **Nota sobre a Estrutura do Repositório**: Este repositório foi reorganizado em novembro de 2024 para melhor organização e manutenibilidade. Consulte [STRUCTURE.md](STRUCTURE.md) para detalhes da nova estrutura e [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) se você tem código em desenvolvimento.
+
 ## 🔥 **ATUALIZAÇÃO SPRINT 1 - PROBLEMAS CRÍTICOS RESOLVIDOS**
 
 **Data:** 2025-11-12  
@@ -946,6 +948,40 @@ Este é o fluxo de trabalho de software que conecta tudo.
 ## Licença
 
 Este projeto é open-source e está disponível sob a licença MIT.
+
+## 📁 Estrutura do Repositório
+
+O repositório está organizado de forma modular para facilitar navegação e manutenção:
+
+```
+3dPot/
+├── backend/              # API Backend (FastAPI)
+├── frontend/            # Interface Web
+│   └── demos/          # Demonstrações HTML
+├── interface-web/      # Interface Web Alternativa
+├── tests/              # Testes automatizados
+│   ├── integration/   # Testes de integração
+│   └── unit/          # Testes unitários
+├── scripts/            # Scripts utilitários
+│   ├── validacao/     # Scripts de validação
+│   ├── dados/         # Geração de dados
+│   ├── monitoramento/ # Monitoramento
+│   └── demos/         # Scripts de demonstração
+├── docs/               # Documentação
+│   ├── sprints/       # Histórico de sprints
+│   ├── relatorios/    # Relatórios de progresso
+│   ├── validacao/     # Relatórios de validação
+│   ├── arquitetura/   # Documentação arquitetural
+│   └── guias/         # Guias e tutoriais
+├── outputs/            # Artefatos gerados (não versionado)
+├── external_api/       # Integrações externas
+├── modelos-3d/        # Modelos 3D
+└── assets/            # Recursos estáticos
+```
+
+Para detalhes completos da estrutura e guia de migração, consulte:
+- 📖 [STRUCTURE.md](STRUCTURE.md) - Estrutura detalhada do repositório
+- 🔄 [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) - Guia de migração para contribuidores
 
 ## Como Contribuir
 
