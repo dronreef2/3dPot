@@ -283,8 +283,11 @@ class ImprovedOpenSCADValidator:
             print("   🔧 Corrigir os erros antes da impressão 3D")
             print("   📖 Consulte a documentação OpenSCAD para ajuda")
         
-        # Salvar relatório
-        report_file = Path("final_validation_report.json")
+        # Salvar relatório em outputs/relatorios/
+        output_dir = Path("outputs/relatorios")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        report_file = output_dir / "final_validation_report.json"
+        
         with open(report_file, 'w', encoding='utf-8') as f:
             json.dump(self.results, f, indent=2, ensure_ascii=False)
         

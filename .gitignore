@@ -895,3 +895,9 @@
 # uploads/
 # downloads/
 
+# Output files and generated reports
+outputs/
+*.validation_report.json
+workflows_status.json
+workspace.json
+

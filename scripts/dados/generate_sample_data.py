@@ -8,6 +8,7 @@ Baseado na estrutura real dos workflows do projeto.
 import json
 import random
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Dict, List, Any
 
 
@@ -245,8 +246,11 @@ def main():
         "metrics": metrics
     }
     
-    # Salvar em arquivo JSON
-    output_file = "workflows_status.json"
+    # Salvar em arquivo JSON em outputs/
+    output_dir = Path("outputs")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_file = output_dir / "workflows_status.json"
+    
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(output_data, f, indent=2, ensure_ascii=False)
     
