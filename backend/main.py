@@ -6,6 +6,7 @@ This unified backend combines:
 - 3D Modeling, Simulation, and Budgeting APIs (Sprints 1-6+)
 - IoT Device Monitoring and Management APIs
 - WebSocket support for real-time updates
+- Observability: Structured logging, metrics, and request tracing (Sprint 6)
 """
 
 import logging
@@ -15,9 +16,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from loguru import logger as loguru_logger
 import sys
+import os
 
 # Core imports
 from backend.core.config import settings, DATABASE_URL, SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, MODELS_STORAGE_PATH
@@ -25,26 +27,49 @@ from backend.core.config import settings, DATABASE_URL, SECRET_KEY, ALGORITHM, A
 # Database
 from backend.database import get_db
 
+# Observability (Sprint 6)
+from backend.observability import (
+    configure_logging,
+    get_logger,
+    RequestIDMiddleware,
+    LoggingMiddleware,
+    MetricsMiddleware,
+    setup_metrics,
+    get_metrics_content_type,
+)
+
+# Configure structured logging
+log_level = os.getenv("LOG_LEVEL", "INFO")
+log_format = os.getenv("LOG_FORMAT", "console")  # Use console for dev, json for prod
+configure_logging(level=log_level, format_type=log_format)
+
+# Get structured logger for this module
+logger = get_logger(__name__)
+
 # === LIFESPAN MANAGEMENT ===
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Gerencia o ciclo de vida da aplicação"""
     # Startup
-    loguru_logger.info(f"Iniciando {settings.PROJECT_NAME} v2.0.0 (Unified)")
-    loguru_logger.info(f"Environment: {getattr(settings, 'ENVIRONMENT', 'production')}")
-    loguru_logger.info(f"Database: {DATABASE_URL[:20]}...")
+    logger.info(
+        "application_startup",
+        project=settings.PROJECT_NAME,
+        version="2.0.0",
+        environment=getattr(settings, 'ENVIRONMENT', 'production'),
+        database_url=DATABASE_URL[:20] + "...",
+    )
     
     try:
-        loguru_logger.info("✅ 3dPot Backend Unified iniciado com sucesso")
+        logger.info("application_started", status="success")
         yield
     except Exception as e:
-        loguru_logger.error(f"❌ Falha ao iniciar aplicação: {e}")
+        logger.error("application_startup_failed", error=str(e), exc_info=True)
         raise
     finally:
         # Shutdown
-        loguru_logger.info("Encerrando 3dPot Backend Unified...")
-        loguru_logger.info("✅ Aplicação encerrada")
+        logger.info("application_shutdown", status="initiated")
+        logger.info("application_shutdown", status="completed")
 
 
 # === CREATE FASTAPI APP ===
@@ -90,6 +115,15 @@ app = FastAPI(
 )
 
 # === MIDDLEWARE ===
+
+# Request ID (must be first to generate IDs for all requests)
+app.add_middleware(RequestIDMiddleware)
+
+# Logging (logs all requests/responses with request IDs)
+app.add_middleware(LoggingMiddleware)
+
+# Metrics (tracks HTTP metrics)
+app.add_middleware(MetricsMiddleware)
 
 # CORS
 allowed_origins = getattr(settings, 'ALLOWED_ORIGINS', ["*"])
@@ -264,7 +298,12 @@ app.include_router(
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc):
     """Handler para exceções HTTP"""
-    loguru_logger.warning(f"HTTP Exception: {exc.status_code} - {exc.detail}")
+    logger.warning(
+        "http_exception",
+        status_code=exc.status_code,
+        detail=exc.detail,
+        path=request.url.path,
+    )
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -280,7 +319,13 @@ async def http_exception_handler(request, exc):
 @app.exception_handler(Exception)
 async def general_exception_handler(request, exc):
     """Handler para exceções gerais"""
-    loguru_logger.error(f"Unhandled Exception: {exc}", exc_info=True)
+    logger.error(
+        "unhandled_exception",
+        exception_type=type(exc).__name__,
+        exception_message=str(exc),
+        path=request.url.path,
+        exc_info=True,
+    )
     return JSONResponse(
         status_code=500,
         content={
@@ -291,6 +336,27 @@ async def general_exception_handler(request, exc):
             }
         }
     )
+
+
+# === OBSERVABILITY ENDPOINTS (Sprint 6) ===
+
+@app.get("/metrics", tags=["observability"], include_in_schema=False)
+async def metrics_endpoint():
+    """
+    Prometheus metrics endpoint.
+    
+    Exposes metrics for monitoring:
+    - HTTP request counts, latencies
+    - Error rates
+    - Business metrics (models created, simulations run, etc.)
+    
+    Configure Prometheus to scrape this endpoint.
+    """
+    return Response(
+        content=setup_metrics(),
+        media_type=get_metrics_content_type(),
+    )
+
 
 
 # === ROOT ENDPOINTS ===
@@ -341,12 +407,14 @@ async def health_check():
 # === DEVELOPMENT SERVER ===
 
 if __name__ == "__main__":
-    # Configurar logging para desenvolvimento
-    loguru_logger.remove()
-    loguru_logger.add(
-        sys.stdout,
-        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-        level="DEBUG"
+    # Configure logging for development (console format with colors)
+    configure_logging(level="DEBUG", format_type="console")
+    
+    logger.info(
+        "starting_dev_server",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
     )
     
     # Executar servidor de desenvolvimento
