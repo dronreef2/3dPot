@@ -13,18 +13,18 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from sqlalchemy import text, and_
 
-from core.config import settings
-from database import get_db
-from models import User, RefreshToken
-from schemas import (
+from backend.core.config import settings
+from backend.database import get_db
+from backend.models import User, RefreshToken
+from backend.schemas import (
     UserRegister, UserLogin, UserLoginResponse, UserPublic, 
     PasswordResetRequest, PasswordResetConfirm, ChangePasswordRequest,
     RefreshTokenRequest, EmailVerificationRequest,
     SessionList, RevokeSessionRequest, RevokeAllSessionsRequest,
     UserProfileUpdate, AuthResponse, AuthMessage
 )
-from services.auth_service import auth_service, AuthenticationError, RateLimitError
-from middleware.auth import (
+from backend.services.auth_service import auth_service, AuthenticationError, RateLimitError
+from backend.middleware.auth import (
     get_current_user, get_current_active_user, log_authentication_attempt,
     log_authentication_logout, create_auth_response, create_error_response,
     extract_token_from_header

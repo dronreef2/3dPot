@@ -11,16 +11,16 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from database import get_db
-from middleware.auth import get_current_user
-from models import User, Simulation, Model3D
-from schemas.simulation import (
+from backend.database import get_db
+from backend.middleware.auth import get_current_user
+from backend.models import User, Simulation, Model3D
+from backend.schemas.simulation import (
     SimulationCreate, SimulationResponse, SimulationResult,
     SimulationStatusResponse, SimulationTemplate,
     DropTestConfig, StressTestConfig, MotionTestConfig, FluidTestConfig,
     ValidationResult
 )
-from services.simulation_service import SimulationService
+from backend.services.simulation_service import SimulationService
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

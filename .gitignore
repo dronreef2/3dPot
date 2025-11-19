@@ -30,6 +30,13 @@
 **/*.egg
 **/MANIFEST
 
+# Backup files
+**/*_backup.py
+**/*_original*.py
+**/*.bak
+**/*.old
+**/*_old.py
+
 # PyInstaller
 **/*.manifest
 **/*.spec

@@ -11,17 +11,17 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from database import get_db
-from middleware.auth import get_current_user
-from models import User, Conversation, ConversationMessage
-from schemas import (
+from backend.database import get_db
+from backend.middleware.auth import get_current_user
+from backend.models import User, Conversation, ConversationMessage
+from backend.schemas import (
     ConversationCreate,
     ConversationalResponse,
     ConversationMessageCreate,
     ConversationMessage,
     APIResponse
 )
-from services.minimax_service import MinimaxService
+from backend.services.minimax_service import MinimaxService
 
 router = APIRouter(prefix="/conversational", tags=["conversational"])
 

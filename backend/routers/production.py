@@ -11,15 +11,15 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Background
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
 
-from database import get_db
-from middleware.auth import get_current_user
-from models import User, Project, IntelligentBudget as Budget
-from models.production_models import (
+from backend.database import get_db
+from backend.middleware.auth import get_current_user
+from backend.models import User, Project, IntelligentBudget as Budget
+from backend.models.production_models import (
     ProductionOrder, ProductionStatus, Priority, ProductionType, QualityStatus,
     ProductionEvent, QualityCheck, ProductionSchedule, ProductionCapacity,
     ProductionMetrics, ProductionOptimization
 )
-from schemas.production_schemas import (
+from backend.schemas.production_schemas import (
     ProductionOrderCreate, ProductionOrderResponse, ProductionOrderUpdate,
     ProductionScheduleResponse, QualityCheckResponse, QualityCheckUpdate,
     ProductionEventResponse, ProductionCapacityResponse, ProductionMetricsResponse,
@@ -28,7 +28,7 @@ from schemas.production_schemas import (
     CapacityPlanningRequest, CapacityPlanningResponse, ProductionUpdate,
     QualityGateCheck, QualityGateResult, SupplyChainStatus, SupplyChainAlert
 )
-from services.production_service import ProductionService
+from backend.services.production_service import ProductionService
 
 router = APIRouter(prefix="/api/v1/production", tags=["production"])
 

@@ -12,10 +12,10 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from database import get_db
-from middleware.auth import get_current_user
-from models import User, Simulation
-from services.simulation_report_service import SimulationReportService
+from backend.database import get_db
+from backend.middleware.auth import get_current_user
+from backend.models import User, Simulation
+from backend.services.simulation_report_service import SimulationReportService
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

@@ -2,22 +2,64 @@
 
 Este documento descreve a organização do repositório 3dPot após a reorganização estrutural.
 
+> **📢 ATUALIZAÇÃO (Nov 2024):** Backend consolidado! Todos os endpoints (Modelagem + IoT) agora estão unificados em `backend/main.py` com routers em `backend/routers/`. A duplicação `backend/` vs `backend/app/` foi resolvida mantendo apenas modelos IoT específicos em `backend/app/models/` para evitar conflitos.
+
 ## 📋 Visão Geral
 
 O repositório foi reorganizado para melhorar a clareza, manutenibilidade e facilitar o onboarding de novos contribuidores. A estrutura atual separa claramente código de produção, testes, scripts utilitários, documentação e artefatos gerados.
+
+### 🎯 Mudanças Principais na Consolidação do Backend
+
+- ✅ **Entry Point Único:** `backend/main.py` agora inclui TODAS as rotas (modelagem, simulação, IoT, etc.)
+- ✅ **Routers Unificados:** Todos em `backend/routers/` (antes: backend/routes/ + backend/app/routers/)
+- ✅ **Sem Duplicação:** Removidos arquivos backup (*_backup.py, *_original*.py)
+- ✅ **Imports Consistentes:** Todos os módulos usam prefixo `backend.*`
+- ✅ **Models Separados:** IoT models mantidos em `backend/app/models/` para evitar conflitos User/Project
 
 ## 📁 Estrutura de Diretórios
 
 ```
 3dPot/
-├── backend/                    # Backend Python (aplicação principal)
-│   ├── app/                   # Lógica da aplicação
-│   ├── core/                  # Núcleo do sistema
-│   ├── models/                # Modelos de dados
-│   ├── routers/               # Rotas da API
-│   ├── services/              # Serviços de negócio
-│   ├── tests/                 # Testes específicos do backend
-│   └── main.py                # Entry point do backend
+├── backend/                    # ✅ Backend Python UNIFICADO (Modelagem + IoT)
+│   ├── main.py                # ✅ Entry point ÚNICO da aplicação
+│   ├── routers/               # ✅ TODOS os endpoints consolidados
+│   │   ├── auth.py           # Autenticação JWT
+│   │   ├── conversational.py # IA conversacional (Minimax)
+│   │   ├── modeling.py       # Modelagem 3D (CadQuery, OpenSCAD)
+│   │   ├── simulation.py     # Simulação física (PyBullet)
+│   │   ├── budgeting.py      # Orçamento inteligente
+│   │   ├── devices.py        # IoT: Gerenciamento de dispositivos
+│   │   ├── monitoring.py     # IoT: Monitoramento em tempo real
+│   │   ├── alerts.py         # IoT: Sistema de alertas
+│   │   ├── projects.py       # IoT: Gestão de projetos
+│   │   ├── health.py         # Health checks
+│   │   └── websocket.py      # WebSocket para tempo real
+│   ├── models/               # Modelos SQLAlchemy
+│   │   ├── __init__.py      # Modelos principais (User, Project, etc.)
+│   │   ├── simulation.py    # Modelos de simulação
+│   │   ├── budgeting.py     # Modelos de orçamento
+│   │   ├── iot_device.py    # Modelos IoT específicos
+│   │   ├── iot_alert.py
+│   │   └── iot_sensor_data.py
+│   ├── app/                  # ✅ MANTIDO: Modelos IoT específicos
+│   │   └── models/          # User/Project IoT (evita conflito com modelos principais)
+│   │       ├── user.py
+│   │       ├── project.py
+│   │       ├── device.py
+│   │       ├── alert.py
+│   │       └── sensor_data.py
+│   ├── core/                 # Configurações centralizadas
+│   │   └── config.py        # Settings e variáveis de ambiente
+│   ├── services/             # Lógica de negócio (17 serviços)
+│   │   ├── auth_service.py
+│   │   ├── modeling_service.py
+│   │   ├── simulation_service.py
+│   │   ├── budgeting_service.py
+│   │   ├── minimax_service.py
+│   │   └── ...
+│   ├── schemas/              # Schemas Pydantic para validação
+│   ├── middleware/           # Middlewares (autenticação, CORS, etc.)
+│   └── tests/                # Testes específicos do backend
 │
 ├── frontend/                   # Frontend da aplicação
 │   ├── src/                   # Código-fonte React/Vue
