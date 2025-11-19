@@ -756,6 +756,148 @@ http://IP_DO_PI:5000
 
 ---
 
+## 🧪 Sistema de Testes
+
+### 📊 **Cobertura de Testes (Sprint 2)**
+
+**Status Atual:** 284 testes unitários • ~72% de cobertura • Execução em < 1s
+
+| Tipo de Teste | Quantidade | Cobertura | Status |
+|---------------|------------|-----------|--------|
+| **Testes Unitários** | 284 | ~72% | ✅ Passando |
+| • Serviços Backend | 191 | ~72% | ✅ Implementado |
+| • Hardware (Arduino/ESP32/RPi) | 52 | ~80% | ✅ Implementado |
+| • Modelos 3D | 18 | ~85% | ✅ Implementado |
+| • Estrutura do Projeto | 23 | ~90% | ✅ Implementado |
+| **Testes de Integração** | 8 arquivos | ~60% | ⚠️ Em consolidação |
+| **Testes End-to-End** | Pendente | 0% | ⏸️ Sprint 3 |
+
+### 🎯 **Serviços com Testes Unitários**
+
+#### ✅ **Cobertos (191 testes novos - Sprint 2)**
+1. **BudgetingService** (48 testes)
+   - Cálculos de custos de materiais
+   - Integração com APIs de fornecedores
+   - Cálculo de preço final com margens
+
+2. **ModelingService** (41 testes)
+   - Modelagem 3D paramétrica
+   - Validação de imprimibilidade
+   - Engines CadQuery e OpenSCAD
+
+3. **Print3DService** (43 testes)
+   - Gerenciamento de impressoras
+   - Geração de G-code
+   - Estimativas de tempo e custo
+
+4. **SimulationService** (32 testes)
+   - Simulações físicas (drop, stress, motion)
+   - Cálculos de física
+   - Sistema de cache
+
+5. **ProductionService** (27 testes)
+   - Planejamento de produção
+   - Otimização de lotes
+   - Controle de qualidade
+
+6. **AuthService** (27 testes - complementar)
+   - Validação de senhas
+   - JWT e refresh tokens
+   - Rate limiting
+
+### 🚀 **Executando os Testes**
+
+#### Todos os Testes
+```bash
+# Método 1: Script helper
+./run_tests.sh all
+
+# Método 2: Pytest direto
+python -m pytest tests/ -v
+
+# Com cobertura
+python -m pytest tests/ --cov=backend --cov-report=html
+```
+
+#### Testes por Categoria
+```bash
+# Apenas testes unitários
+./run_tests.sh unit
+python -m pytest tests/unit/ -v
+
+# Apenas testes de integração
+./run_tests.sh integration
+python -m pytest tests/integration/ -v
+
+# Apenas testes de serviços
+python -m pytest tests/unit/services/ -v
+
+# Apenas testes de hardware
+./run_tests.sh hardware
+python -m pytest tests/unit/ -m "arduino or esp32 or raspberry_pi" -v
+```
+
+#### Testes Específicos
+```bash
+# Um serviço específico
+python -m pytest tests/unit/services/test_budgeting_service.py -v
+
+# Uma classe específica
+python -m pytest tests/unit/services/test_modeling_service.py::TestDimensionValidation -v
+
+# Um teste específico
+python -m pytest tests/unit/services/test_print3d_service.py::TestGCodeGeneration::test_gcode_header_generation -v
+```
+
+#### Relatório de Cobertura
+```bash
+# Gerar relatório HTML
+./run_tests.sh coverage
+
+# Visualizar cobertura (abre no navegador)
+open tests/coverage_html/index.html
+```
+
+### 📝 **Estrutura de Testes**
+
+```
+tests/
+├── conftest.py                          # Fixtures globais
+├── unit/                                # Testes unitários
+│   ├── services/                        # ✅ Serviços backend (191 testes)
+│   │   ├── test_budgeting_service.py   # 48 testes
+│   │   ├── test_modeling_service.py    # 41 testes
+│   │   ├── test_print3d_service.py     # 43 testes
+│   │   ├── test_simulation_service.py  # 32 testes
+│   │   ├── test_production_service.py  # 27 testes
+│   │   └── test_auth_service.py        # 27 testes (complementar)
+│   ├── test_arduino/                   # ✅ Hardware Arduino
+│   ├── test_esp32/                     # ✅ Hardware ESP32
+│   ├── test_raspberry_pi/              # ✅ Hardware Raspberry Pi
+│   ├── test_3d_models.py               # ✅ Modelos 3D
+│   └── test_project_structure.py       # ✅ Estrutura do projeto
+└── integration/                         # Testes de integração
+    ├── test_system_integration.py       # Testes de sistema
+    ├── test_minimax_service.py          # Testes de IA
+    └── teste_endpoint_lgm.py            # Testes de endpoints
+```
+
+### 📚 **Documentação de Testes**
+
+Para mais detalhes sobre a estratégia de testes e implementação da Sprint 2:
+- **[SPRINT2-QUALIDADE-TESTES-RELATORIO.md](docs/arquitetura/SPRINT2-QUALIDADE-TESTES-RELATORIO.md)** - Relatório completo da Sprint 2
+- **[pytest.ini](pytest.ini)** - Configuração do pytest
+- **[requirements-test.txt](requirements-test.txt)** - Dependências de teste
+
+### 🎯 **Próximos Passos (Sprint 3)**
+- [ ] Consolidar testes de integração (remover duplicações)
+- [ ] Implementar testes end-to-end
+- [ ] Adicionar testes para serviços secundários
+- [ ] Integrar com CI/CD pipeline
+- [ ] Atingir 80% de cobertura
+
+---
+
 ## 🔍 Troubleshooting Comum
 
 ### 🌐 **Problemas do Backend API**
