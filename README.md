@@ -882,19 +882,103 @@ tests/
     └── teste_endpoint_lgm.py            # Testes de endpoints
 ```
 
+### 🌐 **Testes End-to-End (E2E) - Sprint 3**
+
+**Status Atual:** 9 testes E2E implementados • Cobrindo fluxos críticos
+
+```bash
+# Executar testes E2E
+pytest tests/e2e/ -v
+
+# Testes E2E específicos
+pytest tests/e2e/test_workflows.py -v
+```
+
+**Fluxos cobertos:**
+- ✅ Autenticação (registro, login)
+- ✅ Criação de projetos
+- ✅ Sistema conversacional
+- ✅ Geração de orçamentos
+- ✅ Fluxo completo (projeto → conversa → orçamento)
+
+```
+tests/e2e/
+└── test_workflows.py                # Testes E2E principais (9 testes)
+```
+
 ### 📚 **Documentação de Testes**
 
-Para mais detalhes sobre a estratégia de testes e implementação da Sprint 2:
-- **[SPRINT2-QUALIDADE-TESTES-RELATORIO.md](docs/arquitetura/SPRINT2-QUALIDADE-TESTES-RELATORIO.md)** - Relatório completo da Sprint 2
+Para mais detalhes sobre testes e estratégia de qualidade:
+- **[SPRINT2-QUALIDADE-TESTES-RELATORIO.md](docs/arquitetura/SPRINT2-QUALIDADE-TESTES-RELATORIO.md)** - Relatório Sprint 2 (Testes Unitários)
+- **[SPRINT3-SCRIPTS-CLI-E2E-RELATORIO.md](docs/arquitetura/SPRINT3-SCRIPTS-CLI-E2E-RELATORIO.md)** - Relatório Sprint 3 (Integração, CLI, E2E)
 - **[pytest.ini](pytest.ini)** - Configuração do pytest
 - **[requirements-test.txt](requirements-test.txt)** - Dependências de teste
 
-### 🎯 **Próximos Passos (Sprint 3)**
-- [ ] Consolidar testes de integração (remover duplicações)
-- [ ] Implementar testes end-to-end
-- [ ] Adicionar testes para serviços secundários
-- [ ] Integrar com CI/CD pipeline
-- [ ] Atingir 80% de cobertura
+### 🎯 **Próximos Passos (Sprint 4)**
+- [ ] Ampliar cobertura E2E (3-5 novos fluxos)
+- [ ] Adicionar testes para serviços secundários (~80-120 testes)
+- [ ] Integrar E2E com CI/CD pipeline
+- [ ] Atingir 85% de cobertura
+- [ ] Testes de performance e carga
+
+---
+
+## 🎯 CLI Unificada (Sprint 3)
+
+O projeto 3dPot possui uma **interface de linha de comando unificada** para facilitar o uso de demos, validações e monitoramento.
+
+### 🚀 Uso Básico
+
+```bash
+# Ver ajuda geral
+python scripts/cli/main.py --help
+
+# Executar demo do Minimax
+python scripts/cli/main.py demo minimax
+
+# Validar modelos OpenSCAD
+python scripts/cli/main.py validate openscad
+
+# Monitorar workflows GitHub
+python scripts/cli/main.py monitor workflows
+```
+
+### 📋 Comandos Disponíveis
+
+#### 🎬 Demo - Demonstrações do Sistema
+
+```bash
+python scripts/cli/main.py demo minimax        # Integração Minimax M2
+python scripts/cli/main.py demo modeling       # Sistema de modelagem 3D
+python scripts/cli/main.py demo system         # Sistema completo
+python scripts/cli/main.py demo lgm            # Integração LGM
+python scripts/cli/main.py demo auth           # Sistema de autenticação
+```
+
+#### ✅ Validate - Validações
+
+```bash
+python scripts/cli/main.py validate openscad              # Validar OpenSCAD
+python scripts/cli/main.py validate openscad --quick      # Validação rápida
+python scripts/cli/main.py validate syntax                # Sintaxe Python
+python scripts/cli/main.py validate quality               # Qualidade código
+```
+
+#### 📊 Monitor - Monitoramento
+
+```bash
+python scripts/cli/main.py monitor workflows              # Workflows GitHub
+python scripts/cli/main.py monitor workflows --optimize   # Com otimizações
+python scripts/cli/main.py monitor performance            # Performance
+```
+
+### 📚 Documentação
+
+Ver documentação completa da CLI em [`scripts/cli/README.md`](scripts/cli/README.md)
+
+### 🔄 Scripts Legados
+
+Os scripts individuais ainda funcionam para compatibilidade, mas **recomendamos usar a CLI unificada**.
 
 ---
 

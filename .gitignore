@@ -275,6 +275,7 @@
 
 # Angular
 **/e2e/
+!tests/e2e/
 **/.angular/
 
 # React Native
