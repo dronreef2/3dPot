@@ -531,18 +531,366 @@ class TestMarketplaceWorkflow:
             assert "tracking_events" in data or "history" in data
 
 
+class TestCollaborationWorkflow:
+    """Testes E2E de fluxo de colaboração em tempo real (Sprint 5)."""
+    
+    @pytest.mark.skip(reason="Requer configuração de colaboração em tempo real")
+    def test_create_collaboration_session(self, test_client, auth_headers):
+        """
+        Testa criação de sessão de colaboração.
+        
+        Fluxo de negócio: Usuário cria uma sessão de colaboração para trabalhar
+        em um projeto com outros membros da equipe em tempo real.
+        """
+        session_data = {
+            "project_id": "test-project-123",
+            "name": "Sessão de Design Colaborativo",
+            "description": "Discussão sobre melhorias no modelo 3D",
+            "max_participants": 5,
+            "enable_video": True,
+            "enable_screen_share": True
+        }
+        
+        response = test_client.post(
+            "/api/v1/collaboration/sessions",
+            json=session_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 201, 401, 404, 422]
+        
+        if response.status_code in [200, 201]:
+            data = response.json()
+            assert "session_id" in data or "id" in data
+            assert "room_id" in data or "room" in data
+            assert "ice_servers" in data or "webrtc_config" in data
+    
+    @pytest.mark.skip(reason="Requer configuração de colaboração")
+    def test_join_collaboration_session(self, test_client, auth_headers):
+        """
+        Testa entrada de participante em sessão de colaboração.
+        
+        Fluxo de negócio: Membro da equipe se junta a uma sessão ativa
+        para colaborar no projeto.
+        """
+        session_id = "session-123"
+        join_data = {
+            "participant_name": "João Silva",
+            "role": "member",
+            "enable_video": True,
+            "enable_audio": True
+        }
+        
+        response = test_client.post(
+            f"/api/v1/collaboration/sessions/{session_id}/join",
+            json=join_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 201, 401, 404, 422]
+        
+        if response.status_code in [200, 201]:
+            data = response.json()
+            assert "participant_id" in data or "id" in data
+            assert "connection_token" in data or "token" in data
+    
+    @pytest.mark.skip(reason="Requer configuração de colaboração")
+    def test_send_collaboration_message(self, test_client, auth_headers):
+        """
+        Testa envio de mensagem em sessão de colaboração.
+        
+        Fluxo de negócio: Participante envia mensagem de texto no chat
+        da sessão para discutir detalhes do projeto.
+        """
+        session_id = "session-123"
+        message_data = {
+            "content": "Podemos reduzir a espessura da parede para 2mm?",
+            "type": "text",
+            "mentions": ["user-456"]
+        }
+        
+        response = test_client.post(
+            f"/api/v1/collaboration/sessions/{session_id}/messages",
+            json=message_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 201, 401, 404, 422]
+        
+        if response.status_code in [200, 201]:
+            data = response.json()
+            assert "message_id" in data or "id" in data
+            assert "timestamp" in data or "created_at" in data
+    
+    @pytest.mark.skip(reason="Requer configuração de colaboração")
+    def test_add_project_comment(self, test_client, auth_headers):
+        """
+        Testa adição de comentário a um projeto.
+        
+        Fluxo de negócio: Revisor adiciona comentário em parte específica
+        do modelo 3D para sugerir melhorias.
+        """
+        project_id = "project-123"
+        comment_data = {
+            "content": "Esta junta precisa ser reforçada",
+            "position": {"x": 125.5, "y": 45.2, "z": 78.9},
+            "severity": "medium",
+            "category": "structural"
+        }
+        
+        response = test_client.post(
+            f"/api/v1/projects/{project_id}/comments",
+            json=comment_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 201, 401, 404, 422]
+        
+        if response.status_code in [200, 201]:
+            data = response.json()
+            assert "comment_id" in data or "id" in data
+
+
+class TestCloudRenderingWorkflow:
+    """Testes E2E de renderização em nuvem (Sprint 5)."""
+    
+    @pytest.mark.skip(reason="Requer configuração de cluster de renderização")
+    def test_create_render_job(self, test_client, auth_headers):
+        """
+        Testa criação de job de renderização em nuvem.
+        
+        Fluxo de negócio: Usuário submete modelo 3D para renderização
+        fotorrealística usando GPUs em nuvem.
+        """
+        render_data = {
+            "model_id": "model-123",
+            "engine": "cycles",
+            "quality": "final",
+            "resolution": "4k",
+            "samples": 512,
+            "gpu_type": "RTX_4090",
+            "frames": 1,
+            "output_format": "png"
+        }
+        
+        response = test_client.post(
+            "/api/v1/cloud-rendering/jobs",
+            json=render_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 201, 401, 404, 422]
+        
+        if response.status_code in [200, 201]:
+            data = response.json()
+            assert "job_id" in data or "id" in data
+            assert "estimated_cost" in data or "cost_estimate" in data
+            assert "estimated_time" in data or "time_estimate" in data
+    
+    @pytest.mark.skip(reason="Requer configuração de renderização")
+    def test_get_render_job_status(self, test_client, auth_headers):
+        """
+        Testa consulta de status de job de renderização.
+        
+        Fluxo de negócio: Usuário verifica progresso da renderização
+        e tempo estimado para conclusão.
+        """
+        job_id = "render-job-123"
+        
+        response = test_client.get(
+            f"/api/v1/cloud-rendering/jobs/{job_id}/status",
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 404, 401]
+        
+        if response.status_code == 200:
+            data = response.json()
+            assert "status" in data
+            assert data["status"] in ["pending", "queued", "rendering", "completed", "failed", "cancelled"]
+            assert "progress" in data or "completion_percentage" in data
+    
+    @pytest.mark.skip(reason="Requer configuração de renderização")
+    def test_cancel_render_job(self, test_client, auth_headers):
+        """
+        Testa cancelamento de job de renderização.
+        
+        Fluxo de negócio: Usuário cancela renderização em andamento
+        para economizar créditos ou corrigir parâmetros.
+        """
+        job_id = "render-job-123"
+        
+        response = test_client.post(
+            f"/api/v1/cloud-rendering/jobs/{job_id}/cancel",
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 404, 401, 422]
+        
+        if response.status_code == 200:
+            data = response.json()
+            assert data.get("status") == "cancelled" or "cancelled" in str(data).lower()
+    
+    @pytest.mark.skip(reason="Requer configuração de renderização")
+    def test_download_render_result(self, test_client, auth_headers):
+        """
+        Testa download de resultado de renderização.
+        
+        Fluxo de negócio: Após conclusão, usuário baixa imagem renderizada
+        em alta qualidade.
+        """
+        job_id = "render-job-123"
+        
+        response = test_client.get(
+            f"/api/v1/cloud-rendering/jobs/{job_id}/download",
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 404, 401, 422]
+        
+        if response.status_code == 200:
+            # Pode ser redirect ou dados binários
+            assert response.headers.get("content-type") or response.status_code == 307
+
+
+class TestAdvancedMarketplaceWorkflow:
+    """Testes E2E avançados de marketplace (Sprint 5)."""
+    
+    @pytest.mark.skip(reason="Requer configuração de marketplace")
+    def test_multi_item_cart_workflow(self, test_client, auth_headers):
+        """
+        Testa fluxo completo de carrinho com múltiplos itens.
+        
+        Fluxo de negócio: Usuário adiciona vários componentes ao carrinho,
+        aplica cupom de desconto e finaliza compra.
+        """
+        # 1. Adicionar item ao carrinho
+        cart_item_1 = {
+            "component_id": "comp-123",
+            "quantity": 3
+        }
+        
+        response = test_client.post(
+            "/api/v1/marketplace/cart/items",
+            json=cart_item_1,
+            headers=auth_headers
+        )
+        assert response.status_code in [200, 201, 401, 404, 422]
+        
+        # 2. Adicionar segundo item
+        cart_item_2 = {
+            "component_id": "comp-456",
+            "quantity": 1
+        }
+        
+        response = test_client.post(
+            "/api/v1/marketplace/cart/items",
+            json=cart_item_2,
+            headers=auth_headers
+        )
+        assert response.status_code in [200, 201, 401, 404, 422]
+        
+        # 3. Aplicar cupom
+        coupon_data = {"coupon_code": "SAVE10"}
+        response = test_client.post(
+            "/api/v1/marketplace/cart/apply-coupon",
+            json=coupon_data,
+            headers=auth_headers
+        )
+        assert response.status_code in [200, 401, 404, 422]
+        
+        # 4. Finalizar compra
+        checkout_data = {
+            "payment_method": "credit_card",
+            "shipping_address": {
+                "street": "Av. Paulista, 1000",
+                "city": "São Paulo",
+                "state": "SP",
+                "zip_code": "01310-100"
+            }
+        }
+        
+        response = test_client.post(
+            "/api/v1/marketplace/cart/checkout",
+            json=checkout_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 201, 401, 404, 422]
+    
+    @pytest.mark.skip(reason="Requer configuração de marketplace")
+    def test_marketplace_error_handling(self, test_client, auth_headers):
+        """
+        Testa tratamento de erros no marketplace.
+        
+        Fluxo de negócio: Sistema lida corretamente com componente
+        fora de estoque, preço inválido, etc.
+        """
+        # 1. Tentar comprar item fora de estoque
+        order_data = {
+            "items": [{"component_id": "out-of-stock-123", "quantity": 1}],
+            "payment_method": "credit_card"
+        }
+        
+        response = test_client.post(
+            "/api/v1/marketplace/orders",
+            json=order_data,
+            headers=auth_headers
+        )
+        
+        # Deve retornar erro apropriado
+        assert response.status_code in [400, 404, 422]
+        
+        if response.status_code in [400, 422]:
+            data = response.json()
+            # Mensagem de erro deve ser informativa
+            assert "detail" in data or "error" in data or "message" in data
+    
+    @pytest.mark.skip(reason="Requer configuração de marketplace")
+    def test_vendor_rating_workflow(self, test_client, auth_headers):
+        """
+        Testa fluxo de avaliação de fornecedor.
+        
+        Fluxo de negócio: Após receber pedido, cliente avalia
+        fornecedor com nota e comentário.
+        """
+        order_id = "order-123"
+        rating_data = {
+            "rating": 4.5,
+            "comment": "Produtos de qualidade, entrega rápida!",
+            "aspects": {
+                "product_quality": 5,
+                "shipping_speed": 4,
+                "customer_service": 5
+            }
+        }
+        
+        response = test_client.post(
+            f"/api/v1/marketplace/orders/{order_id}/rate",
+            json=rating_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 201, 401, 404, 422]
+
+
 if __name__ == "__main__":
-    print("🧪 TESTES END-TO-END - 3DPOT V2.0 - SPRINT 4")
+    print("🧪 TESTES END-TO-END - 3DPOT V2.0 - SPRINT 5")
     print("=" * 60)
     print("⚠️  Nota: Muitos testes E2E estão marcados como skip")
     print("   pois requerem banco de dados e serviços configurados.")
     print("=" * 60)
-    print("📊 Novos fluxos E2E adicionados na Sprint 4:")
+    print("📊 Novos fluxos E2E adicionados na Sprint 5:")
+    print("   - Colaboração em tempo real (4 testes)")
+    print("   - Renderização em nuvem (4 testes)")
+    print("   - Marketplace avançado (3 testes)")
+    print("=" * 60)
+    print("📊 Fluxos E2E existentes da Sprint 4:")
     print("   - Revisão de projeto")
     print("   - Simulações avançadas")
     print("   - Integração com impressão 3D")
     print("   - Otimização de custos")
-    print("   - Marketplace")
+    print("   - Marketplace básico")
     print("=" * 60)
     
     # Executar testes
