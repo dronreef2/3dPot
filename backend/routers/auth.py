@@ -1,6 +1,7 @@
 """
 Rotas de Autenticação - 3dPot v2.0
 JWT OAuth2 completo com registro, login, refresh tokens e gerenciamento de sessões
+Sprint 7: Integração com audit logging para rastreamento de ações de autenticação
 """
 
 import logging
@@ -29,6 +30,8 @@ from backend.middleware.auth import (
     log_authentication_logout, create_auth_response, create_error_response,
     extract_token_from_header
 )
+# Sprint 7: Import audit logging
+from backend.observability import audit_login, audit_logout, audit_resource_created, get_request_id
 
 # Configurar logging
 logger = logging.getLogger(__name__)
@@ -51,9 +54,21 @@ async def register_user(
         # Informações para auditoria
         ip_address = request.client.host
         user_agent = request.headers.get("user-agent", "Unknown")
+        request_id = get_request_id(request)
         
         # Registra usuário
         user = auth_service.register_user(user_data, db, ip_address)
+        
+        # Sprint 7: Audit log do registro
+        audit_resource_created(
+            resource_type="user",
+            resource_id=str(user.id),
+            user_id=str(user.id),
+            username=user.username,
+            ip_address=ip_address,
+            request_id=request_id,
+            details={"email": user.email, "role": user.role}
+        )
         
         # Log do registro
         logger.info(f"USER_REGISTER | {user.username} | {user.email} | {ip_address}")
@@ -135,13 +150,24 @@ async def login(
         # Informações para auditoria
         ip_address = request.client.host
         user_agent = request.headers.get("user-agent", "Unknown")
+        request_id = get_request_id(request)
         
         # Autentica usuário
         login_response = auth_service.authenticate_user(
             login_data, db, ip_address, user_agent
         )
         
-        # Log do login bem-sucedido
+        # Sprint 7: Audit log do login bem-sucedido
+        audit_login(
+            user_id=str(login_response.user.id),
+            username=login_response.user.username,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            success=True,
+            request_id=request_id
+        )
+        
+        # Log do login bem-sucedido (manter para compatibilidade)
         log_authentication_attempt(
             username=login_data.username,
             ip_address=ip_address,
@@ -157,6 +183,16 @@ async def login(
         )
         
     except RateLimitError as e:
+        # Sprint 7: Audit log for rate limit exceeded
+        from backend.observability import audit_security_event, AuditAction
+        request_id = get_request_id(request)
+        audit_security_event(
+            event_type=AuditAction.RATE_LIMIT_EXCEEDED,
+            username=login_data.username,
+            ip_address=request.client.host,
+            request_id=request_id,
+            details={"endpoint": "/api/auth/login", "reason": str(e)}
+        )
         log_authentication_attempt(
             username=login_data.username,
             ip_address=request.client.host,
@@ -170,6 +206,17 @@ async def login(
             error="RATE_LIMITED"
         )
     except AuthenticationError as e:
+        # Sprint 7: Audit log for failed login
+        request_id = get_request_id(request)
+        audit_login(
+            user_id="unknown",
+            username=login_data.username,
+            ip_address=request.client.host,
+            user_agent=user_agent,
+            success=False,
+            request_id=request_id,
+            reason=str(e)
+        )
         log_authentication_attempt(
             username=login_data.username,
             ip_address=request.client.host,
@@ -245,6 +292,7 @@ async def logout(
         # Informações para auditoria
         ip_address = request.client.host
         user_agent = request.headers.get("user-agent", "Unknown")
+        request_id = get_request_id(request)
         
         # Extrai refresh token se fornecido
         refresh_token = None
@@ -254,7 +302,15 @@ async def logout(
         # Faz logout
         auth_service.logout(refresh_token=refresh_token, db=db)
         
-        # Log do logout
+        # Sprint 7: Audit log do logout
+        audit_logout(
+            user_id=str(current_user.id),
+            username=current_user.username,
+            ip_address=ip_address,
+            request_id=request_id
+        )
+        
+        # Log do logout (manter para compatibilidade)
         log_authentication_logout(
             user_id=str(current_user.id),
             ip_address=ip_address,
