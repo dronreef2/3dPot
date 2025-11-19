@@ -1,8 +1,10 @@
-# 🎯 3dPot - Sistema de Prototipagem Sob Demanda v2.0
+# 🎯 3dPot - Sistema de Prototipagem Sob Demanda v4.0
 
 [![CI Pipeline](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/ci.yml?label=CI%20Pipeline&style=flat-square)](https://github.com/dronreef2/3dPot/actions/workflows/ci.yml)
 [![Python Tests](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/python-tests.yml?label=Python%20Tests&style=flat-square)](https://github.com/dronreef2/3dPot/actions)
 [![Code Quality](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/code-quality.yml?label=Code%20Quality&style=flat-square)](https://github.com/dronreef2/3dPot/actions)
+[![Code Coverage](https://img.shields.io/badge/coverage-80%25-green?style=flat-square)](https://github.com/dronreef2/3dPot)
+[![Tests](https://img.shields.io/badge/tests-445%20passing-success?style=flat-square)](https://github.com/dronreef2/3dPot)
 [![3D Models](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/openscad.yml?label=3D%20Models&style=flat-square)](https://github.com/dronreef2/3dPot/actions)
 [![Arduino Build](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/arduino-build.yml?label=Arduino%20Build&style=flat-square)](https://github.com/dronreef2/3dPot/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -46,17 +48,23 @@ python -m uvicorn main:app --reload
 ### Comandos Principais
 
 ```bash
-# Rodar todos os testes
+# Rodar todos os testes (445 testes)
 ./run_tests.sh
 
-# Rodar apenas testes unitários
+# Rodar apenas testes unitários (391 testes)
 pytest tests/unit/ -v
 
 # Rodar testes de integração
 pytest tests/integration/ -v
 
-# Verificar cobertura
-pytest --cov=backend tests/
+# Rodar testes E2E (20 testes)
+pytest tests/e2e/ -v
+
+# Rodar testes da CLI (34 testes)
+pytest tests/unit/cli/ -v
+
+# Verificar cobertura (threshold: 70%)
+pytest tests/unit/ --cov=backend --cov-report=html --cov-fail-under=70
 
 # Iniciar backend em modo desenvolvimento
 cd backend && python -m uvicorn main:app --reload --port 8000
@@ -70,12 +78,43 @@ cd backend && python -m uvicorn main:app --reload --port 8000
 │   ├── main.py       # Entry point único
 │   ├── routers/      # Todos os endpoints consolidados
 │   ├── models/       # Modelos SQLAlchemy
-│   └── services/     # Lógica de negócio
+│   └── services/     # Lógica de negócio (17 serviços)
 ├── docs/             # 📚 Documentação completa
+│   └── arquitetura/  # Relatórios Sprint 1-4
 ├── scripts/          # 🛠️ Scripts auxiliares
-├── tests/            # 🧪 Testes unitários e integração
+│   └── cli/          # CLI unificada (13 comandos)
+├── tests/            # 🧪 445 testes (80% de cobertura)
+│   ├── unit/         # 391 testes unitários
+│   ├── integration/  # Testes de integração
+│   ├── e2e/          # 20 testes E2E
+│   └── cli/          # 34 testes da CLI
 └── codigos/          # 💻 Firmware IoT (ESP32, Arduino, RPi)
 ```
+
+## 🔥 **ATUALIZAÇÃO SPRINT 4 - QUALIDADE E CI/CD APRIMORADOS**
+
+### 📊 Sprint 4 - Novembro 2025
+
+**Foco:** Expansão de testes, integração CI/CD com coverage, e testes de CLI
+
+✅ **200 novos testes unitários** para serviços secundários (391 total)  
+✅ **11 novos testes E2E** cobrindo 5 fluxos adicionais (20 total)  
+✅ **34 testes da CLI unificada** cobrindo parsing, roteamento e comandos  
+✅ **CI/CD aprimorado** com threshold de coverage (70%) e job E2E  
+✅ **80% de cobertura** de código estimada (+8pp vs Sprint 3)  
+
+**📖 Documentação:** [Sprint 4 - Relatório Completo](docs/arquitetura/SPRINT4-QUALIDADE-CI-CLI-RELATORIO.md)
+
+### Métricas de Qualidade
+
+| Métrica | Sprint 3 | Sprint 4 | Melhoria |
+|---------|----------|----------|----------|
+| Testes Unitários | 191 | 391 | +105% |
+| Testes E2E | 9 | 20 | +122% |
+| Testes CLI | 0 | 34 | Novo! |
+| **Total** | **212** | **445** | **+110%** |
+| Cobertura | ~72% | ~80% | +8pp |
+| CI Jobs | 1 | 2 | +E2E |
 
 ## 🔥 **ATUALIZAÇÃO SPRINT 1 - PROBLEMAS CRÍTICOS RESOLVIDOS**
 

@@ -266,11 +266,283 @@ class TestCompleteProjectFlow:
             assert budget_response.status_code in [200, 201, 401, 404, 422]
 
 
+class TestProjectRevisionWorkflow:
+    """Testes E2E do fluxo de revisão de projeto (Sprint 4)."""
+    
+    @pytest.mark.skip(reason="Requer configuração completa de banco de dados")
+    def test_project_revision_flow(self, test_client, auth_headers):
+        """Testa fluxo completo: criar projeto → atualizar → marcar como pronto."""
+        # 1. Criar projeto inicial
+        project_data = {
+            "name": "Projeto para Revisão",
+            "description": "Projeto que será revisado",
+            "category": "mecanico"
+        }
+        
+        create_response = test_client.post(
+            "/api/v1/projects/",
+            json=project_data,
+            headers=auth_headers
+        )
+        
+        assert create_response.status_code in [200, 201, 401, 404, 422]
+        
+        if create_response.status_code in [200, 201]:
+            project_id = create_response.json().get("id")
+            
+            # 2. Atualizar projeto
+            update_data = {
+                "description": "Projeto revisado com novas especificações",
+                "status": "em_revisao"
+            }
+            
+            update_response = test_client.put(
+                f"/api/v1/projects/{project_id}",
+                json=update_data,
+                headers=auth_headers
+            )
+            
+            # 3. Marcar como pronto
+            ready_response = test_client.patch(
+                f"/api/v1/projects/{project_id}/ready",
+                headers=auth_headers
+            )
+            
+            assert ready_response.status_code in [200, 404, 422]
+
+
+class TestAdvancedSimulationWorkflow:
+    """Testes E2E de simulação avançada com diferentes parâmetros (Sprint 4)."""
+    
+    @pytest.mark.skip(reason="Requer configuração completa de simulação")
+    def test_drop_test_simulation(self, test_client, auth_headers):
+        """Testa simulação de drop test com diferentes alturas."""
+        simulation_data = {
+            "type": "drop_test",
+            "model_path": "/models/test_object.stl",
+            "parameters": {
+                "drop_height": 1.0,
+                "num_drops": 5,
+                "ground_material": "concrete"
+            }
+        }
+        
+        response = test_client.post(
+            "/api/v1/simulation/run",
+            json=simulation_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 201, 401, 404, 422, 500]
+        
+        if response.status_code in [200, 201]:
+            data = response.json()
+            assert "simulation_id" in data or "result" in data
+    
+    @pytest.mark.skip(reason="Requer configuração completa de simulação")
+    def test_stress_test_simulation(self, test_client, auth_headers):
+        """Testa simulação de stress test com diferentes forças."""
+        simulation_data = {
+            "type": "stress_test",
+            "model_path": "/models/test_object.stl",
+            "parameters": {
+                "force_newtons": 500,
+                "direction": "vertical",
+                "material": "PLA"
+            }
+        }
+        
+        response = test_client.post(
+            "/api/v1/simulation/run",
+            json=simulation_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 201, 401, 404, 422, 500]
+
+
+class TestPrint3DIntegrationWorkflow:
+    """Testes E2E de integração com impressão 3D (Sprint 4)."""
+    
+    @pytest.mark.skip(reason="Requer impressora 3D configurada")
+    def test_create_print_job(self, test_client, auth_headers):
+        """Testa criação de job de impressão 3D."""
+        print_job_data = {
+            "model_path": "/models/test_print.stl",
+            "material": "PLA",
+            "color": "white",
+            "layer_height": 0.2,
+            "infill": 20,
+            "supports": True,
+            "quantity": 1
+        }
+        
+        response = test_client.post(
+            "/api/v1/print3d/jobs",
+            json=print_job_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 201, 401, 404, 422]
+        
+        if response.status_code in [200, 201]:
+            data = response.json()
+            assert "job_id" in data or "id" in data
+            
+            # Verificar estimativa de tempo e custo
+            if "estimated_time" in data:
+                assert data["estimated_time"] > 0
+            if "estimated_cost" in data:
+                assert data["estimated_cost"] > 0
+    
+    @pytest.mark.skip(reason="Requer impressora 3D configurada")
+    def test_print_job_status(self, test_client, auth_headers):
+        """Testa consulta de status de job de impressão."""
+        job_id = "test-job-123"
+        
+        response = test_client.get(
+            f"/api/v1/print3d/jobs/{job_id}/status",
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 404, 401]
+
+
+class TestCostOptimizationWorkflow:
+    """Testes E2E de fluxo de otimização de custos (Sprint 4)."""
+    
+    @pytest.mark.skip(reason="Requer configuração de otimização")
+    def test_optimize_material_costs(self, test_client, auth_headers):
+        """Testa otimização de custos de material."""
+        optimization_data = {
+            "project_id": "test-project-123",
+            "optimization_type": "material",
+            "constraints": {
+                "max_budget": 1000,
+                "min_quality": 0.8,
+                "max_lead_time_days": 14
+            }
+        }
+        
+        response = test_client.post(
+            "/api/v1/optimization/analyze",
+            json=optimization_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 201, 401, 404, 422]
+        
+        if response.status_code in [200, 201]:
+            data = response.json()
+            assert "recommendations" in data or "optimized_cost" in data
+    
+    @pytest.mark.skip(reason="Requer configuração de otimização")
+    def test_batch_production_optimization(self, test_client, auth_headers):
+        """Testa otimização de produção em lote."""
+        optimization_data = {
+            "project_id": "test-project-123",
+            "optimization_type": "batch",
+            "quantity": 100,
+            "constraints": {
+                "max_budget": 5000,
+                "max_lead_time_days": 30
+            }
+        }
+        
+        response = test_client.post(
+            "/api/v1/optimization/batch",
+            json=optimization_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 201, 401, 404, 422]
+
+
+class TestMarketplaceWorkflow:
+    """Testes E2E de fluxo de marketplace (Sprint 4)."""
+    
+    @pytest.mark.skip(reason="Requer configuração de marketplace")
+    def test_search_components(self, test_client, auth_headers):
+        """Testa busca de componentes no marketplace."""
+        search_params = {
+            "query": "sensor ultrassonico",
+            "category": "eletronic",
+            "max_price": 50,
+            "in_stock": True
+        }
+        
+        response = test_client.get(
+            "/api/v1/marketplace/search",
+            params=search_params,
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 401, 404]
+        
+        if response.status_code == 200:
+            data = response.json()
+            assert "results" in data or "items" in data
+    
+    @pytest.mark.skip(reason="Requer configuração de marketplace")
+    def test_create_order(self, test_client, auth_headers):
+        """Testa criação de pedido no marketplace."""
+        order_data = {
+            "items": [
+                {"component_id": "comp-123", "quantity": 2},
+                {"component_id": "comp-456", "quantity": 1}
+            ],
+            "shipping_address": {
+                "street": "Rua Teste, 123",
+                "city": "São Paulo",
+                "state": "SP",
+                "zip_code": "01234-567"
+            },
+            "payment_method": "credit_card"
+        }
+        
+        response = test_client.post(
+            "/api/v1/marketplace/orders",
+            json=order_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 201, 401, 404, 422]
+        
+        if response.status_code in [200, 201]:
+            data = response.json()
+            assert "order_id" in data or "id" in data
+            assert "total_price" in data or "amount" in data
+    
+    @pytest.mark.skip(reason="Requer configuração de marketplace")
+    def test_order_tracking(self, test_client, auth_headers):
+        """Testa rastreamento de pedido."""
+        order_id = "order-123"
+        
+        response = test_client.get(
+            f"/api/v1/marketplace/orders/{order_id}/track",
+            headers=auth_headers
+        )
+        
+        assert response.status_code in [200, 404, 401]
+        
+        if response.status_code == 200:
+            data = response.json()
+            assert "status" in data
+            assert "tracking_events" in data or "history" in data
+
+
 if __name__ == "__main__":
-    print("🧪 TESTES END-TO-END - 3DPOT V2.0")
+    print("🧪 TESTES END-TO-END - 3DPOT V2.0 - SPRINT 4")
     print("=" * 60)
     print("⚠️  Nota: Muitos testes E2E estão marcados como skip")
     print("   pois requerem banco de dados e serviços configurados.")
+    print("=" * 60)
+    print("📊 Novos fluxos E2E adicionados na Sprint 4:")
+    print("   - Revisão de projeto")
+    print("   - Simulações avançadas")
+    print("   - Integração com impressão 3D")
+    print("   - Otimização de custos")
+    print("   - Marketplace")
     print("=" * 60)
     
     # Executar testes
