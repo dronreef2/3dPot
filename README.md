@@ -3,8 +3,8 @@
 [![CI Pipeline](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/ci.yml?label=CI%20Pipeline&style=flat-square)](https://github.com/dronreef2/3dPot/actions/workflows/ci.yml)
 [![Python Tests](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/python-tests.yml?label=Python%20Tests&style=flat-square)](https://github.com/dronreef2/3dPot/actions)
 [![Code Quality](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/code-quality.yml?label=Code%20Quality&style=flat-square)](https://github.com/dronreef2/3dPot/actions)
-[![Code Coverage](https://img.shields.io/badge/coverage-80%25-green?style=flat-square)](https://github.com/dronreef2/3dPot)
-[![Tests](https://img.shields.io/badge/tests-445%20passing-success?style=flat-square)](https://github.com/dronreef2/3dPot)
+[![Code Coverage](https://img.shields.io/badge/coverage-85%25-green?style=flat-square)](https://github.com/dronreef2/3dPot)
+[![Tests](https://img.shields.io/badge/tests-691%20passing-success?style=flat-square)](https://github.com/dronreef2/3dPot)
 [![3D Models](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/openscad.yml?label=3D%20Models&style=flat-square)](https://github.com/dronreef2/3dPot/actions)
 [![Arduino Build](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/arduino-build.yml?label=Arduino%20Build&style=flat-square)](https://github.com/dronreef2/3dPot/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -48,19 +48,19 @@ python -m uvicorn main:app --reload
 ### Comandos Principais
 
 ```bash
-# Rodar todos os testes (445 testes)
+# Rodar todos os testes (691 testes)
 ./run_tests.sh
 
-# Rodar apenas testes unitários (391 testes)
+# Rodar apenas testes unitários (612 testes)
 pytest tests/unit/ -v
 
 # Rodar testes de integração
 pytest tests/integration/ -v
 
-# Rodar testes E2E (20 testes)
+# Rodar testes E2E (30 testes)
 pytest tests/e2e/ -v
 
-# Rodar testes da CLI (34 testes)
+# Rodar testes da CLI (49 testes)
 pytest tests/unit/cli/ -v
 
 # Verificar cobertura (threshold: 70%)
@@ -68,6 +68,9 @@ pytest tests/unit/ --cov=backend --cov-report=html --cov-fail-under=70
 
 # Iniciar backend em modo desenvolvimento
 cd backend && python -m uvicorn main:app --reload --port 8000
+
+# Acessar métricas Prometheus (Sprint 6)
+curl http://localhost:8000/metrics
 ```
 
 ### Estrutura de Diretórios Principais
@@ -83,8 +86,8 @@ cd backend && python -m uvicorn main:app --reload --port 8000
 │   └── arquitetura/  # Relatórios Sprint 1-4
 ├── scripts/          # 🛠️ Scripts auxiliares
 │   └── cli/          # CLI unificada (13 comandos)
-├── tests/            # 🧪 668 testes (85% de cobertura)
-│   ├── unit/         # 589 testes unitários
+├── tests/            # 🧪 691 testes (85% de cobertura)
+│   ├── unit/         # 612 testes unitários
 │   ├── integration/  # Testes de integração
 │   ├── e2e/          # 30 testes E2E
 │   └── cli/          # 49 testes da CLI
@@ -127,6 +130,68 @@ cd backend && python -m uvicorn main:app --reload --port 8000
 🗺️ **Roadmap claro:** 4 sprints definidas para production-ready (Sprints 6-9)
 
 **Status:** 🟡 **85% Production-Ready** - Pronto para staging, necessita hardening para produção completa
+
+---
+
+## 🔥 **ATUALIZAÇÃO SPRINT 6 - OBSERVABILIDADE E PREPARAÇÃO PARA PRODUÇÃO**
+
+### 📊 Sprint 6 - Novembro 2025
+
+**Foco:** Implementação de observabilidade production-ready para monitoramento e debugging
+
+✅ **Logging estruturado** com structlog (JSON/console)  
+✅ **Métricas Prometheus** para HTTP, erros e negócio  
+✅ **Request tracking** com correlation IDs  
+✅ **23 novos testes** de observabilidade (100% passing)  
+✅ **Endpoint /metrics** para scraping Prometheus  
+✅ **Configuração via environment** (LOG_LEVEL, LOG_FORMAT)
+
+**📖 Documentação:** [Sprint 6 - Relatório Completo](docs/arquitetura/SPRINT6-OBSERVABILIDADE-RELATORIO.md)
+
+### Recursos de Observabilidade - Sprint 6
+
+| Recurso | Descrição | Status |
+|---------|-----------|--------|
+| **Structured Logging** | JSON logs com timestamp, request_id, contexto | ✅ |
+| **HTTP Metrics** | Latência, throughput, erros por endpoint | ✅ |
+| **Business Metrics** | Modelos criados, simulações, orçamentos | ✅ |
+| **Request Tracking** | X-Request-ID para debugging distribuído | ✅ |
+| **Prometheus Export** | Endpoint /metrics para scraping | ✅ |
+| **Environment Config** | LOG_LEVEL, LOG_FORMAT configuráveis | ✅ |
+
+### Destaques Sprint 6
+
+🔍 **Debugging Facilitado:** Request IDs permitem rastrear requisições end-to-end  
+📊 **Visibilidade de Performance:** Métricas de latência e throughput por endpoint  
+🚀 **Production-Ready:** Logs JSON compatíveis com ELK/Loki, métricas para Grafana  
+⚙️ **Configurável:** Níveis de log e formatos via variáveis de ambiente  
+🧪 **Testado:** 23 testes garantem funcionamento correto
+
+**Exemplo de Log Estruturado:**
+```json
+{
+  "timestamp": "2025-11-19T23:15:42Z",
+  "level": "info",
+  "event": "http_request_completed",
+  "service": "3dpot-backend",
+  "request_id": "a1b2c3d4-e5f6-7890-abcd",
+  "method": "POST",
+  "path": "/api/v1/modeling",
+  "status_code": 200,
+  "duration_ms": 145.23
+}
+```
+
+**Exemplo de Métricas:**
+```promql
+# Latência P95 de requisições
+histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+
+# Taxa de erros 5xx
+rate(http_requests_total{status=~"5.."}[5m])
+```
+
+**Status:** 🟢 **88% Production-Ready** (+3pp vs Sprint 5) - Observabilidade básica completa
 
 ---
 
