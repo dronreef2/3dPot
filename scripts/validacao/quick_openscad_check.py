@@ -115,8 +115,12 @@ def main():
     else:
         print(f"\n⚠️  {error_count} arquivo(s) precisam de correção")
     
-    # Salva relatório
-    with open("quick_validation_report.json", "w") as f:
+    # Salva relatório em outputs/relatorios/
+    output_dir = Path("outputs/relatorios")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    report_path = output_dir / "quick_validation_report.json"
+    
+    with open(report_path, "w") as f:
         json.dump({
             "validation_time": "2025-11-10T14:35:00",
             "summary": {
@@ -127,7 +131,7 @@ def main():
             "files": results
         }, f, indent=2)
     
-    print(f"   💾 Relatório salvo em: quick_validation_report.json")
+    print(f"   💾 Relatório salvo em: {report_path}")
     
     return 0 if valid_count == len(scad_files) else 1
 

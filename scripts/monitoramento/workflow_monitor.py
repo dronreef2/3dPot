@@ -283,7 +283,7 @@ def main():
     parser.add_argument("--token", required=True, help="GitHub Personal Access Token")
     parser.add_argument("--owner", required=True, help="Repository owner")
     parser.add_argument("--repo", required=True, help="Repository name")
-    parser.add_argument("--output", help="Output JSON file path", default="workflows_status.json")
+    parser.add_argument("--output", help="Output JSON file path", default="outputs/workflows_status.json")
     parser.add_argument("--format", choices=["json", "summary"], default="summary",
                        help="Output format")
     

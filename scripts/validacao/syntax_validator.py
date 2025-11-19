@@ -232,8 +232,11 @@ class OpenSCADSintaticValidator:
             print(f"⚠️  {error_count} arquivo(s) precisa(m) de correção sintática")
             print("🔧 Revise os erros listados acima")
         
-        # Salvar relatório
-        report_file = Path("syntax_validation_report.json")
+        # Salvar relatório em outputs/relatorios/
+        output_dir = Path("outputs/relatorios")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        report_file = output_dir / "syntax_validation_report.json"
+        
         with open(report_file, 'w', encoding='utf-8') as f:
             json.dump(self.results, f, indent=2, ensure_ascii=False)
         

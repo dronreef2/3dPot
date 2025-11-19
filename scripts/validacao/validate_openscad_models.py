@@ -302,8 +302,11 @@ class OpenSCADValidator:
             print("   ⚠️  Corrigir erros de sintaxe antes da impressão")
             print("   🔍 Revisar código OpenSCAD dos arquivos com problema")
         
-        # Salva relatório em JSON
-        report_file = Path("validation_report.json")
+        # Salva relatório em JSON em outputs/relatorios/
+        output_dir = Path("outputs/relatorios")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        report_file = output_dir / "validation_report.json"
+        
         with open(report_file, 'w', encoding='utf-8') as f:
             json.dump(self.results, f, indent=2, ensure_ascii=False)
         
