@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """
 Script para testar rapidamente a integração com Minimax M2
+
+⚠️ NOTA: Este é um dos vários scripts de teste Minimax disponíveis:
+- teste-rapido-minimax.py (este script): Teste rápido e básico
+- teste-minimax-standalone.py: Teste standalone mais completo
+- Para uso em produção, use o serviço backend/services/minimax_service.py
 """
 
 import os

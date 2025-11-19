@@ -18,6 +18,65 @@
 
 > 📚 **Nota sobre a Estrutura do Repositório**: Este repositório foi reorganizado em novembro de 2024 para melhor organização e manutenibilidade. Consulte [STRUCTURE.md](STRUCTURE.md) para detalhes da nova estrutura e [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) se você tem código em desenvolvimento.
 
+## 🚀 Quick Start
+
+### Setup em 5 Minutos
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/dronreef2/3dPot.git
+cd 3dPot
+
+# 2. Execute o script de setup automatizado
+./setup-3dpot.sh
+
+# 3. Configure as variáveis de ambiente
+cp backend/.env.example backend/.env
+# Edite backend/.env com suas configurações
+
+# 4. Inicie o backend
+cd backend
+python -m uvicorn main:app --reload
+
+# 5. Acesse a documentação da API
+# Swagger UI: http://localhost:8000/docs
+# ReDoc: http://localhost:8000/redoc
+```
+
+### Comandos Principais
+
+```bash
+# Rodar todos os testes
+./run_tests.sh
+
+# Rodar apenas testes unitários
+pytest tests/unit/ -v
+
+# Rodar testes de integração
+pytest tests/integration/ -v
+
+# Verificar cobertura
+pytest --cov=backend tests/
+
+# Iniciar backend em modo desenvolvimento
+cd backend && python -m uvicorn main:app --reload --port 8000
+```
+
+### Estrutura de Diretórios Principais
+
+```
+3dPot/
+├── backend/          # ✅ API REST unificada (Modelagem + IoT)
+│   ├── main.py       # Entry point único
+│   ├── routers/      # Todos os endpoints consolidados
+│   ├── models/       # Modelos SQLAlchemy
+│   └── services/     # Lógica de negócio
+├── docs/             # 📚 Documentação completa
+├── scripts/          # 🛠️ Scripts auxiliares
+├── tests/            # 🧪 Testes unitários e integração
+└── codigos/          # 💻 Firmware IoT (ESP32, Arduino, RPi)
+```
+
 ## 🔥 **ATUALIZAÇÃO SPRINT 1 - PROBLEMAS CRÍTICOS RESOLVIDOS**
 
 **Data:** 2025-11-12  
@@ -95,9 +154,31 @@ Soluções hardware completas com ESP32, Arduino e Raspberry Pi para monitoramen
 #### **Estrutura do Backend:**
 ```
 backend/
-├── 📄 main.py                    # Entry point da aplicação
+├── 📄 main.py                    # ✅ Entry point UNIFICADO (Modelagem + IoT)
 ├── 📄 requirements.txt           # Dependências Python
-├── 🏗️ core/                      # Configurações e setups
+├── 🏗️ routers/                   # ✅ TODOS os endpoints consolidados
+│   ├── auth.py                   # Autenticação JWT
+│   ├── conversational.py         # IA conversacional
+│   ├── modeling.py               # Modelagem 3D
+│   ├── simulation.py             # Simulação física
+│   ├── budgeting.py              # Orçamento inteligente
+│   ├── devices.py                # IoT: Dispositivos
+│   ├── monitoring.py             # IoT: Monitoramento
+│   ├── alerts.py                 # IoT: Alertas
+│   ├── projects.py               # IoT: Projetos
+│   └── websocket.py              # IoT: Tempo real
+├── 🗄️ models/                    # Modelos SQLAlchemy
+│   ├── __init__.py               # Modelos principais (User, Project)
+│   ├── simulation.py             # Modelos de simulação
+│   ├── budgeting.py              # Modelos de orçamento
+│   └── iot_*.py                  # Modelos IoT específicos
+├── 💼 services/                  # Lógica de negócio
+│   ├── auth_service.py           # Serviço de autenticação
+│   ├── modeling_service.py       # Serviço de modelagem
+│   ├── simulation_service.py     # Serviço de simulação
+│   └── budgeting_service.py      # Serviço de orçamento
+├── 📋 schemas/                   # Schemas Pydantic
+└── 🏗️ core/                      # Configurações e setups
 │   ├── config.py                # Settings e configurações
 │   └── database.py              # Engine PostgreSQL
 ├── 🗄️ models/                    # Modelos SQLAlchemy
