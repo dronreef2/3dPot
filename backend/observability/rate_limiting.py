@@ -229,6 +229,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     """
     Middleware to apply rate limiting to all requests.
     Can be configured with different limits for different endpoints.
+    Sprint 8: Support for Redis backend via redis_limiter parameter.
     """
     
     def __init__(
@@ -236,7 +237,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         app,
         default_limit: int = 60,
         burst_size: Optional[int] = None,
-        sensitive_endpoints: Optional[Dict[str, int]] = None
+        sensitive_endpoints: Optional[Dict[str, int]] = None,
+        redis_limiter = None
     ):
         """
         Initialize rate limit middleware.
@@ -246,13 +248,18 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             default_limit: Default requests per minute for all endpoints
             burst_size: Default burst size
             sensitive_endpoints: Dict mapping endpoint patterns to specific limits
+            redis_limiter: Optional Redis rate limiter instance (Sprint 8)
         """
         super().__init__(app)
         
         # Read configuration from environment
         self.enabled = os.getenv("RATE_LIMITING_ENABLED", "true").lower() == "true"
         
-        # Default rate limiter
+        # Sprint 8: Store Redis limiter if provided
+        self.redis_limiter = redis_limiter
+        self.using_redis = redis_limiter is not None
+        
+        # Default rate limiter (in-memory)
         self.default_limiter = RateLimiter(
             requests_per_minute=default_limit,
             burst_size=burst_size,
@@ -273,6 +280,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         logger.info(
             "rate_limit_middleware_initialized",
             enabled=self.enabled,
+            backend="redis" if self.using_redis else "in-memory",
             default_limit=default_limit,
             sensitive_endpoints=list(self.sensitive_endpoints.keys())
         )
@@ -293,6 +301,49 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if request.url.path in ["/health", "/healthz", "/ping", "/metrics"]:
             return await call_next(request)
         
+        # Sprint 8: Use Redis limiter if available
+        if self.using_redis and self.redis_limiter:
+            try:
+                allowed, retry_after = self.redis_limiter.check_rate_limit(request)
+                
+                if not allowed:
+                    # Return 429 Too Many Requests
+                    from fastapi.responses import JSONResponse
+                    return JSONResponse(
+                        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                        content={
+                            "error": "Rate limit exceeded",
+                            "message": "Too many requests. Please try again later.",
+                            "retry_after": retry_after
+                        },
+                        headers={"Retry-After": str(retry_after)}
+                    )
+                
+                # Process request normally
+                response = await call_next(request)
+                
+                # Add rate limit info to response headers
+                try:
+                    remaining = self.redis_limiter.get_remaining_tokens(request)
+                    response.headers["X-RateLimit-Limit"] = str(self.redis_limiter.requests_per_minute)
+                    response.headers["X-RateLimit-Remaining"] = str(remaining)
+                    response.headers["X-RateLimit-Backend"] = "redis"
+                except Exception:
+                    pass
+                
+                return response
+                
+            except Exception as e:
+                # Redis failed - log warning and fall back to in-memory
+                logger.warning(
+                    "rate_limit_redis_error",
+                    error=str(e),
+                    fallback="in-memory",
+                    message="Redis rate limiting failed, using in-memory fallback"
+                )
+                # Continue to in-memory logic below
+        
+        # In-memory rate limiting (default or fallback)
         # Get appropriate limiter
         limiter = self._get_limiter(request.url.path)
         
@@ -301,9 +352,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         
         if not allowed:
             # Return 429 Too Many Requests
-            return HTTPException(
+            from fastapi.responses import JSONResponse
+            return JSONResponse(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail={
+                content={
                     "error": "Rate limit exceeded",
                     "message": "Too many requests. Please try again later.",
                     "retry_after": retry_after
@@ -315,12 +367,18 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         
         # Add rate limit info to response headers
-        response.headers["X-RateLimit-Limit"] = str(limiter.requests_per_minute)
-        response.headers["X-RateLimit-Remaining"] = str(
-            limiter.buckets.get(limiter._get_client_key(request), limiter.default_limiter.buckets.get(limiter._get_client_key(request), TokenBucket(limiter.burst_size, limiter.refill_rate))).get_available_tokens()
-            if limiter._get_client_key(request) in limiter.buckets
-            else limiter.burst_size
-        )
+        try:
+            client_key = limiter._get_client_key(request)
+            if client_key in limiter.buckets:
+                remaining = limiter.buckets[client_key].get_available_tokens()
+            else:
+                remaining = limiter.burst_size
+            
+            response.headers["X-RateLimit-Limit"] = str(limiter.requests_per_minute)
+            response.headers["X-RateLimit-Remaining"] = str(remaining)
+            response.headers["X-RateLimit-Backend"] = "in-memory"
+        except Exception:
+            pass
         
         return response
 

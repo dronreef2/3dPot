@@ -1,11 +1,12 @@
 """
 3dPot Backend - Rotas de Gerenciamento de Projetos
 Sistema de Prototipagem Sob Demanda
+Sprint 8: RBAC integration for access control and resource ownership validation
 """
 
 from datetime import datetime
 from typing import List, Optional, Dict, Any
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from pydantic import BaseModel, Field
@@ -14,6 +15,20 @@ from loguru import logger
 from backend.database import get_db
 from backend.app.models.user import User
 from backend.app.models.project import Project, ProjectStatus, ProjectType, ProjectPriority
+
+# Sprint 8: Import RBAC helpers
+from backend.core.authorization import (
+    Role, Permission, require_role, require_permission, 
+    check_resource_ownership, has_permission
+)
+
+# Import auth dependency (assuming it exists)
+try:
+    from backend.middleware.auth import get_current_user
+except ImportError:
+    # Fallback for optional auth
+    async def get_current_user():
+        return None
 
 router = APIRouter()
 
@@ -112,10 +127,24 @@ async def list_projects(
 @router.post("/", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
 async def create_project(
     project_data: ProjectCreate,
-    current_user: User = Depends(lambda: None),  # Opcional por enquanto
+    request: Request,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Cria um novo projeto"""
+    """
+    Cria um novo projeto
+    Sprint 8: Requires authentication and PROJECT_CREATE permission
+    """
+    # Sprint 8: Check permission
+    if current_user and not has_permission(
+        getattr(current_user, 'role', Role.USER), 
+        Permission.PROJECT_CREATE
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to create projects"
+        )
+    
     try:
         db_project = Project(
             name=project_data.name,
@@ -126,7 +155,7 @@ async def create_project(
             estimated_hours=project_data.estimated_hours,
             budget=project_data.budget,
             filament_type=project_data.filament_type,
-            owner_id=current_user.id if current_user else 1,  # Usuário padrão
+            owner_id=current_user.id if current_user else 1,  # Usuário padrão para compatibilidade
             status=ProjectStatus.DRAFT.value,
             progress_percentage=0
         )
@@ -135,7 +164,7 @@ async def create_project(
         await db.commit()
         await db.refresh(db_project)
         
-        logger.info(f"Project created: {db_project.name}")
+        logger.info(f"Project created: {db_project.name} by user {current_user.id if current_user else 'anonymous'}")
         
         return db_project
         
@@ -180,9 +209,14 @@ async def get_project(
 async def update_project(
     project_data: ProjectUpdate,
     project_id: int,
+    request: Request,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Atualiza um projeto"""
+    """
+    Atualiza um projeto
+    Sprint 8: Requires ownership or admin role
+    """
     try:
         result = await db.execute(select(Project).where(Project.id == project_id))
         project = result.scalar_one_or_none()
@@ -191,6 +225,16 @@ async def update_project(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Project not found"
+            )
+        
+        # Sprint 8: Check resource ownership
+        if current_user:
+            check_resource_ownership(
+                current_user=current_user,
+                resource=project,
+                resource_type="project",
+                request=request,
+                allow_admin=True
             )
         
         # Aplicar atualizações
@@ -204,7 +248,7 @@ async def update_project(
         await db.commit()
         await db.refresh(project)
         
-        logger.info(f"Project updated: {project.name}")
+        logger.info(f"Project updated: {project.name} by user {current_user.id if current_user else 'anonymous'}")
         
         return project
         
@@ -222,9 +266,14 @@ async def update_project(
 @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_project(
     project_id: int,
+    request: Request,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Remove um projeto"""
+    """
+    Remove um projeto
+    Sprint 8: Requires ownership, admin role, or PROJECT_DELETE permission
+    """
     try:
         result = await db.execute(select(Project).where(Project.id == project_id))
         project = result.scalar_one_or_none()
@@ -235,10 +284,26 @@ async def delete_project(
                 detail="Project not found"
             )
         
+        # Sprint 8: Check resource ownership or admin/permission
+        if current_user:
+            # Check if user has PROJECT_DELETE permission or is owner/admin
+            user_role = getattr(current_user, 'role', Role.USER)
+            has_delete_perm = has_permission(user_role, Permission.PROJECT_DELETE)
+            
+            if not has_delete_perm:
+                # If no delete permission, check ownership
+                check_resource_ownership(
+                    current_user=current_user,
+                    resource=project,
+                    resource_type="project",
+                    request=request,
+                    allow_admin=True
+                )
+        
         await db.delete(project)
         await db.commit()
         
-        logger.info(f"Project deleted: {project.name}")
+        logger.info(f"Project deleted: {project.name} by user {current_user.id if current_user else 'anonymous'}")
         
     except HTTPException:
         raise
