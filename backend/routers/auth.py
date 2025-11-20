@@ -22,7 +22,7 @@ from backend.schemas import (
     PasswordResetRequest, PasswordResetConfirm, ChangePasswordRequest,
     RefreshTokenRequest, EmailVerificationRequest,
     SessionList, RevokeSessionRequest, RevokeAllSessionsRequest,
-    UserProfileUpdate, AuthResponse, AuthMessage
+    UserProfileUpdate, AuthResponse, AuthMessage, MFALoginVerification
 )
 from backend.services.auth_service import auth_service, AuthenticationError, RateLimitError
 from backend.middleware.auth import (
@@ -237,7 +237,88 @@ async def login(
             error="INTERNAL_ERROR"
         )
 
-@auth_router.post("/refresh", response_model=AuthResponse)
+# ==================== MFA VERIFICATION (SPRINT 9) ====================
+
+@auth_router.post("/login/mfa-verify", response_model=AuthResponse)
+async def verify_mfa_login(
+    mfa_data: MFALoginVerification,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Verifica código MFA e completa o login (Sprint 9).
+    Chamado após /login retornar mfa_required=true.
+    """
+    try:
+        # Informações para auditoria
+        ip_address = request.client.host
+        user_agent = request.headers.get("user-agent", "Unknown")
+        request_id = get_request_id(request)
+        
+        # Completa login após validação MFA
+        login_response = auth_service.complete_mfa_login(
+            mfa_token=mfa_data.mfa_token,
+            code=mfa_data.code,
+            db=db,
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+        
+        # Sprint 9: Audit log do MFA challenge bem-sucedido
+        from backend.observability import audit_security_event, AuditAction
+        audit_security_event(
+            event_type=AuditAction.MFA_CHALLENGE_PASSED,
+            user_id=str(login_response.user.id),
+            username=login_response.user.username,
+            ip_address=ip_address,
+            request_id=request_id,
+            details={"action": "mfa_login_completed"}
+        )
+        
+        # Audit log do login bem-sucedido
+        audit_login(
+            user_id=str(login_response.user.id),
+            username=login_response.user.username,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            success=True,
+            request_id=request_id
+        )
+        
+        # Retorna tokens finais
+        return AuthResponse(
+            success=True,
+            message="Login MFA realizado com sucesso",
+            data=login_response.dict()
+        )
+        
+    except AuthenticationError as e:
+        # Sprint 9: Audit log for failed MFA
+        from backend.observability import audit_security_event, AuditAction
+        request_id = get_request_id(request)
+        audit_security_event(
+            event_type=AuditAction.MFA_CHALLENGE_FAILED,
+            user_id="unknown",
+            username="unknown",
+            ip_address=request.client.host,
+            request_id=request_id,
+            details={"reason": str(e)}
+        )
+        
+        return AuthResponse(
+            success=False,
+            message=str(e),
+            error="MFA_VERIFICATION_FAILED"
+        )
+    except Exception as e:
+        logger.error(f"Erro na verificação MFA de login: {str(e)}")
+        return AuthResponse(
+            success=False,
+            message="Erro interno do servidor",
+            error="INTERNAL_ERROR"
+        )
+
+# ==================== REFRESH TOKENS ====================
 async def refresh_tokens(
     refresh_data: RefreshTokenRequest,
     request: Request,
