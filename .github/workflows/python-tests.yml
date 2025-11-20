@@ -103,6 +103,61 @@ jobs:
             echo "Threshold: 70% (configured in pytest step)"
           fi
   
+  security-checks:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety pip-audit
+          
+      - name: Run Bandit security scan
+        continue-on-error: true
+        run: |
+          echo "🔒 Running Bandit security scan on Python code..."
+          bandit -r backend/ -f json -o bandit-report.json || true
+          bandit -r backend/ -f txt || echo "⚠️  Bandit found potential security issues"
+          
+      - name: Run Safety check on dependencies
+        continue-on-error: true
+        run: |
+          echo "🔒 Checking dependencies for known vulnerabilities..."
+          if [ -f requirements.txt ]; then
+            safety check --file requirements.txt --json > safety-report.json || true
+            safety check --file requirements.txt || echo "⚠️  Safety found vulnerable dependencies"
+          fi
+          
+      - name: Run pip-audit
+        continue-on-error: true
+        run: |
+          echo "🔒 Running pip-audit on installed packages..."
+          if [ -f requirements.txt ]; then
+            pip-audit --requirement requirements.txt --format json > pip-audit-report.json || true
+            pip-audit --requirement requirements.txt || echo "⚠️  pip-audit found vulnerabilities"
+          fi
+          
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+            pip-audit-report.json
+  
   e2e-tests:
     name: E2E Tests (Optional)
     runs-on: ubuntu-latest

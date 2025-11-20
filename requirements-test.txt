@@ -21,6 +21,10 @@ flake8>=6.0.0
 mypy>=1.0.0
 bandit>=1.7.0
 
+# Sprint 8: Security scanning tools
+safety>=2.3.0
+pip-audit>=2.6.0
+
 # Bibliotecas de hardware e comunicação (mocks)
 pyserial>=3.5
 python-socketio>=5.7.0

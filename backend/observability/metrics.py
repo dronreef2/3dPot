@@ -101,6 +101,37 @@ budget_calculations_total = Counter(
 )
 
 
+# === Security Metrics (Sprint 8) ===
+
+rate_limit_hits_total = Counter(
+    "rate_limit_hits_total",
+    "Total rate limit violations",
+    ["endpoint", "client_type"],
+    registry=registry,
+)
+
+auth_failures_total = Counter(
+    "auth_failures_total",
+    "Total authentication failures",
+    ["failure_type", "endpoint"],
+    registry=registry,
+)
+
+audit_events_total = Counter(
+    "audit_events_total",
+    "Total audit events logged",
+    ["action", "level"],
+    registry=registry,
+)
+
+permission_denied_total = Counter(
+    "permission_denied_total",
+    "Total permission denied events",
+    ["resource_type", "action"],
+    registry=registry,
+)
+
+
 class MetricsMiddleware(BaseHTTPMiddleware):
     """
     Middleware to collect HTTP metrics automatically.
@@ -218,6 +249,28 @@ class Metrics:
     def exception(exception_type: str) -> None:
         """Record an exception"""
         exceptions_total.labels(exception_type=exception_type).inc()
+    
+    # Sprint 8: Security metrics
+    
+    @staticmethod
+    def rate_limit_hit(endpoint: str, client_type: str = "ip") -> None:
+        """Record a rate limit violation"""
+        rate_limit_hits_total.labels(endpoint=endpoint, client_type=client_type).inc()
+    
+    @staticmethod
+    def auth_failure(failure_type: str, endpoint: str = "/api/auth/login") -> None:
+        """Record an authentication failure"""
+        auth_failures_total.labels(failure_type=failure_type, endpoint=endpoint).inc()
+    
+    @staticmethod
+    def audit_event(action: str, level: str = "info") -> None:
+        """Record an audit event"""
+        audit_events_total.labels(action=action, level=level).inc()
+    
+    @staticmethod
+    def permission_denied(resource_type: str, action: str) -> None:
+        """Record a permission denied event"""
+        permission_denied_total.labels(resource_type=resource_type, action=action).inc()
 
 
 # Singleton instance
