@@ -873,15 +873,7 @@ Exemplos de uso:
   python framework_adapter.py
 
   # Modo direto com parâmetros
-  python framework_adapter.py \\
-    --repo-url "https://github.com/user/my-project" \\
-    --stack "Python/FastAPI + PostgreSQL" \\
-    --objectives "API REST para e-commerce" \\
-    --test-coverage "~30%" \\
-    --observability "logs básicos" \\
-    --security "JWT básico" \\
-    --documentation "mínima" \\
-    --output ./output
+  python framework_adapter.py --repo-url "https://github.com/user/my-project" --stack "Python/FastAPI + PostgreSQL" --objectives "API REST para e-commerce" --test-coverage "30 percent" --observability "logs básicos" --security "JWT básico" --documentation "mínima" --output ./output
 
 Para mais informações, consulte:
   - docs/arquitetura/AI-SPRINT-FRAMEWORK.md
@@ -893,7 +885,7 @@ Para mais informações, consulte:
     parser.add_argument('--repo-url', help='URL do repositório alvo')
     parser.add_argument('--stack', help='Stack tecnológico (ex: Python/FastAPI, Node/Express)')
     parser.add_argument('--objectives', help='Objetivos do projeto')
-    parser.add_argument('--test-coverage', help='Cobertura de testes atual (ex: ~40%, sem testes)')
+    parser.add_argument('--test-coverage', help='Cobertura de testes atual (ex: 40 percent, sem testes)')
     parser.add_argument('--observability', help='Estado de observabilidade (ex: nenhuma, logs básicos)')
     parser.add_argument('--security', help='Estado de segurança (ex: mínima, JWT básico)')
     parser.add_argument('--documentation', help='Estado de documentação (ex: mínima, moderada)')
