@@ -1,9 +1,10 @@
 """
 3dPot Backend - Logging Middleware
 Sprint 6: Automatic request/response logging
+Sprint 9: Extended with trace_id support
 
 This middleware automatically logs:
-- Incoming requests with method, path, request_id
+- Incoming requests with method, path, request_id, trace_id
 - Outgoing responses with status, duration
 - Exceptions and errors
 """
@@ -15,7 +16,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
 from .logging_config import get_logger
-from .request_id import get_request_id
+from .request_id import get_request_id, get_trace_id
 
 
 logger = get_logger(__name__)
@@ -26,9 +27,9 @@ class LoggingMiddleware(BaseHTTPMiddleware):
     Middleware to automatically log HTTP requests and responses.
     
     Logs:
-    - Request: method, path, request_id, client IP
-    - Response: status, duration, request_id
-    - Errors: exception type, details, request_id
+    - Request: method, path, request_id, trace_id, client IP
+    - Response: status, duration, request_id, trace_id
+    - Errors: exception type, details, request_id, trace_id
     
     Usage:
         from backend.observability import LoggingMiddleware
@@ -53,6 +54,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         method = request.method
         path = request.url.path
         request_id = get_request_id()
+        trace_id = get_trace_id()  # Sprint 9
         client_host = request.client.host if request.client else "unknown"
         
         # Log incoming request
@@ -61,6 +63,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             method=method,
             path=path,
             request_id=request_id,
+            trace_id=trace_id,  # Sprint 9
             client_ip=client_host,
         )
         
@@ -80,6 +83,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 status_code=response.status_code,
                 duration_ms=round(duration * 1000, 2),
                 request_id=request_id,
+                trace_id=trace_id,  # Sprint 9
             )
             
             # Log warning for 4xx/5xx errors
@@ -92,6 +96,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                     status_code=response.status_code,
                     duration_ms=round(duration * 1000, 2),
                     request_id=request_id,
+                    trace_id=trace_id,  # Sprint 9
                 )
             
             return response
@@ -108,6 +113,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 exception_message=str(exc),
                 duration_ms=round(duration * 1000, 2),
                 request_id=request_id,
+                trace_id=trace_id,  # Sprint 9
                 exc_info=True,
             )
             

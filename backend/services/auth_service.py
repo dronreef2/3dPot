@@ -243,7 +243,11 @@ class AuthenticationService:
     def authenticate_user(self, login_data: UserLogin, db: Session,
                          ip_address: Optional[str] = None,
                          user_agent: Optional[str] = None) -> UserLoginResponse:
-        """Autentica usuário e retorna tokens"""
+        """
+        Autentica usuário e retorna tokens.
+        Sprint 9: Com suporte para MFA challenge quando habilitado.
+        """
+        from backend.core.config import MFA_ENABLED, MFA_REQUIRED_FOR_ADMIN
         
         # Verifica rate limiting por IP
         self._check_rate_limit_login(ip_address)
@@ -270,6 +274,38 @@ class AuthenticationService:
         if not user.is_active:
             raise AuthenticationError("Conta desativada")
         
+        # Sprint 9: Verifica se MFA é necessário
+        mfa_required = False
+        if MFA_ENABLED:
+            # MFA é obrigatório para admins se configurado
+            if MFA_REQUIRED_FOR_ADMIN and (user.is_superuser or user.role == 'admin'):
+                mfa_required = True
+                # Se admin não tem MFA configurado, força erro
+                if not user.mfa_enabled:
+                    raise AuthenticationError("MFA é obrigatório para administradores. Configure MFA antes de fazer login.")
+            # Ou se o usuário tem MFA habilitado voluntariamente
+            elif user.mfa_enabled:
+                mfa_required = True
+        
+        # Se MFA é necessário, retorna token parcial para challenge
+        if mfa_required:
+            # Cria um token temporário de MFA challenge (curta duração: 5 min)
+            mfa_challenge_token = self._create_mfa_challenge_token(user)
+            
+            # NÃO reseta tentativas de login nem atualiza last_login ainda
+            # Isso será feito após validação MFA
+            
+            return UserLoginResponse(
+                access_token="",  # Token vazio - será emitido após MFA
+                refresh_token="",  # Token vazio - será emitido após MFA
+                token_type="bearer",
+                expires_in=300,  # 5 minutos para completar MFA
+                user=UserPublic.from_orm(user),
+                mfa_required=True,
+                mfa_token=mfa_challenge_token
+            )
+        
+        # Login normal sem MFA (backward compatible)
         # Reset tentativas de login em caso de sucesso
         self._reset_login_attempts(user.id, ip_address)
         
@@ -300,7 +336,8 @@ class AuthenticationService:
             refresh_token=refresh_token,
             token_type="bearer",
             expires_in=expires_in,
-            user=UserPublic.from_orm(user)
+            user=UserPublic.from_orm(user),
+            mfa_required=False
         )
     
     def refresh_tokens(self, refresh_token: str, db: Session) -> UserLoginResponse:
@@ -413,6 +450,97 @@ class AuthenticationService:
             return True
         
         return False
+    
+    # ==================== MFA CHALLENGE (SPRINT 9) ====================
+    
+    def _create_mfa_challenge_token(self, user: User) -> str:
+        """
+        Cria token temporário para MFA challenge (5 minutos)
+        Este token permite verificar MFA após credenciais corretas
+        """
+        now = datetime.utcnow()
+        expire = now + timedelta(minutes=5)
+        
+        payload = {
+            "sub": str(user.id),
+            "username": user.username,
+            "type": "mfa_challenge",
+            "iat": now,
+            "exp": expire,
+            "jti": str(uuid4())
+        }
+        
+        return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
+    
+    def verify_mfa_challenge_token(self, mfa_token: str) -> Dict[str, Any]:
+        """
+        Verifica token de MFA challenge e retorna payload
+        """
+        try:
+            payload = jwt.decode(mfa_token, self.secret_key, algorithms=[self.algorithm])
+            if payload.get("type") != "mfa_challenge":
+                raise TokenInvalidError("Token não é um MFA challenge válido")
+            return payload
+        except jwt.ExpiredSignatureError:
+            raise TokenExpiredError("MFA challenge expirado. Faça login novamente.")
+        except jwt.InvalidTokenError:
+            raise TokenInvalidError("MFA challenge inválido")
+    
+    def complete_mfa_login(self, mfa_token: str, code: str, db: Session,
+                          device_info: Optional[Dict] = None,
+                          ip_address: Optional[str] = None,
+                          user_agent: Optional[str] = None) -> UserLoginResponse:
+        """
+        Completa login após verificação MFA bem-sucedida.
+        Sprint 9: Valida código MFA e emite tokens finais.
+        """
+        from backend.services.mfa_service import mfa_service, MFAInvalidCodeException
+        
+        # Verifica token de challenge
+        payload = self.verify_mfa_challenge_token(mfa_token)
+        user_id = payload.get("sub")
+        
+        # Busca usuário
+        user = db.query(User).filter(User.id == UUID(user_id)).first()
+        if not user or not user.is_active:
+            raise AuthenticationError("Usuário não encontrado ou inativo")
+        
+        # Valida código MFA (TOTP ou backup code)
+        try:
+            is_valid = mfa_service.validate_mfa_code(user, code)
+        except MFAInvalidCodeException as e:
+            raise AuthenticationError(str(e))
+        
+        if not is_valid:
+            raise AuthenticationError("Código MFA inválido")
+        
+        # MFA validado com sucesso - completa login
+        # Reset tentativas de login
+        self._reset_login_attempts(user.id, ip_address)
+        
+        # Atualiza último login
+        user.last_login = datetime.utcnow()
+        user.login_attempts = 0
+        user.locked_until = None
+        db.commit()
+        
+        # Cria tokens finais
+        access_token = self.create_access_token(user)
+        refresh_token, refresh_token_record = self.create_refresh_token(
+            user, db,
+            device_info=device_info,
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+        
+        return UserLoginResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_type="bearer",
+            expires_in=self.access_token_expire_minutes * 60,
+            user=UserPublic.from_orm(user),
+            mfa_required=False
+        )
     
     # ==================== RATE LIMITING ====================
     

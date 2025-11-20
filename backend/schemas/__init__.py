@@ -349,6 +349,9 @@ class UserLoginResponse(BaseModel):
     token_type: str = Field(default="bearer", description="Tipo do token")
     expires_in: int = Field(..., description="Tempo de expiração em segundos")
     user: 'UserPublic' = Field(..., description="Dados públicos do usuário")
+    # Sprint 9: MFA challenge support
+    mfa_required: Optional[bool] = Field(default=False, description="Indica se MFA é obrigatório")
+    mfa_token: Optional[str] = Field(default=None, description="Token temporário para challenge MFA")
 
 class RefreshTokenRequest(BaseModel):
     """Request para renovar token"""
@@ -379,6 +382,12 @@ class ChangePasswordRequest(BaseModel):
 class EmailVerificationRequest(BaseModel):
     """Solicitação de verificação de email"""
     email: EmailStr = Field(..., description="Email para verificar")
+
+class MFALoginVerification(BaseModel):
+    """Verificação MFA durante login - Sprint 9"""
+    mfa_token: str = Field(..., description="Token temporário da etapa de login")
+    code: str = Field(..., min_length=6, max_length=8, description="Código MFA (TOTP ou backup)")
+    remember_device: bool = Field(default=False, description="Lembrar este dispositivo (futuro)")
 
 # Auth responses
 class Token(BaseModel):
