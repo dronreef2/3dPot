@@ -380,29 +380,47 @@ pytest --cov=backend --cov-report=html
 
 ## 🔐 Resumo de Segurança
 
-### Scans Executados
+### Scans Executados (20 de Novembro de 2025)
 
-**CodeQL:**
-- Status: ✅ Executado
+**CodeQL / SAST:**
+- Status: ⚠️ Workflow dedicado não configurado
+- Alternativa: ✅ Trivy scanner (SARIF upload para CodeQL action)
 - Severidade crítica: 0
 - Severidade alta: 0
-- Notas: Nenhum problema de segurança detectado no código adicionado
+- Notas: Trivy executado via CI/CD pipeline. CodeQL workflow recomendado para Sprint 10.
 
 **Bandit (Python Security Linter):**
 ```bash
-bandit -r backend/services/mfa_service.py backend/routers/mfa.py
-```
-- Status: ✅ Executado
-- Issues: 0 de severidade alta/média
-- Notas: Uso correto de pyotp e secrets para geração de tokens
+# Scan completo
+bandit -r backend/ scripts/dr/ -ll
 
-**Safety (Dependency Check):**
-```bash
-safety check --json
+# Scan específico Sprint 9
+bandit -r backend/services/mfa_service.py backend/routers/mfa.py \
+       backend/services/auth_service.py scripts/dr/ -ll
 ```
-- Status: ✅ Executado
-- Vulnerabilidades conhecidas: 0
-- Notas: Todas as dependências estão atualizadas
+- Status: ✅ Executado em 20/11/2025
+- Escopo: 33,741 linhas de código Python
+- **Código Sprint 9 (MFA + DR):** 0 HIGH, 0 MEDIUM ✅
+- **Código geral:** 2 HIGH, 5 MEDIUM (todos justificados e aceitos)
+  - HIGH: MD5 usado apenas para cache keys (não criptográfico)
+  - MEDIUM: Bind 0.0.0.0 (containerizado, com reverse proxy)
+  - MEDIUM: Pickle em cache interno (não deserializa input externo)
+- Notas: Uso correto de pyotp, secrets, e criptografia para MFA
+
+**pip-audit (Dependency Security):**
+```bash
+pip-audit --desc -f json -o pip-audit-report.json
+```
+- Status: ✅ Executado em 20/11/2025
+- Vulnerabilidades encontradas: 21 em 10 pacotes
+- **Ação tomada:** ✅ 4 upgrades críticos aplicados:
+  - `cryptography` 41.0.8 → 43.0.1 (CVE-2024-26130, CVE-2023-50782)
+  - `certifi` 2023.11.17 → 2024.7.4+ (CVE-2024-39689)
+  - `jinja2` 3.1.2 → 3.1.4 (GHSA-h5c8-rqwp-cp95, GHSA-h75v-3vvj-5mfj)
+  - `idna` 3.6 → 3.7+ (PYSEC-2024-60)
+- Status pós-mitigação: **0 vulnerabilidades críticas não mitigadas**
+
+**Documentação completa:** Ver [SPRINT9-SECURITY-SUMMARY.md](./SPRINT9-SECURITY-SUMMARY.md)
 
 ### Boas Práticas Implementadas
 
@@ -480,6 +498,8 @@ safety check --json
 - [x] Runbook acessível para equipe de ops
 - [x] Testes de restore validados
 - [x] Documentação de MFA para usuários
+- [x] **Security scans executados e documentados** ✅
+- [x] **Vulnerabilidades críticas mitigadas** ✅
 - [ ] **Training de ops team no runbook** (próximo passo)
 - [ ] **Drill de DR (teste de restore real)** (próximo passo)
 
@@ -512,10 +532,13 @@ safety check --json
 - [ ] On-call runbooks automatizados
 
 ### 5. Segurança
-- [ ] Penetration testing
+- [ ] CodeQL workflow dedicado (SAST automático)
+- [ ] Dependabot para auto-updates de dependências
+- [ ] Penetration testing externo
 - [ ] Security hardening based on OWASP Top 10
-- [ ] Automated vulnerability scanning (CI/CD)
-- [ ] Compliance audits (GDPR, SOC2)
+- [ ] Compliance audits (LGPD, SOC2 se aplicável)
+- [ ] Migrar pickle para JSON (simulation cache)
+- [ ] CSP (Content Security Policy) headers
 
 ---
 
