@@ -30,6 +30,11 @@ PASSWORD_REQUIRE_LOWERCASE = os.environ.get("PASSWORD_REQUIRE_LOWERCASE", "true"
 PASSWORD_REQUIRE_NUMBERS = os.environ.get("PASSWORD_REQUIRE_NUMBERS", "true").lower() == "true"
 PASSWORD_REQUIRE_SPECIAL = os.environ.get("PASSWORD_REQUIRE_SPECIAL", "true").lower() == "true"
 
+# MFA/2FA Configuration (Sprint 9)
+MFA_ENABLED = os.environ.get("MFA_ENABLED", "false").lower() == "true"
+MFA_ISSUER_NAME = os.environ.get("MFA_ISSUER_NAME", "3dPot")
+MFA_REQUIRED_FOR_ADMIN = os.environ.get("MFA_REQUIRED_FOR_ADMIN", "false").lower() == "true"
+
 # Rate limiting
 RATE_LIMIT_PER_MINUTE = int(os.environ.get("RATE_LIMIT_PER_MINUTE", "60"))
 RATE_LIMIT_PER_HOUR = int(os.environ.get("RATE_LIMIT_PER_HOUR", "1000"))
@@ -120,6 +125,11 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     API_VERSION: str = "v1"
     API_PREFIX: str = ""
+    
+    # MFA/2FA Settings (Sprint 9)
+    MFA_ENABLED: bool = False
+    MFA_ISSUER_NAME: str = "3dPot"
+    MFA_REQUIRED_FOR_ADMIN: bool = False
     
     model_config = {
         "env_file": ".env",
