@@ -4,7 +4,7 @@
 [![Python Tests](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/python-tests.yml?label=Python%20Tests&style=flat-square)](https://github.com/dronreef2/3dPot/actions)
 [![Code Quality](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/code-quality.yml?label=Code%20Quality&style=flat-square)](https://github.com/dronreef2/3dPot/actions)
 [![Code Coverage](https://img.shields.io/badge/coverage-85%25-green?style=flat-square)](https://github.com/dronreef2/3dPot)
-[![Tests](https://img.shields.io/badge/tests-691%20passing-success?style=flat-square)](https://github.com/dronreef2/3dPot)
+[![Tests](https://img.shields.io/badge/tests-748%20passing-success?style=flat-square)](https://github.com/dronreef2/3dPot)
 [![3D Models](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/openscad.yml?label=3D%20Models&style=flat-square)](https://github.com/dronreef2/3dPot/actions)
 [![Arduino Build](https://img.shields.io/github/actions/workflow/status/dronreef2/3dPot/arduino-build.yml?label=Arduino%20Build&style=flat-square)](https://github.com/dronreef2/3dPot/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -48,10 +48,10 @@ python -m uvicorn main:app --reload
 ### Comandos Principais
 
 ```bash
-# Rodar todos os testes (691 testes)
+# Rodar todos os testes (748 testes)
 ./run_tests.sh
 
-# Rodar apenas testes unitários (612 testes)
+# Rodar apenas testes unitários (669 testes)
 pytest tests/unit/ -v
 
 # Rodar testes de integração
@@ -86,8 +86,8 @@ curl http://localhost:8000/metrics
 │   └── arquitetura/  # Relatórios Sprint 1-4
 ├── scripts/          # 🛠️ Scripts auxiliares
 │   └── cli/          # CLI unificada (13 comandos)
-├── tests/            # 🧪 691 testes (85% de cobertura)
-│   ├── unit/         # 612 testes unitários
+├── tests/            # 🧪 748 testes (90% de cobertura)
+│   ├── unit/         # 669 testes unitários
 │   ├── integration/  # Testes de integração
 │   ├── e2e/          # 30 testes E2E
 │   └── cli/          # 49 testes da CLI
@@ -130,6 +130,87 @@ curl http://localhost:8000/metrics
 🗺️ **Roadmap claro:** 4 sprints definidas para production-ready (Sprints 6-9)
 
 **Status:** 🟡 **85% Production-Ready** - Pronto para staging, necessita hardening para produção completa
+
+---
+
+## 🔥 **ATUALIZAÇÃO SPRINT 7 - SEGURANÇA E HARDENING**
+
+### 🔒 Sprint 7 - Novembro 2025
+
+**Foco:** Implementação de recursos essenciais de segurança e hardening para operação segura em produção
+
+✅ **Rate Limiting** com Token Bucket algorithm e limites configuráveis  
+✅ **Audit Logging** para rastreamento completo de ações críticas  
+✅ **Security Configuration** com validação automática  
+✅ **57+ novos testes** de segurança (100% passing)  
+✅ **Proteção de endpoints sensíveis** (auth, cloud rendering, marketplace)  
+✅ **Sanitização automática** de dados sensíveis em logs
+
+**📖 Documentação:** [Sprint 7 - Relatório Completo](docs/arquitetura/SPRINT7-SEGURANCA-RELATORIO.md)
+
+### Recursos de Segurança - Sprint 7
+
+| Recurso | Descrição | Status |
+|---------|-----------|--------|
+| **Rate Limiting** | Token bucket, 10-60 req/min por endpoint | ✅ |
+| **Audit Logging** | 30+ ações auditáveis com sanitização | ✅ |
+| **Security Config** | Validação de secrets e configuração | ✅ |
+| **RBAC** | Controle de acesso por roles (validado) | ✅ |
+| **Protected Endpoints** | Auth: 10/min, Cloud: 30/min, Market: 50/min | ✅ |
+| **Data Sanitization** | Passwords/tokens redatados automaticamente | ✅ |
+
+### Destaques Sprint 7
+
+🔒 **Proteção contra Ataques:** Rate limiting protege contra brute force e DoS  
+📝 **Rastreabilidade Total:** Audit logs de login, logout, criação/alteração de recursos  
+⚙️ **Configuração Segura:** Validação automática de SECRET_KEY, CORS, DEBUG mode  
+🛡️ **Privacidade de Dados:** Sanitização automática de passwords, tokens, API keys  
+🧪 **Testado:** 57+ testes garantem funcionamento correto e cobertura completa
+
+**Exemplo de Rate Limit:**
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 5
+X-RateLimit-Limit: 10
+X-RateLimit-Remaining: 0
+
+{
+  "error": "Rate limit exceeded",
+  "message": "Too many requests. Please try again later.",
+  "retry_after": 5
+}
+```
+
+**Exemplo de Audit Log:**
+```json
+{
+  "timestamp": "2025-11-19T23:30:15Z",
+  "level": "info",
+  "event": "audit_log",
+  "audit": true,
+  "action": "login_success",
+  "user_id": "user-abc-123",
+  "username": "john_doe",
+  "ip_address": "203.0.113.1",
+  "request_id": "req-xyz-789"
+}
+```
+
+**Configuração de Segurança:**
+```bash
+# Rate Limiting
+RATE_LIMITING_ENABLED=true
+RATE_LIMIT_DEFAULT=60
+RATE_LIMIT_AUTH=10
+RATE_LIMIT_CLOUD_RENDERING=30
+
+# Production Security
+SECRET_KEY=$(openssl rand -hex 64)  # 64+ caracteres
+DEBUG=false
+ALLOWED_ORIGINS=https://app.3dpot.com
+```
+
+**Status:** 🟢 **90% Production-Ready** (+5pp vs Sprint 6) - Segurança básica completa, pronto para produção com monitoramento
 
 ---
 

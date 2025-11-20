@@ -36,6 +36,8 @@ from backend.observability import (
     MetricsMiddleware,
     setup_metrics,
     get_metrics_content_type,
+    # Sprint 7: Rate Limiting
+    create_rate_limit_middleware,
 )
 
 # Configure structured logging
@@ -124,6 +126,21 @@ app.add_middleware(LoggingMiddleware)
 
 # Metrics (tracks HTTP metrics)
 app.add_middleware(MetricsMiddleware)
+
+# Sprint 7: Rate Limiting (before CORS to protect all endpoints)
+# Configure with specific limits for sensitive endpoints
+from backend.observability.rate_limiting import RateLimitMiddleware
+app.add_middleware(
+    RateLimitMiddleware,
+    default_limit=int(os.getenv("RATE_LIMIT_DEFAULT", "60")),
+    burst_size=int(os.getenv("RATE_LIMIT_BURST", "120")),
+    sensitive_endpoints={
+        "/api/auth/login": int(os.getenv("RATE_LIMIT_AUTH", "10")),
+        "/api/auth/register": int(os.getenv("RATE_LIMIT_AUTH", "10")),
+        "/api/v1/cloud-rendering": int(os.getenv("RATE_LIMIT_CLOUD_RENDERING", "30")),
+        "/api/v1/marketplace": int(os.getenv("RATE_LIMIT_MARKETPLACE", "50")),
+    }
+)
 
 # CORS
 allowed_origins = getattr(settings, 'ALLOWED_ORIGINS', ["*"])
