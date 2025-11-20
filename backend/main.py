@@ -127,20 +127,86 @@ app.add_middleware(LoggingMiddleware)
 # Metrics (tracks HTTP metrics)
 app.add_middleware(MetricsMiddleware)
 
-# Sprint 7: Rate Limiting (before CORS to protect all endpoints)
+# Sprint 8: Rate Limiting with Redis backend support
 # Configure with specific limits for sensitive endpoints
-from backend.observability.rate_limiting import RateLimitMiddleware
-app.add_middleware(
-    RateLimitMiddleware,
-    default_limit=int(os.getenv("RATE_LIMIT_DEFAULT", "60")),
-    burst_size=int(os.getenv("RATE_LIMIT_BURST", "120")),
-    sensitive_endpoints={
-        "/api/auth/login": int(os.getenv("RATE_LIMIT_AUTH", "10")),
-        "/api/auth/register": int(os.getenv("RATE_LIMIT_AUTH", "10")),
-        "/api/v1/cloud-rendering": int(os.getenv("RATE_LIMIT_CLOUD_RENDERING", "30")),
-        "/api/v1/marketplace": int(os.getenv("RATE_LIMIT_MARKETPLACE", "50")),
-    }
-)
+# Supports both in-memory and Redis backends via RATE_LIMIT_BACKEND env variable
+rate_limit_backend = os.getenv("RATE_LIMIT_BACKEND", "in-memory").lower()
+rate_limiting_enabled = os.getenv("RATE_LIMITING_ENABLED", "true").lower() == "true"
+
+if rate_limiting_enabled:
+    if rate_limit_backend == "redis":
+        try:
+            from backend.observability.rate_limiting_redis import create_redis_rate_limiter
+            
+            # Try to create Redis rate limiter
+            redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+            logger.info(
+                "rate_limit_backend_init",
+                backend="redis",
+                redis_url=redis_url.split('@')[-1] if '@' in redis_url else redis_url
+            )
+            
+            redis_limiter = create_redis_rate_limiter(
+                redis_url=redis_url,
+                requests_per_minute=int(os.getenv("RATE_LIMIT_DEFAULT", "60")),
+                burst_size=int(os.getenv("RATE_LIMIT_BURST", "120")),
+                enabled=True,
+                key_prefix="rate_limit"
+            )
+            
+            # Use Redis-backed middleware
+            from backend.observability.rate_limiting import RateLimitMiddleware
+            app.add_middleware(
+                RateLimitMiddleware,
+                default_limit=int(os.getenv("RATE_LIMIT_DEFAULT", "60")),
+                burst_size=int(os.getenv("RATE_LIMIT_BURST", "120")),
+                sensitive_endpoints={
+                    "/api/auth/login": int(os.getenv("RATE_LIMIT_AUTH", "10")),
+                    "/api/auth/register": int(os.getenv("RATE_LIMIT_AUTH", "10")),
+                    "/api/v1/cloud-rendering": int(os.getenv("RATE_LIMIT_CLOUD_RENDERING", "30")),
+                    "/api/v1/marketplace": int(os.getenv("RATE_LIMIT_MARKETPLACE", "50")),
+                },
+                redis_limiter=redis_limiter  # Pass Redis limiter to middleware
+            )
+            logger.info("rate_limit_redis_initialized", status="success")
+            
+        except Exception as e:
+            # Fallback to in-memory if Redis fails
+            logger.warning(
+                "rate_limit_redis_fallback",
+                error=str(e),
+                fallback="in-memory",
+                message="Redis rate limiting failed to initialize, falling back to in-memory"
+            )
+            from backend.observability.rate_limiting import RateLimitMiddleware
+            app.add_middleware(
+                RateLimitMiddleware,
+                default_limit=int(os.getenv("RATE_LIMIT_DEFAULT", "60")),
+                burst_size=int(os.getenv("RATE_LIMIT_BURST", "120")),
+                sensitive_endpoints={
+                    "/api/auth/login": int(os.getenv("RATE_LIMIT_AUTH", "10")),
+                    "/api/auth/register": int(os.getenv("RATE_LIMIT_AUTH", "10")),
+                    "/api/v1/cloud-rendering": int(os.getenv("RATE_LIMIT_CLOUD_RENDERING", "30")),
+                    "/api/v1/marketplace": int(os.getenv("RATE_LIMIT_MARKETPLACE", "50")),
+                }
+            )
+    else:
+        # In-memory rate limiting (default)
+        logger.info("rate_limit_backend_init", backend="in-memory")
+        from backend.observability.rate_limiting import RateLimitMiddleware
+        app.add_middleware(
+            RateLimitMiddleware,
+            default_limit=int(os.getenv("RATE_LIMIT_DEFAULT", "60")),
+            burst_size=int(os.getenv("RATE_LIMIT_BURST", "120")),
+            sensitive_endpoints={
+                "/api/auth/login": int(os.getenv("RATE_LIMIT_AUTH", "10")),
+                "/api/auth/register": int(os.getenv("RATE_LIMIT_AUTH", "10")),
+                "/api/v1/cloud-rendering": int(os.getenv("RATE_LIMIT_CLOUD_RENDERING", "30")),
+                "/api/v1/marketplace": int(os.getenv("RATE_LIMIT_MARKETPLACE", "50")),
+            }
+        )
+else:
+    logger.info("rate_limiting_disabled", message="Rate limiting is disabled via RATE_LIMITING_ENABLED=false")
 
 # CORS
 allowed_origins = getattr(settings, 'ALLOWED_ORIGINS', ["*"])

@@ -13,9 +13,10 @@ Rotas para renderização em nuvem e processamento GPU distribuído, incluindo:
 Autor: MiniMax Agent
 Data: 2025-11-13
 Versão: 2.0.0 - Sprint 6+
+Sprint 8: RBAC integration for admin-only operations
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks, Request
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
@@ -28,6 +29,11 @@ from ..core.config import settings
 from ..services.cloud_rendering_service import CloudRenderingService
 from ..middleware.auth import get_current_user
 from ..models import User
+
+# Sprint 8: Import RBAC helpers
+from backend.core.authorization import (
+    Role, Permission, require_role, has_role, has_permission
+)
 
 router = APIRouter()
 
@@ -44,9 +50,17 @@ async def create_gpu_cluster(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Criar novo cluster de GPU (apenas administradores)"""
-    if not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="Acesso negado")
+    """
+    Criar novo cluster de GPU (apenas administradores)
+    Sprint 8: Protected with ADMIN role requirement
+    """
+    # Sprint 8: Use RBAC instead of is_superuser check
+    user_role = getattr(current_user, 'role', Role.USER)
+    if not has_role(user_role, [Role.ADMIN, Role.OPERATOR]):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Access denied. Admin or Operator role required."
+        )
     
     try:
         cluster = await cloud_rendering_service.create_gpu_cluster(db, cluster_data)

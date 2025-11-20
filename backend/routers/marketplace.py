@@ -12,9 +12,10 @@ Rotas para marketplace de modelos 3D, incluindo:
 Autor: MiniMax Agent
 Data: 2025-11-13
 Versão: 2.0.0 - Sprint 6+
+Sprint 8: RBAC integration for seller and admin permissions
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query, Form
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query, Form, Request
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
@@ -27,6 +28,11 @@ from ..core.config import settings
 from ..services.marketplace_service import MarketplaceService
 from ..middleware.auth import get_current_user
 from ..models import User
+
+# Sprint 8: Import RBAC helpers
+from backend.core.authorization import (
+    Role, Permission, require_role, has_role, has_permission
+)
 
 router = APIRouter()
 
@@ -43,9 +49,17 @@ async def create_category(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Criar nova categoria (apenas administradores)"""
-    if not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="Acesso negado")
+    """
+    Criar nova categoria (apenas administradores)
+    Sprint 8: Protected with ADMIN role requirement
+    """
+    # Sprint 8: Use RBAC instead of is_superuser check
+    user_role = getattr(current_user, 'role', Role.USER)
+    if not has_role(user_role, [Role.ADMIN]):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Access denied. Admin role required."
+        )
     
     try:
         category = await marketplace_service.create_category(db, category_data)
