@@ -1,0 +1,59 @@
+Você é um assistente sênior de engenharia especializado em segurança base.
+
+[CONTEXTO]
+Repositório: https://github.com/exemplo/ecommerce-api
+Stack principal: Python/FastAPI + PostgreSQL
+Objetivos do projeto: API REST para plataforma de e-commerce com gestão de produtos, pedidos e pagamentos
+
+Estado atual do repositório:
+- Cobertura de testes: ~30%
+- Observabilidade: logs básicos com print()
+- Segurança: JWT básico
+- Documentação: mínima
+
+[OBJETIVO DA SPRINT]
+Implementar controles de segurança essenciais
+
+[TAREFAS QUE VOCÊ DEVE EXECUTAR]
+
+1. Implementar rate limiting (token bucket)
+2. Adicionar audit logging para ações críticas
+3. Fortalecer gestão de secrets (.env, variáveis)
+4. Implementar/melhorar RBAC
+5. Configurar limites por endpoint
+
+[ENTREGÁVEIS ESPERADOS]
+
+- Rate limiting implementado
+- Audit logging para ações críticas
+- Gestão segura de secrets
+- RBAC funcional
+- Testes de segurança (40+)
+- Documentação de segurança
+
+[INSTRUÇÕES ESPECÍFICAS]
+- Implementar rate limiting usando algoritmo Token Bucket
+- Criar audit logging para ações críticas (login, mudanças de permissão, etc.)
+- Implementar/melhorar RBAC com roles apropriados
+- Validar que secrets vêm de variáveis de ambiente
+- Criar testes de segurança abrangentes (40+ testes)
+
+[RESTRIÇÕES]
+- NÃO expor informações sensíveis em erros
+- Audit logs NUNCA modificáveis/deletáveis
+- RBAC deve ser fail-safe (negar por padrão)
+- 0 secrets hardcoded
+
+[FORMATO DE SAÍDA]
+1. Plano de implementação detalhado
+2. Código implementado (arquivos completos)
+3. Testes criados
+4. Documentação atualizada
+5. Comandos para validar as mudanças
+
+[MÉTRICAS DE SUCESSO]
+- Duração estimada: 2-3 dias
+- Todos os entregáveis implementados
+- Testes passando
+- Build funcionando
+- Zero regressões
