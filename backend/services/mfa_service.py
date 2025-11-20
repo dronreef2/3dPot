@@ -188,11 +188,11 @@ class MFAService:
     
     def validate_mfa_code(self, user: User, code: str) -> bool:
         """
-        Valida código MFA durante login
+        Valida código MFA durante login (TOTP ou backup code)
         
         Args:
             user: Usuário autenticando
-            code: Código TOTP de 6 dígitos
+            code: Código TOTP de 6 dígitos ou backup code (formato: XXXX-XXXX)
             
         Returns:
             bool: True se código é válido
@@ -204,12 +204,47 @@ class MFAService:
         if not user.mfa_enabled or not user.mfa_secret:
             raise MFANotEnabledException("MFA não está habilitado para este usuário")
         
-        if not self.verify_totp_code(user.mfa_secret, code):
-            raise MFAInvalidCodeException("Código MFA inválido")
+        # Primeiro tenta validar como código TOTP
+        if self.verify_totp_code(user.mfa_secret, code):
+            logger.info(f"Código TOTP validado com sucesso para usuário {user.username}")
+            return True
         
-        logger.info(f"Código MFA validado com sucesso para usuário {user.username}")
+        # Se falhou, tenta validar como backup code
+        if self.validate_backup_code(user, code):
+            logger.info(f"Backup code validado com sucesso para usuário {user.username}")
+            return True
         
-        return True
+        raise MFAInvalidCodeException("Código MFA inválido")
+    
+    def validate_backup_code(self, user: User, code: str) -> bool:
+        """
+        Valida backup code e o marca como usado
+        
+        Args:
+            user: Usuário autenticando
+            code: Código de backup (formato: XXXX-XXXX)
+            
+        Returns:
+            bool: True se backup code é válido e ainda não foi usado
+        """
+        if not user.mfa_backup_codes:
+            return False
+        
+        # Backup codes são case-insensitive e podem ter espaços
+        code_normalized = code.strip().replace(" ", "").lower()
+        
+        for backup_code in user.mfa_backup_codes:
+            backup_normalized = backup_code.strip().replace(" ", "").lower()
+            if backup_normalized == code_normalized:
+                # Backup code é válido - remove da lista (one-time use)
+                user.mfa_backup_codes.remove(backup_code)
+                logger.warning(
+                    f"Backup code usado para usuário {user.username}. "
+                    f"Códigos restantes: {len(user.mfa_backup_codes)}"
+                )
+                return True
+        
+        return False
     
     def generate_backup_codes(self, count: int = 10) -> list:
         """
