@@ -14,6 +14,8 @@ python-multipart==0.0.6
 httpx==0.25.2
 requests==2.31.0
 aiohttp==3.9.1
+certifi>=2024.7.4  # Security fix: CVE-2024-39689
+idna>=3.7  # Security fix: PYSEC-2024-60 (DoS)
 
 # =============================================================================
 # DATABASE & ORM
@@ -47,7 +49,7 @@ email-validator==2.1.0
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 python-multipart==0.0.6
-cryptography==41.0.8
+cryptography==43.0.1  # Security fix: CVE-2024-26130, CVE-2023-50782, CVE-2024-0727
 
 # MFA/2FA (Sprint 9)
 pyotp==2.9.0
@@ -91,7 +93,7 @@ reportlab==4.0.7
 
 # PDF Generation
 weasyprint==60.2
-jinja2==3.1.2
+jinja2==3.1.4  # Security fix: GHSA-h5c8-rqwp-cp95, GHSA-h75v-3vvj-5mfj
 
 # Image Processing
 Pillow==10.1.0
