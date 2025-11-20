@@ -226,6 +226,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Modeling & Simulation routers (from backend/routes/)
 from backend.routers.auth import auth_router
+from backend.routers.mfa import mfa_router  # Sprint 9: MFA endpoints
 from backend.routers.conversational import router as conversational_router
 from backend.routers.budgeting import router as budgeting_router
 from backend.routers.modeling import router as modeling_router
@@ -262,6 +263,12 @@ app.include_router(
     auth_router,
     prefix="/api/auth",
     tags=["authentication"]
+)
+
+# MFA (Sprint 9)
+app.include_router(
+    mfa_router,
+    tags=["mfa"]
 )
 
 # === MODELING & PROTOTYPING APIs ===

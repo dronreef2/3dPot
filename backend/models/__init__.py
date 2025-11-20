@@ -51,6 +51,11 @@ class User(Base):
     verification_token = Column(String(255), nullable=True)
     verification_token_expires = Column(DateTime, nullable=True)
     
+    # MFA/2FA (Sprint 9)
+    mfa_enabled = Column(Boolean, default=False)
+    mfa_secret = Column(String(255), nullable=True)  # TOTP secret
+    mfa_backup_codes = Column(JSON, default=list)  # Backup codes for recovery
+    
     # Profile
     avatar_url = Column(String(500), nullable=True)
     bio = Column(Text, nullable=True)

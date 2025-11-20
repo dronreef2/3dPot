@@ -92,6 +92,13 @@ class AuditAction:
     SUSPICIOUS_ACTIVITY = "suspicious_activity"
     ACCOUNT_LOCKED = "account_locked"
     ACCOUNT_UNLOCKED = "account_unlocked"
+    
+    # MFA Events (Sprint 9)
+    MFA_ENROLLED = "mfa_enrolled"
+    MFA_DISABLED = "mfa_disabled"
+    MFA_CHALLENGE_PASSED = "mfa_challenge_passed"
+    MFA_CHALLENGE_FAILED = "mfa_challenge_failed"
+    MFA_BACKUP_CODES_REGENERATED = "mfa_backup_codes_regenerated"
 
 
 class AuditLevel:
