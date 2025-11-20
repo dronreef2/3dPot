@@ -12,7 +12,7 @@ python-multipart==0.0.6
 
 # HTTP Client & APIs
 httpx==0.25.2
-requests==2.31.0
+requests>=2.32.0  # Security fix: GHSA-9wx4-h78v-vm56
 aiohttp==3.9.1
 certifi>=2024.7.4  # Security fix: CVE-2024-39689
 idna>=3.7  # Security fix: PYSEC-2024-60 (DoS)
