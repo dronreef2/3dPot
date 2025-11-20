@@ -1,6 +1,7 @@
 """
 Audit Logging - 3dPot Sprint 7
 Sistema de auditoria para rastreamento de ações críticas e mudanças de estado
+Sprint 8: Integração com métricas Prometheus
 """
 
 from datetime import datetime
@@ -11,6 +12,13 @@ from backend.observability.logging_config import get_logger
 
 # Get structured logger for audit
 audit_logger = get_logger("audit")
+
+# Import metrics (lazy to avoid circular imports)
+try:
+    from backend.observability.metrics import metrics
+    METRICS_AVAILABLE = True
+except ImportError:
+    METRICS_AVAILABLE = False
 
 
 class AuditAction:
@@ -171,6 +179,14 @@ def log_audit(
         audit_logger.warning("audit_log", **log_entry)
     else:
         audit_logger.info("audit_log", **log_entry)
+    
+    # Sprint 8: Emit metrics if available
+    if METRICS_AVAILABLE:
+        try:
+            metrics.audit_event(action=action, level=level)
+        except Exception:
+            # Don't fail audit logging if metrics fail
+            pass
 
 
 def _sanitize_details(details: Dict[str, Any]) -> Dict[str, Any]:

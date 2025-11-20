@@ -15,6 +15,13 @@ from backend.observability.logging_config import get_logger
 
 logger = get_logger(__name__)
 
+# Import metrics (lazy to avoid circular imports)
+try:
+    from backend.observability.metrics import metrics
+    METRICS_AVAILABLE = True
+except ImportError:
+    METRICS_AVAILABLE = False
+
 
 class TokenBucket:
     """
@@ -202,6 +209,15 @@ class RateLimiter:
                 retry_after=retry_after,
                 available_tokens=bucket.get_available_tokens()
             )
+            
+            # Sprint 8: Emit metrics if available
+            if METRICS_AVAILABLE:
+                try:
+                    client_type = "user" if client_key.startswith("user:") else "ip"
+                    metrics.rate_limit_hit(endpoint=request.url.path, client_type=client_type)
+                except Exception:
+                    # Don't fail rate limiting if metrics fail
+                    pass
             
             return False, retry_after
         
