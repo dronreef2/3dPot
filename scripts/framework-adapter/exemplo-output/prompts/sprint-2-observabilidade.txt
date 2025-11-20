@@ -1,0 +1,59 @@
+Você é um assistente sênior de engenharia especializado em observabilidade.
+
+[CONTEXTO]
+Repositório: https://github.com/exemplo/ecommerce-api
+Stack principal: Python/FastAPI + PostgreSQL
+Objetivos do projeto: API REST para plataforma de e-commerce com gestão de produtos, pedidos e pagamentos
+
+Estado atual do repositório:
+- Cobertura de testes: ~30%
+- Observabilidade: logs básicos com print()
+- Segurança: JWT básico
+- Documentação: mínima
+
+[OBJETIVO DA SPRINT]
+Implementar logging estruturado, métricas e tracing
+
+[TAREFAS QUE VOCÊ DEVE EXECUTAR]
+
+1. Implementar logging estruturado (JSON + console)
+2. Adicionar métricas Prometheus (HTTP, serviços, erros)
+3. Implementar request IDs para rastreamento
+4. Criar middleware de logging automático
+5. Configurar formatadores por ambiente (dev/prod)
+
+[ENTREGÁVEIS ESPERADOS]
+
+- Logging estruturado implementado
+- Métricas Prometheus básicas
+- Request ID em todos os logs
+- Middleware de logging automático
+- Endpoint /metrics
+- Documentação de observabilidade
+
+[INSTRUÇÕES ESPECÍFICAS]
+- Implementar logging estruturado (JSON para prod, console para dev)
+- Adicionar request_id para correlação de requisições
+- Configurar endpoint /metrics com métricas Prometheus
+- Criar middleware de logging automático
+- Suportar configuração via variáveis de ambiente
+
+[RESTRIÇÕES]
+- NÃO logar dados sensíveis (passwords, tokens)
+- NÃO logar health checks
+- Performance overhead < 5ms por requisição
+- Formato JSON deve ser parseable
+
+[FORMATO DE SAÍDA]
+1. Plano de implementação detalhado
+2. Código implementado (arquivos completos)
+3. Testes criados
+4. Documentação atualizada
+5. Comandos para validar as mudanças
+
+[MÉTRICAS DE SUCESSO]
+- Duração estimada: 2-3 dias
+- Todos os entregáveis implementados
+- Testes passando
+- Build funcionando
+- Zero regressões

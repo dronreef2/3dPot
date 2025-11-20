@@ -1644,6 +1644,73 @@ Para detalhes completos da estrutura e guia de migração, consulte:
 4. Push para a branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
+## 🚀 Aplique Este Framework ao Seu Próprio Projeto
+
+O 3dPot evoluiu de 40% para 98% production-readiness através de um framework estruturado de 9 sprints com IA. Agora você pode aplicar esse mesmo framework ao seu repositório!
+
+### Framework Adapter - Ferramenta de Adaptação
+
+Criamos uma ferramenta que analisa seu projeto e gera automaticamente:
+- ✅ **Diagnóstico** - Estima em qual sprint seu projeto está
+- 🗺️ **Roadmap Personalizado** - 4-6 sprints customizadas para seu contexto
+- 🤖 **Prompts Adaptados** - Prontos para usar com GitHub Copilot, ChatGPT, Claude
+- ✅ **Checklist Pré-Sprint** - Lista de verificação antes de começar
+
+### Início Rápido (5 minutos)
+
+```bash
+cd scripts/framework-adapter
+python framework_adapter.py
+```
+
+Responda algumas perguntas sobre seu projeto e receba:
+- Análise completa do estado atual
+- Roadmap de sprints recomendadas
+- Prompts prontos para usar com IA
+- Checklist de preparação
+
+### Documentação do Framework
+
+- 📖 **[Framework Adapter README](scripts/framework-adapter/README.md)** - Documentação completa da ferramenta
+- ⚡ **[Quick Start Guide](scripts/framework-adapter/QUICKSTART.md)** - Comece em 5 minutos
+- 📚 **[Exemplos de Uso](scripts/framework-adapter/EXEMPLOS.md)** - 5 cenários detalhados
+- 🎯 **[AI-SPRINT-FRAMEWORK.md](docs/arquitetura/AI-SPRINT-FRAMEWORK.md)** - Framework completo das 9 sprints
+- 🤖 **[AI-SPRINT-PROMPTS.md](docs/arquitetura/AI-SPRINT-PROMPTS.md)** - Todos os prompts reutilizáveis
+- 📘 **[ENG-PLAYBOOK-IA.md](docs/arquitetura/ENG-PLAYBOOK-IA.md)** - Playbook de engenharia com IA
+
+### O Que o Framework Faz
+
+O framework guia você através de 9 tipos de sprint:
+
+1. **Sprint 1-2:** Estrutura + Testes Básicos
+2. **Sprint 3-5:** Integração + CI/CD + Qualidade
+3. **Sprint 6:** Observabilidade (Logs + Métricas + Tracing)
+4. **Sprint 7-8:** Segurança Base + Hardening
+5. **Sprint 9:** Operações + DR + MFA
+
+### Resultados do 3dPot
+
+- De **93 para 748 testes** (+655 testes)
+- De **40% para 85%** de cobertura
+- De **40% para 98%** production-ready
+- **2-4 semanas** total (9 sprints)
+
+### Começe Agora
+
+```bash
+# Exemplo: API Python com testes parciais
+python framework_adapter.py \
+  --repo-url "https://github.com/seu-usuario/seu-projeto" \
+  --stack "Python/FastAPI + PostgreSQL" \
+  --objectives "API REST para e-commerce" \
+  --test-coverage "~30%" \
+  --observability "logs básicos" \
+  --security "JWT básico" \
+  --documentation "mínima"
+```
+
+📖 **[Leia o guia completo →](scripts/framework-adapter/README.md)**
+
 ## Autor
 
 **Guilherme (dronreef2)** - Análise e documentação de projetos Maker
