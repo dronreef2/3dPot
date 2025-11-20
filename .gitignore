@@ -909,3 +909,8 @@ outputs/
 workflows_status.json
 workspace.json
 
+
+# Framework Adapter test outputs
+framework-output/
+framework-output-*/
+
