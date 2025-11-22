@@ -276,13 +276,15 @@ Follow the BRANCH_CONSOLIDATION_GUIDE.md for the remaining phases to complete th
 
 ## Merge Summary
 
-All active branches have been successfully consolidated using the "ours" merge strategy to preserve the corrected import paths. The merges brought in 228 commits from the following branches:
+All active branches have been successfully consolidated using the "ours" merge strategy to preserve the corrected import paths. The merges brought in the commit history from the following branches:
 
-1. **copilot/finalize-production-readiness** - 206 commits
-2. **copilot/finish-sprint-9-mfa-implementation** - 206 commits  
-3. **copilot/apply-ai-driven-sprint-framework** - 210 commits
-4. **copilot/use-framework-adapter-tools** - 210 commits
-5. **copilot/finalize-sprint-9-tasks-again** - 205 commits
+1. **copilot/finalize-production-readiness** - 206 commits (total in branch)
+2. **copilot/finish-sprint-9-mfa-implementation** - 206 commits (total in branch)
+3. **copilot/apply-ai-driven-sprint-framework** - 210 commits (total in branch)
+4. **copilot/use-framework-adapter-tools** - 210 commits (total in branch)
+5. **copilot/finalize-sprint-9-tasks-again** - 205 commits (total in branch)
+
+After git deduplicated the shared commit history, this resulted in 228 net new commits added to the copilot/merge-production-readiness branch.
 
 The `copilot/update-github-token-workflows` branch was not merged as it contained outdated workflow configurations and was marked for evaluation/closure in the consolidation guide.
 

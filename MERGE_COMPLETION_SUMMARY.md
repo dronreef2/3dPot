@@ -13,13 +13,13 @@ This document summarizes the successful consolidation of all active feature bran
 ### Phase 2 - Critical (High Priority)
 
 #### 1. copilot/finalize-production-readiness
-- **Commits merged:** 206
+- **Total commits in branch:** 206
 - **Features:** Production deployment configurations, security hardening, Docker improvements
 - **Merge strategy:** `--allow-unrelated-histories -X ours`
 - **Status:** ✅ Successfully merged
 
 #### 2. copilot/finish-sprint-9-mfa-implementation
-- **Commits merged:** 206
+- **Total commits in branch:** 206
 - **Features:** MFA/2FA security implementation, auth system enhancements
 - **Merge strategy:** `--allow-unrelated-histories -X ours`
 - **Status:** ✅ Successfully merged
@@ -27,13 +27,13 @@ This document summarizes the successful consolidation of all active feature bran
 ### Phase 3 - Features (Medium Priority)
 
 #### 3. copilot/apply-ai-driven-sprint-framework
-- **Commits merged:** 210
+- **Total commits in branch:** 210
 - **Features:** AI-driven development tools, sprint framework improvements
 - **Merge strategy:** `--allow-unrelated-histories -X ours`
 - **Status:** ✅ Successfully merged
 
 #### 4. copilot/use-framework-adapter-tools
-- **Commits merged:** 210
+- **Total commits in branch:** 210
 - **Features:** Framework adapter tools, developer experience improvements
 - **Merge strategy:** `--allow-unrelated-histories -X ours`
 - **Status:** ✅ Successfully merged
@@ -41,7 +41,7 @@ This document summarizes the successful consolidation of all active feature bran
 ### Phase 4 - Cleanup (Low Priority)
 
 #### 5. copilot/finalize-sprint-9-tasks-again
-- **Commits merged:** 205
+- **Total commits in branch:** 205
 - **Features:** Sprint 9 final tasks, MFA backup codes, comprehensive tests
 - **Merge strategy:** `--allow-unrelated-histories -X ours`
 - **Status:** ✅ Successfully merged
@@ -53,10 +53,12 @@ This document summarizes the successful consolidation of all active feature bran
 
 ## Total Results
 
-- **Total commits merged:** 228 commits from 5 branches
+- **Total new commits added:** 228 commits from 5 branches (after deduplication of shared history)
 - **Branches successfully consolidated:** 5 out of 6
 - **Branches skipped:** 1 (outdated)
 - **Merge conflicts:** 0 (all resolved using "ours" strategy)
+
+**Note on commit counts:** Each branch listed (e.g., 206 commits for finalize-production-readiness) represents the total commits in that branch's history. However, many commits are shared between branches due to their common ancestry. After git deduplicates the shared history during merge, the net result is 228 new commits added to our branch.
 
 ## Merge Strategy Explanation
 
@@ -181,4 +183,4 @@ All active feature branches have been successfully consolidated into a single br
 - ✅ No merge conflicts
 - ✅ Ready for testing and final review
 
-The consolidation work requested in the problem statement ("Próximos Passos - Após merge") has been completed according to the phased approach outlined in BRANCH_CONSOLIDATION_GUIDE.md.
+The consolidation work requested in the problem statement (under "Next Steps - After merge") has been completed according to the phased approach outlined in BRANCH_CONSOLIDATION_GUIDE.md.
