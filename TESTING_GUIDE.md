@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Python 3.8+ (tested with 3.12)
+- Python 3.12+ (required for cadquery 2.4.0)
 - pip or pip3
 - Git
 

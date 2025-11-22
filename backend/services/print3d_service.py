@@ -34,11 +34,6 @@ from backend.models import (
     Printer, Material, PrintJob, PrintQueue, PrintSettings, PrintJobLog,
     User, Project, Model3D
 )
-# Removido - schemas não implementados no momento
-# from backend.schemas import (
-#     dict, dict, dict, dict, 
-#     dict, dict, dict
-# )
 
 logger = logging.getLogger(__name__)
 
