@@ -29,9 +29,9 @@ import jwt
 
 from backend.core.config import settings
 from backend.models import User
-from services.auth_service import auth_service
+from backend.services.auth_service import auth_service
 from backend.schemas import TokenData, UserPublic
-from database import get_db
+from backend.database import get_db
 
 # Configurar logging
 logger = logging.getLogger(__name__)

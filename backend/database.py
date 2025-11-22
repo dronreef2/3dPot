@@ -185,7 +185,7 @@ def get_active_users_count(db: Session):
 def cleanup_expired_sessions(db: Session):
     """Remove sessões expiradas do banco"""
     from datetime import datetime
-    from models import RefreshToken
+    from backend.models import RefreshToken
     
     deleted_count = db.query(RefreshToken).filter(
         RefreshToken.expires_at < datetime.utcnow()
