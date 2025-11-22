@@ -326,15 +326,19 @@ All verification commands confirm zero inconsistencies:
 
 ```bash
 # Check for old "from core." pattern (should be 0)
-grep -r "^from core\." backend/ | grep -v __pycache__ | wc -l
+grep -r "^from core\." backend/ --include="*.py" | grep -v __pycache__ | wc -l
 # Result: 0 ✅
 
 # Check for old "from models import" pattern (should be 0)
-grep -r "^from models import" backend/ | grep -v __pycache__ | wc -l
+grep -r "^from models import" backend/ --include="*.py" | grep -v __pycache__ | wc -l
 # Result: 0 ✅
 
-# Check for old "from schemas." pattern (should be 0)
-grep -r "^from schemas\." backend/ | grep -v __pycache__ | wc -l
+# Check for old "from schemas." pattern without backend. prefix (should be 0)
+grep -n "from schemas\." backend/ -r --include="*.py" | grep -v __pycache__ | grep -v "from backend.schemas\." | wc -l
+# Result: 0 ✅
+
+# Check for old "from services." pattern without backend. prefix (should be 0)
+grep -n "from services\." backend/ -r --include="*.py" | grep -v __pycache__ | grep -v "from backend.services\." | wc -l
 # Result: 0 ✅
 ```
 
