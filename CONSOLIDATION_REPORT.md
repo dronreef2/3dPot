@@ -259,20 +259,20 @@ Follow the BRANCH_CONSOLIDATION_GUIDE.md for the remaining phases to complete th
 
 After this merge (following BRANCH_CONSOLIDATION_GUIDE.md):
 
-### Fase 2 - Critical (Alta Prioridade)
+### Phase 2 - Critical (High Priority)
 
 - [ ] Merge `copilot/finalize-production-readiness` (3 behind, 2 ahead)
 - [ ] Merge `copilot/finish-sprint-9-mfa-implementation` (4 behind, 3 ahead)
 
-### Fase 3 - Features (Média Prioridade)
+### Phase 3 - Features (Medium Priority)
 
 - [ ] Merge `copilot/apply-ai-driven-sprint-framework` (2 behind, 5 ahead)
 - [ ] Merge `copilot/use-framework-adapter-tools` (1 behind, 4 ahead)
 
-### Fase 4 - Cleanup (Baixa Prioridade)
+### Phase 4 - Cleanup (Low Priority)
 
 - [ ] Cherry-pick `copilot/finalize-sprint-9-tasks-again` (5 behind, 3 ahead)
-- [ ] Avaliar/fechar `copilot/update-github-token-workflows` (158 behind)
+- [ ] Evaluate/close `copilot/update-github-token-workflows` (158 behind)
 
 ## 🏷️ Suggested Labels
 
