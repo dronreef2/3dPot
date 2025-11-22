@@ -2,9 +2,11 @@
 
 ## Prerequisites
 
-- Python 3.12+ (required for cadquery 2.4.0)
+- Python 3.9+ (Python 3.12 recommended for best compatibility)
 - pip or pip3
 - Git
+
+**Note:** While the project may work with Python 3.8+, cadquery 2.4.0 works best with Python 3.9 or later.
 
 ## Quick Start (5 Minutes)
 
