@@ -8,8 +8,8 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
 import logging
 
-from core.config import settings, DATABASE_URL
-from models import Base, User
+from backend.core.config import settings, DATABASE_URL
+from backend.models import Base, User
 
 logger = logging.getLogger(__name__)
 

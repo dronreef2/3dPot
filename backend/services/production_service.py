@@ -20,7 +20,7 @@ from models.production_models import (
     ProductionEvent, QualityCheck, ProductionCapacity, ProductionSchedule,
     ProductionMetrics, ProductionOptimization
 )
-from models import IntelligentBudget as Budget, Project, User
+from backend.models import IntelligentBudget as Budget, Project, User
 from schemas.budgeting import IntelligentBudgetResponse
 
 logger = logging.getLogger(__name__)

@@ -14,7 +14,7 @@ import numpy as np
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, desc
 
-from models import IntelligentBudget as Budget, Project
+from backend.models import IntelligentBudget as Budget, Project
 from models.production_models import (
     ProductionOrder, ProductionType, ProductionStatus, QualityStatus,
     ProductionMetrics, ProductionOptimization
