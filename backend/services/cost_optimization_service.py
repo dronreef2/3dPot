@@ -15,12 +15,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, desc
 
 from backend.models import IntelligentBudget as Budget, Project
-from models.production_models import (
+from backend.models.production_models import (
     ProductionOrder, ProductionType, ProductionStatus, QualityStatus,
     ProductionMetrics, ProductionOptimization
 )
-from schemas.budgeting import IntelligentBudgetResponse
-from schemas.production_schemas import OptimizationRequest
+from backend.schemas.budgeting import IntelligentBudgetResponse
+from backend.schemas.production_schemas import OptimizationRequest
 
 logger = logging.getLogger(__name__)
 

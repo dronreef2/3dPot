@@ -9,7 +9,7 @@ from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel, Field
 
-from schemas.budgeting import IntelligentBudgetResponse
+from backend.schemas.budgeting import IntelligentBudgetResponse
 
 # Enums
 class ProductionStatusEnum(str, Enum):

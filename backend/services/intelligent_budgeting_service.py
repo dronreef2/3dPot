@@ -22,7 +22,7 @@ from backend.models import (
     Model3D, User, Project, Simulation, SimulationResult,
     IntelligentBudget as Budget, BudgetMaterial, BudgetSupplier
 )
-from schemas.budgeting import (
+from backend.schemas.budgeting import (
     IntelligentBudgetCreate, IntelligentBudgetResponse, QualityBasedPricing,
     MaterialRecommendation, SupplierComparison, BudgetTimeline,
     Slant3DQuote, SimulationIntegration
