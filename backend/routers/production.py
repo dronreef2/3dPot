@@ -884,8 +884,8 @@ async def analyze_cost_optimization(
     """Analisar oportunidades de otimização de custos"""
     
     try:
-        from services.cost_optimization_service import CostOptimizationService
-        from schemas.production_schemas import OptimizationRequest
+        from backend.services.cost_optimization_service import CostOptimizationService
+        from backend.schemas.production_schemas import OptimizationRequest
         
         # Configurar request de otimização
         optimization_request = OptimizationRequest(
