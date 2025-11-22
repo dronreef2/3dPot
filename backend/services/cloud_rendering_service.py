@@ -30,8 +30,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc, func, text
 from sqlalchemy.orm import joinedload
 
-from core.config import settings
-from models import (
+from backend.core.config import settings
+from backend.models import (
     GPUCluster, RenderJob, RenderSettings, QualityPreset, BatchRenderConfig,
     CostEstimate, RenderNode, RenderJobLog,
     User, Project, Model3D

@@ -15,9 +15,9 @@ import hashlib
 import httpx
 from sqlalchemy.orm import Session
 
-from core.config import SLANT3D_API_KEY
-from models.budgeting import Slant3DQuote, IntelligentBudget
-from schemas.budgeting import Slant3DQuoteRequest, Slant3DQuote as Slant3DQuoteSchema
+from backend.core.config import SLANT3D_API_KEY
+from backend.models.budgeting import Slant3DQuote, IntelligentBudget
+from backend.schemas.budgeting import Slant3DQuoteRequest, Slant3DQuote as Slant3DQuoteSchema
 
 logger = logging.getLogger(__name__)
 

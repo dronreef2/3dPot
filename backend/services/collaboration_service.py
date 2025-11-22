@@ -29,8 +29,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc, func
 from sqlalchemy.orm import joinedload
 
-from core.config import settings
-from models import (
+from backend.core.config import settings
+from backend.models import (
     CollaborationSession, Participant, Message, VideoCall, VideoCallParticipant,
     ScreenShare, FileVersion, CollaborationSetting,
     User, Project

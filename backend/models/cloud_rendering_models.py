@@ -461,7 +461,7 @@ class RenderJobLog(Base):
 # Adicionar relacionamentos ao modelo User
 def add_user_cloud_rendering_relationships():
     """Adicionar relacionamentos ao modelo User"""
-    from models import User
+    from backend.models import User
     
     if not hasattr(User, 'render_jobs'):
         User.render_jobs = relationship(
@@ -491,7 +491,7 @@ def add_user_cloud_rendering_relationships():
 # Adicionar relacionamentos ao modelo Project
 def add_project_cloud_rendering_relationships():
     """Adicionar relacionamentos ao modelo Project"""
-    from models import Project
+    from backend.models import Project
     
     if not hasattr(Project, 'render_jobs'):
         Project.render_jobs = relationship(
