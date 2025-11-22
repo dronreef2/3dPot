@@ -29,13 +29,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc
 import numpy as np
 
-from core.config import settings
-from models import (
+from backend.core.config import settings
+from backend.models import (
     Printer, Material, PrintJob, PrintQueue, PrintSettings, PrintJobLog,
     User, Project, Model3D
 )
 # Removido - schemas não implementados no momento
-# from schemas import (
+# from backend.schemas import (
 #     dict, dict, dict, dict, 
 #     dict, dict, dict
 # )

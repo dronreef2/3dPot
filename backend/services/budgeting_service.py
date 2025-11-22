@@ -14,9 +14,9 @@ import pandas as pd
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
-from core.config import OCTOPART_API_KEY, DIGIKEY_API_KEY
-from models import Budget, Project, Model3D
-from schemas import BudgetCreate, ItemDetalhado, Fornecedor
+from backend.core.config import OCTOPART_API_KEY, DIGIKEY_API_KEY
+from backend.models import Budget, Project, Model3D
+from backend.schemas import BudgetCreate, ItemDetalhado, Fornecedor
 
 logger = logging.getLogger(__name__)
 

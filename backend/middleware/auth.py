@@ -27,10 +27,10 @@ except ImportError:
 from sqlalchemy.orm import Session
 import jwt
 
-from core.config import settings
-from models import User
+from backend.core.config import settings
+from backend.models import User
 from services.auth_service import auth_service
-from schemas import TokenData, UserPublic
+from backend.schemas import TokenData, UserPublic
 from database import get_db
 
 # Configurar logging
