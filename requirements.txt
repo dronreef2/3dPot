@@ -24,6 +24,9 @@ idna>=3.7  # Security fix: PYSEC-2024-60 (DoS)
 # PostgreSQL
 sqlalchemy[asyncio]==2.0.23
 asyncpg==0.29.0
+# Note: psycopg2-binary 2.9.9 requires Python 3.8-3.12 for prebuilt wheels (no pg_config needed)
+# For Python 3.13+, verify wheel availability or install libpq-dev in build environment
+# See .python-version and runtime.txt for version specification
 psycopg2-binary==2.9.9
 
 # Database Management
