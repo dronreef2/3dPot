@@ -92,7 +92,7 @@
 **/ipython_config.py
 
 # pyenv
-**/.python-version
+# **/.python-version  # Commented out - we need to track this for deployment platform version specification
 
 # pipenv
 **/Pipfile.lock
