@@ -91,8 +91,7 @@
 **/profile_default/
 **/ipython_config.py
 
-# pyenv
-# **/.python-version  # Commented out - we need to track this for deployment platform version specification
+# pyenv - .python-version tracked for deployment platform configuration
 
 # pipenv
 **/Pipfile.lock
